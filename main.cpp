@@ -4,7 +4,19 @@
 
 #include <iostream>
 
+#include "src/images/Image.h"
+#include "src/steganographer/Steganographer.h"
+#include "src/utils/Logger.h"
+
 int main() {
-    std::cout << "coucou !" << std::endl;
+    try
+    {
+        Image image("C:/Users/Roumite/CLionProjects/stegnocode/data/img_1.png");
+        Steganographer::decode(image);
+    } catch (const std::exception &e)
+    {
+        Logger::log(std::string("Error -> ") + e.what());
+    }
+
     return 42;
 }
