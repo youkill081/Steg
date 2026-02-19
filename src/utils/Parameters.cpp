@@ -26,9 +26,8 @@ Mode Parameters::parse_mode(const std::string &mode)
 }
 
 // ReSharper disable once CppNotAllPathsReturnValue
-Data_type Parameters::parse_type(const std::string &type)
+DataType Parameters::parse_type(const std::string &type)
 {
-    if (type == std::string("raw")) return RAW;
     if (type == std::string("string")) return STRING;
 
     std::cout << "Unknown type: " << type << std::endl;
@@ -48,7 +47,10 @@ std::vector<std::string> Parameters::parse_parameters(int ac, char** av)
 
 std::string Parameters::parse_image_path(int ac, char** av)
 {
-    return std::string{av[ac-2]};
+    if (mode == DECODE)
+        return std::string{av[2]};
+    else
+        return std::string{av[ac-2]};
 }
 
 std::string Parameters::parse_output_path(int ac, char** av)
@@ -58,11 +60,15 @@ std::string Parameters::parse_output_path(int ac, char** av)
 
 Parameters::Parameters(int ac, char** av)
 {
-    if (ac < 5) display_help();
-
+    if (ac < 3) display_help();
     mode = parse_mode(av[1]);
-    type = parse_type(av[2]);
-    parameters = parse_parameters(ac, av);
     image_path = parse_image_path(ac, av);
-    output_path = parse_output_path(ac, av);
+
+    if (mode == ENCODE)
+    {
+        type = parse_type(av[2]);
+        parameters = parse_parameters(ac, av);
+        output_path = parse_output_path(ac, av);
+    }
+
 }

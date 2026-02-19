@@ -10,17 +10,15 @@
 constexpr uint32_t CHECKSUM = 0b01101101011010010111010001100101;
 constexpr uint8_t PROTOCOL_VERSION = 1;
 
-enum Data_type
+enum DataType
 {
-    RAW,
     STRING
 };
 
-inline std::string data_type_to_string(Data_type type)
+inline std::string data_type_to_string(DataType type)
 {
     switch (type)
     {
-        case RAW: return "RAW";
         case STRING: return "STRING";
         default: return "UNKNOWN";
     }

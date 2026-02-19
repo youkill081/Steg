@@ -29,6 +29,10 @@ set(SOURCES
         src/steganographer/header.hpp
         src/utils/Parameters.cpp
         src/utils/Parameters.h
+        src/handlers/IHander.h
+        src/handlers/StringHandler.cpp
+        src/handlers/StringHandler.h
+        src/handlers/handlers.h
 )
 
 add_executable(${APP_NAME} ${SOURCES})

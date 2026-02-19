@@ -30,7 +30,7 @@ inline std::string mode_to_string(Mode mode)
 }
 
 inline constexpr std::string_view HELP_MESSAGE = R"(Usage:
-  stegnocode encode <raw|string> <options...> <input_image_path> <output_image_path>
+  stegnocode encode <string> <options...> <input_image_path> <output_image_path>
   stegnocode decode <image_path>
 )";
 
@@ -38,7 +38,7 @@ class Parameters
 {
 private:
     Mode mode;
-    Data_type type;
+    DataType type;
     std::vector<std::string> parameters;
     std::string image_path;
     std::string output_path;
@@ -46,15 +46,15 @@ private:
     static void display_help();
 
     static Mode parse_mode(const std::string &mode);
-    static Data_type parse_type(const std::string &type);
+    static DataType parse_type(const std::string &type);
     static std::vector<std::string> parse_parameters(int ac, char **av);
-    static std::string parse_image_path(int ac,char **av);
+    std::string parse_image_path(int ac,char **av);
     static std::string parse_output_path(int ac, char **av);
 public:
     Parameters(int ac, char **av);
 
     [[nodiscard]] const Mode& get_mode() const { return mode; }
-    [[nodiscard]] const Data_type& get_type() const { return type; }
+    [[nodiscard]] const DataType& get_type() const { return type; }
     [[nodiscard]] const std::vector<std::string>& get_parameters() const { return parameters; }
     [[nodiscard]] const std::string& get_image_path() const { return image_path; }
     [[nodiscard]] const std::string& get_output_path() const { return output_path; }

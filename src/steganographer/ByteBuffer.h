@@ -40,7 +40,7 @@ public:
     void write_uint32(uint32_t value);
 
     uint8_t read_uint8();
-    uint32_t read_uint32();
+    uint32_t read_uint32() ;
 
     void reset_cursor();
     [[nodiscard]] size_t size() const; // Return number of byte in  the buffer
