@@ -4,7 +4,7 @@ project(stegnocode)
 
 set(APP_NAME stegnocode)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(libs/stegcommon)
 add_subdirectory(stegasm)
