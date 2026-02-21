@@ -342,5 +342,5 @@ ByteBuffer Compiler::compiledFileToBytebuffer(const CompiledFile& compiledFile)
 ByteBuffer Compiler::compile(const std::string& path)
 {
     CompiledFile file = compileFile(path);
-    return compiledFileToBytebuffer(file);;
+    return compiledFileToBytebuffer(file);
 }
