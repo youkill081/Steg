@@ -22,12 +22,12 @@ uint16_t MemoryBlockSet::find_free_block_index(uint16_t size) const
     throw MemoryError("Not enough memory to allocate " + std::to_string(size));
 }
 
-bool MemoryBlockSet::is_address_free(uint16_t address)
+bool MemoryBlockSet::is_address_free(uint16_t address) const
 {
     return blocks[find_address_block_index(address)].free == FREE;
 }
 
-bool MemoryBlockSet::is_address_used(uint16_t address)
+bool MemoryBlockSet::is_address_used(uint16_t address) const
 {
     return blocks[find_address_block_index(address)].free == USED;
 }
@@ -141,7 +141,7 @@ void MemoryBlockSet::free(uint16_t address)
 
 // ----- Memory -----
 
-uint16_t Memory::read(uint16_t address)
+uint16_t Memory::read(uint16_t address) const
 {
     if (_blocks.is_address_free(address))
         throw MemoryError("[SEGFAULT] Try to read at FREE address " + std::to_string(address));

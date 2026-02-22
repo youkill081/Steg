@@ -12,4 +12,5 @@ void Vm::run(ByteBuffer& buffer)
     Runtime runtime = Loader::load(buffer);
 
     runtime.memory.display();
+    runtime.registries.display();
 }

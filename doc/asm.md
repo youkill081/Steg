@@ -78,13 +78,13 @@ Toutes les opération auront des signatures fixe ; cet a dire qu'on connaits leu
 |     JA     |  0xD   |         data1          |                                 saute à l'instruction data1 du programme si A>B                                  |
 |     JB     |  0xE   |         data1          |                                 saute à l'instruction data1 du programme si A<B                                  |
 | DISPLAY_N  |  0xF   |        RegX(1)         |                              Affiche le contenu du registre RegX(1) comme un nombre                              |
-| DISPLAY_AN |  0x11  |        RegX(1)         |                  Affiche la valeur à l'adresse contenu dans le registre RegX(1) comme un nombre                  |
-| DISPLAY_C  |  0x12  |        RegX(1)         |                               Affiche le contenu du registre RegX(1) comme un char                               |
-| DISPLAY_AC |  0x13  |        RegX(1)         |                  Affiche la valeur à l'addresse contenu dans le registre  RegX(1) comme un char                  |
-| DISPLAY_B  |  0x14  |        RegX(1)         |                             Affiche le contenu du registre RegX(1) comme en binaire                              |
-| DISPLAY_AB |  0x15  |        RegX(1)         |                 Affiche la valeur à l'addresse contenu dans le registre RegX(1) comme en binaire                 |
-|    HALT    |  0x16  |                        |                 Met fin au programme, la valeurs de retours seras la valeurs enregistrer dans R0                 |
-|   ALOCA    |  0x17  |     RegX(1), data1     |                        Alloues data1 mot et retourne l'addresse dans le registre RegX(1)                         |
-|   ALOCR    |  0x18  |    RegX(1), RegX(2)    |                       Alloues RegX(2) mot et retourne l'addresse dans le registre RegX(1)                        |
-|    FREE    |  0x19  |        RegX(1)         |                                   Free la mémoire allouer à l'addresse RegX(1)                                   |
+| DISPLAY_AN |  0x10  |        RegX(1)         |                  Affiche la valeur à l'adresse contenu dans le registre RegX(1) comme un nombre                  |
+| DISPLAY_C  |  0x11  |        RegX(1)         |                               Affiche le contenu du registre RegX(1) comme un char                               |
+| DISPLAY_AC |  0x12  |        RegX(1)         |                  Affiche la valeur à l'addresse contenu dans le registre  RegX(1) comme un char                  |
+| DISPLAY_B  |  0x13  |        RegX(1)         |                             Affiche le contenu du registre RegX(1) comme en binaire                              |
+| DISPLAY_AB |  0x14  |        RegX(1)         |                 Affiche la valeur à l'addresse contenu dans le registre RegX(1) comme en binaire                 |
+|    HALT    |  0x15  |                        |                 Met fin au programme, la valeurs de retours seras la valeurs enregistrer dans R0                 |
+|   ALOCA    |  0x16  |     RegX(1), data1     |                        Alloues data1 mot et retourne l'addresse dans le registre RegX(1)                         |
+|   ALOCR    |  0x17  |    RegX(1), RegX(2)    |                       Alloues RegX(2) mot et retourne l'addresse dans le registre RegX(1)                        |
+|    FREE    |  0x18  |        RegX(1)         |                                   Free la mémoire allouer à l'addresse RegX(1)                                   |
 

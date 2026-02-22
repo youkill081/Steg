@@ -33,8 +33,8 @@ private:
 public:
     [[nodiscard]] const std::vector<MemoryBlock>& get_blocks() const { return blocks; }
 
-    bool is_address_free(uint16_t address);
-    bool is_address_used(uint16_t address);
+    [[nodiscard]] bool is_address_free(uint16_t address) const;
+    [[nodiscard]] bool is_address_used(uint16_t address) const;
 
     uint16_t allocate(uint16_t size);
     void allocate_at(uint16_t address, uint16_t size);
@@ -50,7 +50,7 @@ private:
 public:
     Memory() = default;
 
-    uint16_t read(uint16_t address);
+    uint16_t read(uint16_t address) const;
     void write(uint16_t address, uint16_t value);
 
     uint16_t allocate(uint16_t size);

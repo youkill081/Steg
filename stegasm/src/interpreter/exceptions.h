@@ -16,3 +16,8 @@ class MemoryError final : public InterpreterError
 {
     using InterpreterError::InterpreterError;
 };
+
+class RegistryError final: public InterpreterError
+{
+    using InterpreterError::InterpreterError;
+};

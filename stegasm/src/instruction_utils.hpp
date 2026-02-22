@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <map>
+#include <string>
+
 inline std::map<std::string, RegNames> stringToRegistry =
 {
     {"R0", R0},
@@ -27,3 +30,5 @@ inline std::map<RegNames, std::string> registryToString =
     {R6, "R6"},
     {R7, "R7"}
 };
+
+

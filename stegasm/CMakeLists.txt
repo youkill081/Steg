@@ -8,7 +8,6 @@ set(SOURCES
         src/main.cpp
         src/instructions.h
         src/interpreter/runtime/Runtime.h
-        src/interpreter/instructions/instruction.h
         src/compiler/TextParser.cpp
         src/compiler/TextParser.h
         src/compiler/Compiler.cpp
@@ -21,9 +20,14 @@ set(SOURCES
         src/interpreter/Vm.h
         src/interpreter/runtime/Memory.cpp
         src/interpreter/exceptions.h
+        src/interpreter/runtime/Registries.cpp
+        src/interpreter/runtime/Registries.h
+        src/instructions.cpp
 )
 
 add_executable(stegasm ${SOURCES})
 
 target_link_libraries(stegasm PRIVATE stegcommon)
+
 target_include_directories(stegasm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../libs/stegcommon)
+target_include_directories(stegasm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
