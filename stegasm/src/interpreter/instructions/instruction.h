@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "../Runtime.h"
+#include "../runtime/Runtime.h"
+
+struct InstructionDesc;
 
 using DecodedInstruction = struct DecodedInstruction
 {
-    uint8_t opcode;
-    uint8_t regIndex[6];
-    uint16_t data[2];
+    InstructionDesc &desc;
 };
 
 using InstructionFct = void(*)(Runtime &, DecodedInstruction &);

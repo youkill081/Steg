@@ -10,6 +10,7 @@
 #include "Logger.h"
 #include "utils/utils.hpp"
 
+using namespace compiler;
 
 std::span<const ParsedLine> Compiler::getSectionLines(
     const std::vector<ParsedLine>& lines,

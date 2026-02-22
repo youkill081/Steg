@@ -6,6 +6,10 @@
 
 #include <cstdint>
 
+#include "Memory.h"
+
 class Runtime
 {
+public:
+    Memory memory;
 };
