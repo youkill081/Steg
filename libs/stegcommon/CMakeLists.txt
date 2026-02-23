@@ -10,6 +10,7 @@ add_library(stegcommon STATIC
         Logger.cpp
         Logger.h
         utils/utils.hpp
+        utils.h
 )
 
 target_include_directories(stegcommon PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

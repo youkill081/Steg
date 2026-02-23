@@ -238,7 +238,7 @@ InstructionSet Compiler::parseInstructions(const std::vector<ParsedLine>& lines,
     if (instructions_lines.empty())
         throw CompilerError("No instructions in .text section !");
 
-    LabelMap labels = parseLabels(instructions_lines);
+    LabelMap labels = parseLabels(instructions_lines, variables);
     InstructionSet instructions;
     for (const auto &line : instructions_lines)
     {
@@ -254,7 +254,7 @@ bool Compiler::is_label(const ParsedLine &line)
     return line.tokens.size() == 1 && line.tokens[0].ends_with(':');
 }
 
-LabelMap Compiler::parseLabels(const std::span<const ParsedLine> &lines)
+LabelMap Compiler::parseLabels(const std::span<const ParsedLine> &lines, const VariableSet &variables)
 {
     LabelMap labels{};
     uint64_t current_instruction_idx = 0;
@@ -270,6 +270,10 @@ LabelMap Compiler::parseLabels(const std::span<const ParsedLine> &lines)
         {
             line.is_instruction = false;
             std::string label_name = line.tokens[0].substr(0, line.tokens[0].size() - 1);
+            if (variables.contains_variable_by_name(label_name))
+                throw CompilerError("Label \"" + label_name + "\" is already used as variable name");
+            if (labels.contains(label_name))
+                throw CompilerError("Label \"" + label_name + "\" is already used");
             labels[label_name] = current_instruction_idx;
         }
     }

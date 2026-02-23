@@ -14,6 +14,7 @@
 #include "../instructions.h"
 #include "ByteBuffer.h"
 #include "TextParser.h"
+#include "utils.h"
 
 #define SECTION_KEYWORD "section"
 #define VARIABLE_SECTION_NAME ".data"
@@ -58,7 +59,7 @@ namespace compiler
         {
             for (const auto &variable : *this)
             {
-                if (variable.name == new_variable.name)
+                if (string_equal(variable.name, new_variable.name))
                     throw CompilerError("Multiple variable with name " + new_variable.name + " !");
             }
             this->push_back(new_variable);
@@ -80,6 +81,16 @@ namespace compiler
                 if (variable.name == name)
                     return variable;
             throw CompilerError("[get_variable_by_name] Variable \"" + name + "\" not found !");
+        }
+
+        [[nodiscard]] bool contains_variable_by_name(const std::string& name) const
+        {
+            for (const auto &variable : *this)
+            {
+                if (string_equal(variable.name, name))
+                    return true;
+            }
+            return false;
         }
 
         void display() const
@@ -176,7 +187,7 @@ namespace compiler
         static InstructionSet parseInstructions(const std::vector<ParsedLine> &lines, const VariableSet &variables);
 
         static bool is_label(const ParsedLine &line);
-        static LabelMap parseLabels(const std::span<const ParsedLine> &lines);
+        static LabelMap parseLabels(const std::span<const ParsedLine> &lines, const VariableSet &variables);
 
         static CompiledFile compileFile(const std::string &path);
 
