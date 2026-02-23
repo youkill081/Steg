@@ -135,6 +135,12 @@ namespace compiler
     };
 
     /*
+     * Label management
+     */
+
+    using LabelMap = std::map<std::string, uint16_t>; // Map label's name with its associated code line
+
+    /*
      * Compilation management
      */
 
@@ -164,10 +170,13 @@ namespace compiler
         static bool userWriteVariableAsAddress(const std::string &token);
         static uint16_t tokenToUint16(const std::string &token);
         static bool tokenIsValidValue(const std::string &token);
-        static DataValueParsingResult parseDataValue(std::string token, const VariableSet &variables);
-        static DataValues getDataValuesFromParsedLine(const InstructionDesc &desc, const ParsedLine &line, const VariableSet &variables);
-        static Instruction parsedLineToInstruction(const ParsedLine &line, const VariableSet &variables);
+        static DataValueParsingResult parseDataValue(std::string token, const VariableSet &variables, const LabelMap &labels);
+        static DataValues getDataValuesFromParsedLine(const InstructionDesc &desc, const ParsedLine &line, const LabelMap &labels, const VariableSet &variables);
+        static Instruction parsedLineToInstruction(const ParsedLine &line, const VariableSet &variables, const LabelMap &labels);
         static InstructionSet parseInstructions(const std::vector<ParsedLine> &lines, const VariableSet &variables);
+
+        static bool is_label(const ParsedLine &line);
+        static LabelMap parseLabels(const std::span<const ParsedLine> &lines);
 
         static CompiledFile compileFile(const std::string &path);
 

@@ -36,6 +36,7 @@ std::span<const ParsedLine> Compiler::getSectionLines(
             {
                 return {lines.data() + section_start_index + 1, number_line_section};
             }
+            line.line_number_in_section = 1;
             number_line_section += 1;
         }
 
@@ -165,24 +166,36 @@ bool Compiler::tokenIsValidValue(const std::string& token)
     return ec == std::errc();
 }
 
-DataValueParsingResult Compiler::parseDataValue(std::string token, const VariableSet &variables)
+DataValueParsingResult Compiler::parseDataValue(std::string token, const VariableSet &variables, const LabelMap &labels)
 {
     bool is_address = userWriteVariableAsAddress(token);
-    if (is_address)
+    if (is_address) // User hardcoded address ex : LOAD A [5]
         token = userVariableWriteAsAddressToString(token);
 
-    if (tokenIsValidValue(token))
+    if (tokenIsValidValue(token)) // User hardcoded a constant ex : LOAD A 5
         return {
             .is_address = is_address,
             .value = tokenToUint16(token)
         };
+
+    if (labels.contains(token)) // User used a label
+    {
+        return {
+            .is_address = false, // Labels are transformed to constant
+            .value = labels.at(token)
+        };
+    }
     return {
         .is_address = true, // Variables are always managed as address'
         .value = variables.get_variable_address(variables.get_variable_by_name(token))
     };
 }
 
-DataValues Compiler::getDataValuesFromParsedLine(const InstructionDesc& desc, const ParsedLine& line, const VariableSet &variables)
+DataValues Compiler::getDataValuesFromParsedLine(
+    const InstructionDesc& desc,
+    const ParsedLine& line,
+    const LabelMap &labels,
+    const VariableSet &variables)
 {
     DataValues data{};
     switch (desc.dataCount)
@@ -190,19 +203,21 @@ DataValues Compiler::getDataValuesFromParsedLine(const InstructionDesc& desc, co
     case TWO_DATA:
         data[1] = parseDataValue(
             line.tokens[desc.regCount + 2],
-            variables
+            variables,
+            labels
         );
     case ONE_DATA:
         data[0] = parseDataValue(
             line.tokens[desc.regCount + 1],
-            variables
+            variables,
+            labels
         );
     default:
         return data;
     }
 }
 
-Instruction Compiler::parsedLineToInstruction(const ParsedLine& line, const VariableSet& variables)
+Instruction Compiler::parsedLineToInstruction(const ParsedLine& line, const VariableSet& variables, const LabelMap &labels)
 {
     const InstructionDesc &desc = getInstructionDescFromParsedLine(line);
     uint32_t token_needed = static_cast<uint32_t>(desc.dataCount) + static_cast<uint32_t>(desc.regCount) + 1;
@@ -213,20 +228,53 @@ Instruction Compiler::parsedLineToInstruction(const ParsedLine& line, const Vari
     return {
         .desc = desc,
         .registries = getUsedRegistriesFromParsedLine(desc, line),
-        .datas = getDataValuesFromParsedLine(desc, line, variables)
+        .datas = getDataValuesFromParsedLine(desc, line, labels, variables)
     };
 }
 
 InstructionSet Compiler::parseInstructions(const std::vector<ParsedLine>& lines, const VariableSet& variables)
 {
-    const auto instructions_lines = getSectionLines(lines, INSTRUCTION_SECTION_NAME, true);
+    auto instructions_lines = getSectionLines(lines, INSTRUCTION_SECTION_NAME, true);
     if (instructions_lines.empty())
         throw CompilerError("No instructions in .text section !");
 
+    LabelMap labels = parseLabels(instructions_lines);
     InstructionSet instructions;
     for (const auto &line : instructions_lines)
-        instructions.push_back(parsedLineToInstruction(line, variables));
+    {
+        if (not line.is_instruction)
+            continue;
+        instructions.push_back(parsedLineToInstruction(line, variables, labels));
+    }
     return instructions;
+}
+
+bool Compiler::is_label(const ParsedLine &line)
+{
+    return line.tokens.size() == 1 && line.tokens[0].ends_with(':');
+}
+
+LabelMap Compiler::parseLabels(const std::span<const ParsedLine> &lines)
+{
+    LabelMap labels{};
+    uint64_t current_instruction_idx = 0;
+
+    for (auto & line : lines)
+    {
+        if (!is_label(line))
+        {
+            line.line_number_in_section = current_instruction_idx++;
+            line.is_instruction = true;
+        }
+        else
+        {
+            line.is_instruction = false;
+            std::string label_name = line.tokens[0].substr(0, line.tokens[0].size() - 1);
+            labels[label_name] = current_instruction_idx;
+        }
+    }
+
+    return labels;
 }
 
 CompiledFile Compiler::compileFile(const std::string& path)

@@ -19,6 +19,9 @@ struct ParsedLine
     std::size_t line_number;
     std::string original_line;
     std::vector<std::string> tokens;
+
+    mutable uint64_t line_number_in_section = 0; // Used by compiler
+    mutable bool is_instruction; // Used by compiler
 };
 
 class TextParser

@@ -10,13 +10,28 @@
 inline std::map<std::string, RegNames> stringToRegistry =
 {
     {"R0", R0},
+    {"r0", R0},
+
     {"R1", R1},
+    {"r1", R1},
+
     {"R2", R2},
+    {"r2", R2},
+
     {"R3", R3},
+    {"r3", R3},
+
     {"R4", R4},
+    {"r4", R4},
+
     {"R5", R5},
+    {"r5", R5},
+
     {"R6", R6},
-    {"R7", R7}
+    {"r6", R6},
+
+    {"R7", R7},
+    {"r7", R7}
 };
 
 inline std::map<RegNames, std::string> registryToString =
