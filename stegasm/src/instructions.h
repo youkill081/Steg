@@ -106,6 +106,15 @@ inline void instr_DEBUG_M(Runtime &runtime, InstructionView view);
 inline void instr_ADDA(Runtime &runtime, InstructionView view);
 inline void instr_CALL(Runtime &runtime, InstructionView view);
 inline void instr_RET(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_CREATE(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_CLOSE(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_POOL(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_SHOULD_CLOSE(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_CLEAR(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_PRESENT(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_KEY_PRESSED(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_KEY_DOWN(Runtime &runtime, InstructionView view);
+inline void instr_WINDOW_SET_TARGET_FPS(Runtime &runtime, InstructionView view);
 
 constexpr std::array instructionSet =
 {
@@ -138,6 +147,15 @@ constexpr std::array instructionSet =
     InstructionDesc{ "ADDA", 0x1B, ONE_REG, ONE_DATA, &instr_ADDA },
     InstructionDesc{ "CALL", 0x1C, NO_REG, ONE_DATA, &instr_CALL },
     InstructionDesc{ "RET", 0x1D, NO_REG, NO_DATA, &instr_RET },
+    InstructionDesc{ "WINDOW_CREATE", 0x1E, NO_REG, NO_DATA, &instr_WINDOW_CREATE },
+    InstructionDesc{ "WINDOW_CLOSE", 0x1F, NO_REG, NO_DATA, &instr_WINDOW_CLOSE },
+    InstructionDesc{ "WINDOW_POOL", 0x20, NO_REG, NO_DATA, &instr_WINDOW_POOL },
+    InstructionDesc{ "WINDOW_SHOULD_CLOSE", 0x21, ONE_REG, NO_DATA, &instr_WINDOW_SHOULD_CLOSE },
+    InstructionDesc{ "WINDOW_CLEAR", 0x22, THREE_REG, NO_DATA, &instr_WINDOW_CLEAR },
+    InstructionDesc{ "WINDOW_PRESENT", 0x23, NO_REG, NO_DATA, &instr_WINDOW_PRESENT },
+    InstructionDesc{ "WINDOW_KEY_PRESSED", 0x24, ONE_REG, ONE_DATA, &instr_WINDOW_KEY_PRESSED },
+    InstructionDesc{ "WINDOW_KEY_DOWN", 0x25, ONE_REG, ONE_DATA, &instr_WINDOW_KEY_DOWN },
+    InstructionDesc{ "WINDOW_SET_TARGET_FPS", 0x26, NO_REG, ONE_DATA, &instr_WINDOW_SET_TARGET_FPS },
 };
 
 #include "check_instructions.hpp"

@@ -26,3 +26,8 @@ class LoaderError final: public InterpreterError
 {
     using InterpreterError::InterpreterError;
 };
+
+class GraphicalBackendError final: public InterpreterError
+{
+    using InterpreterError::InterpreterError;
+};

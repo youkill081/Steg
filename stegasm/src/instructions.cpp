@@ -234,3 +234,63 @@ void instr_RET(Runtime& runtime, InstructionView view)
     runtime.instruction_pointer = runtime.stack.top();
     runtime.stack.pop();
 }
+
+void instr_WINDOW_CREATE(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.create_window();
+}
+
+void instr_WINDOW_CLOSE(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.close_window();
+}
+
+void instr_WINDOW_POOL(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.poll_events();
+}
+
+void instr_WINDOW_SHOULD_CLOSE(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.should_close()
+    );
+}
+
+void instr_WINDOW_CLEAR(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.clear_window({
+        static_cast<uint8_t>(runtime.registries.read(view.r1())),
+        static_cast<uint8_t>(runtime.registries.read(view.r2())),
+        static_cast<uint8_t>(runtime.registries.read(view.r3())),
+    });
+}
+
+void instr_WINDOW_PRESENT(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.present_window();
+}
+
+void instr_WINDOW_KEY_PRESSED(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.key_pressed(view.get_d1(runtime))
+    );
+}
+
+void instr_WINDOW_KEY_DOWN(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.key_down(view.get_d1(runtime))
+    );
+}
+
+void instr_WINDOW_SET_TARGET_FPS(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.set_target_fps(
+        view.get_d1(runtime)
+    );
+}

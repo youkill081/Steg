@@ -7,6 +7,7 @@
 #include <stack>
 #include <vector>
 
+#include "GraphicalBackend.h"
 #include "Memory.h"
 #include "Registries.h"
 
@@ -29,11 +30,15 @@ public:
     Memory memory;
     Registries registries;
     ComparisonFlag comparison_flag;
+    std::stack<uint16_t> stack{};
+    GraphicalBackend graphical_backend;
 
     std::vector<LoadedInstruction> instructions{};
-    std::stack<uint16_t> stack{};
+
     uint64_t instruction_pointer = 0;
     bool is_running = true;
+
+
 
     uint16_t return_value = 0;
 };

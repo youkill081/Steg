@@ -61,35 +61,43 @@ Les opérations peuvents donc utiliser au maximum 7 registres et 2 datas.
  
 Toutes les opération auront des signatures fixe ; cet a dire qu'on connaits leurs nombre de registres et data.  
 
-| Opération  | Codage | Registre(s) et Data(s) |                                                   Description                                                    |
-|:----------:|:------:|:----------------------:|:----------------------------------------------------------------------------------------------------------------:|
-|   LOADA    |  0x1   |    RegX(1) ; data1     |                             Charge une donnée depuis data1 dans le registre RegX(1)                              |
-|   LOADR    |  0x2   |   RegX(1) ; RegX(2)    |       Charge une donnée depuis une addresse **stocker dans un registre** RegX(2) dans le registre RegX(1)        |
-|   STOREA   |  0x3   |    RegX(1) ; data1     |            Charge une donnée en RAM depuis un registre RegX(1) vers une addresse **hardcoder** data1             |
-|   STORER   |  0x4   |   RegX(1) ; RegX(2)    | Charge une donnée en RAM depuis un registre RegX(1) vers une addresse **stocker dans un autre registre** RegX(2) |
-|    MOV     |  0x5   |   RegX(1) ; RegX(2)    |                               Déplace la valeurs du registre RegX(2) vers RegX(1)                                |
-|    ADD     |  0x6   |   RegX(1) ; RegX(2)    |                        Additionne RegX(1) avec  RegX(2) et stock le résultat dans RegX(1)                        |
-|    SUB     |  0x7   |   RegX(1) ; RegX(2)    |                         Soustrait RegX(1) avec RegX(2) et stock le résultat dans RegX(1)                         |
-|    JMP     |  0x8   |         data1          |                                     Saute à l'instruction data1 du programme                                     |
-|    CMPR    |  0x9   |   RegX(1) ; RegX(2)    |                                       Compare les valeurs de deux registre                                       |
-|    CMPA    |  0xA   |    RegX(1) ; data1     |                             Compare la valeurs dans le registre Reg(1) et dans data1                             |
-|     JE     |  0xB   |         data1          |                                 saute à l'instruction data1 du programme si A==B                                 |
-|    JNE     |  0xC   |         data1          |                                 saute à l'instruction data1 du programme si A!=B                                 |
-|     JA     |  0xD   |         data1          |                                 saute à l'instruction data1 du programme si A>B                                  |
-|     JB     |  0xE   |         data1          |                                 saute à l'instruction data1 du programme si A<B                                  |
-| DISPLAY_N  |  0xF   |        RegX(1)         |                              Affiche le contenu du registre RegX(1) comme un nombre                              |
-| DISPLAY_AN |  0x10  |        RegX(1)         |                  Affiche la valeur à l'adresse contenu dans le registre RegX(1) comme un nombre                  |
-| DISPLAY_C  |  0x11  |        RegX(1)         |                               Affiche le contenu du registre RegX(1) comme un char                               |
-| DISPLAY_AC |  0x12  |        RegX(1)         |                  Affiche la valeur à l'addresse contenu dans le registre  RegX(1) comme un char                  |
-| DISPLAY_B  |  0x13  |        RegX(1)         |                             Affiche le contenu du registre RegX(1) comme en binaire                              |
-| DISPLAY_AB |  0x14  |        RegX(1)         |                 Affiche la valeur à l'addresse contenu dans le registre RegX(1) comme en binaire                 |
-|    HALT    |  0x15  |                        |                 Met fin au programme, la valeurs de retours seras la valeurs enregistrer dans R0                 |
-|   ALOCA    |  0x16  |     RegX(1), data1     |                        Alloues data1 mot et retourne l'addresse dans le registre RegX(1)                         |
-|   ALOCR    |  0x17  |    RegX(1), RegX(2)    |                       Alloues RegX(2) mot et retourne l'addresse dans le registre RegX(1)                        |
-|    FREE    |  0x18  |        RegX(1)         |                                   Free la mémoire allouer à l'addresse RegX(1)                                   |
-|  DEBUG_R   |  0x19  |                        |                                       Affiche l'état de tous les registres                                       |
-|  DEBUG_M   |  0x1A  |                        |                                           Affiche l'état de la mémoire                                           |
-|    ADDA    |  0x1B  |     RegX(1), data1     |                  Additionne RegX(1) avec le contenus de data1 ; stock le résultat dans RegX(1)                   |
-|    CALL    |  0x1C  |         data1          |                            Stock l'instruction pointeur dans la stack et jump à data1                            |
-|    RET     |  0x1D  |                        |                                    Pop la stack et jump à la valeurs récupéré                                    |
-
+|       Opération       | Codage |  Registre(s) et Data(s)   |                                                         Description                                                          |
+|:---------------------:|:------:|:-------------------------:|:----------------------------------------------------------------------------------------------------------------------------:|
+|         LOADA         |  0x1   |      RegX(1) ; data1      |                                   Charge une donnée depuis data1 dans le registre RegX(1)                                    |
+|         LOADR         |  0x2   |     RegX(1) ; RegX(2)     |             Charge une donnée depuis une addresse **stocker dans un registre** RegX(2) dans le registre RegX(1)              |
+|        STOREA         |  0x3   |      RegX(1) ; data1      |                  Charge une donnée en RAM depuis un registre RegX(1) vers une addresse **hardcoder** data1                   |
+|        STORER         |  0x4   |     RegX(1) ; RegX(2)     |       Charge une donnée en RAM depuis un registre RegX(1) vers une addresse **stocker dans un autre registre** RegX(2)       |
+|          MOV          |  0x5   |     RegX(1) ; RegX(2)     |                                     Déplace la valeurs du registre RegX(2) vers RegX(1)                                      |
+|          ADD          |  0x6   |     RegX(1) ; RegX(2)     |                              Additionne RegX(1) avec  RegX(2) et stock le résultat dans RegX(1)                              |
+|          SUB          |  0x7   |     RegX(1) ; RegX(2)     |                               Soustrait RegX(1) avec RegX(2) et stock le résultat dans RegX(1)                               |
+|          JMP          |  0x8   |           data1           |                                           Saute à l'instruction data1 du programme                                           |
+|         CMPR          |  0x9   |     RegX(1) ; RegX(2)     |                                             Compare les valeurs de deux registre                                             |
+|         CMPA          |  0xA   |      RegX(1) ; data1      |                                   Compare la valeurs dans le registre Reg(1) et dans data1                                   |
+|          JE           |  0xB   |           data1           |                                       saute à l'instruction data1 du programme si A==B                                       |
+|          JNE          |  0xC   |           data1           |                                       saute à l'instruction data1 du programme si A!=B                                       |
+|          JA           |  0xD   |           data1           |                                       saute à l'instruction data1 du programme si A>B                                        |
+|          JB           |  0xE   |           data1           |                                       saute à l'instruction data1 du programme si A<B                                        |
+|       DISPLAY_N       |  0xF   |          RegX(1)          |                                    Affiche le contenu du registre RegX(1) comme un nombre                                    |
+|      DISPLAY_AN       |  0x10  |          RegX(1)          |                        Affiche la valeur à l'adresse contenu dans le registre RegX(1) comme un nombre                        |
+|       DISPLAY_C       |  0x11  |          RegX(1)          |                                     Affiche le contenu du registre RegX(1) comme un char                                     |
+|      DISPLAY_AC       |  0x12  |          RegX(1)          |                        Affiche la valeur à l'addresse contenu dans le registre  RegX(1) comme un char                        |
+|       DISPLAY_B       |  0x13  |          RegX(1)          |                                   Affiche le contenu du registre RegX(1) comme en binaire                                    |
+|      DISPLAY_AB       |  0x14  |          RegX(1)          |                       Affiche la valeur à l'addresse contenu dans le registre RegX(1) comme en binaire                       |
+|         HALT          |  0x15  |                           |                       Met fin au programme, la valeurs de retours seras la valeurs enregistrer dans R0                       |
+|         ALOCA         |  0x16  |      RegX(1), data1       |                              Alloues data1 mot et retourne l'addresse dans le registre RegX(1)                               |
+|         ALOCR         |  0x17  |     RegX(1), RegX(2)      |                             Alloues RegX(2) mot et retourne l'addresse dans le registre RegX(1)                              |
+|         FREE          |  0x18  |          RegX(1)          |                                         Free la mémoire allouer à l'addresse RegX(1)                                         |
+|        DEBUG_R        |  0x19  |                           |                                             Affiche l'état de tous les registres                                             |
+|        DEBUG_M        |  0x1A  |                           |                                                 Affiche l'état de la mémoire                                                 |
+|         ADDA          |  0x1B  |      RegX(1), data1       |                        Additionne RegX(1) avec le contenus de data1 ; stock le résultat dans RegX(1)                         |
+|         CALL          |  0x1C  |           data1           |                                  Stock l'instruction pointeur dans la stack et jump à data1                                  |
+|          RET          |  0x1D  |                           |                                          Pop la stack et jump à la valeurs récupéré                                          |
+|     WINDOW_CREATE     |  0x1E  |                           |                                                       Crée une fenêtre                                                       |
+|     WINDOW_CLOSE      |  0x1F  |                           |                                                       Ferme la fenêtre                                                       |
+|      WINDOW_POOL      |  0x20  |                           |                                                       Pool les events                                                        |
+|  WINDOW_SHOULD_CLOSE  |  0x21  |          RegX(1)          |      Retourne si l'utilisateur a demander de fermer la fenêtre (ex: clique sur la croix) stock le résutat dans RegX(1)       |
+|     WINDOW_CLEAR      |  0x22  | RegX(1), RegX(2), RegX(3) |               Clear la fenêtre avec la couleurs R V B spécifiée ; RegX(1)=Rouge ; RegX(2)=Vert ; RegX(3)=Bleu                |
+|    WINDOW_PRESENT     |  0x23  |                           |                         Affiche les éléments dessiner sur la fenêtre après le WINDOW_CLEAR précédent                         |
+|  WINDOW_KEY_PRESSED   |  0x24  |      RegX(1), data1       |      Retourne dans RegX(1) si la touche data1 a été préssée [Liste des touches ligne 572](../libs/raylib/src/raylib.h)       |
+|    WINDOW_KEY_DOWN    |  0x25  |      RegX(1), data1       | Retourne dans RegX(1) si la touche data1 est actuellement appuyée [Liste des touches ligne 572](../libs/raylib/src/raylib.h) |
+| WINDOW_SET_TARGET_FPS |  0x26  |           data1           | Définit le nombre de FPS visé ; le programme va attendre X ms après l'appel de WINDOW_PRESENT pour matcher au nombre de FPS  |
