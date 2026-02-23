@@ -7,7 +7,6 @@
 #include <charconv>
 #include <iostream>
 
-#include "Logger.h"
 #include "utils/utils.hpp"
 
 using namespace compiler;
@@ -94,19 +93,15 @@ Variable Compiler::parsedLineToVariable(const ParsedLine& line)
 
 VariableSet Compiler::parseVariables(const std::vector<ParsedLine> &lines)
 {
-    Logger::log("Parsing variables", "Compiler");
-
     const auto variables_lines = getSectionLines(lines, VARIABLE_SECTION_NAME);
     if (variables_lines.empty())
     {
-        Logger::log("No variables found", "Compiler");
         return {};
     }
 
     VariableSet variables;
     for (const auto &line : variables_lines)
         variables.push_variable(parsedLineToVariable(line));
-    variables.display();
     return variables;
 }
 
@@ -224,8 +219,6 @@ Instruction Compiler::parsedLineToInstruction(const ParsedLine& line, const Vari
 
 InstructionSet Compiler::parseInstructions(const std::vector<ParsedLine>& lines, const VariableSet& variables)
 {
-    Logger::log("Parsing instructions", "Compiler");
-
     const auto instructions_lines = getSectionLines(lines, INSTRUCTION_SECTION_NAME, true);
     if (instructions_lines.empty())
         throw CompilerError("No instructions in .text section !");
@@ -233,7 +226,6 @@ InstructionSet Compiler::parseInstructions(const std::vector<ParsedLine>& lines,
     InstructionSet instructions;
     for (const auto &line : instructions_lines)
         instructions.push_back(parsedLineToInstruction(line, variables));
-    instructions.display();
     return instructions;
 }
 
@@ -292,8 +284,6 @@ void Compiler::writeDatasFlagInBuffer(
 
 ByteBuffer Compiler::compiledFileToBytebuffer(const CompiledFile& compiledFile)
 {
-    Logger::log("Convert file to ByteBuffer", "Compiler");
-
     ByteBuffer buffer;
 
     // Push Variables
