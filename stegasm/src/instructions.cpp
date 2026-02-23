@@ -47,7 +47,7 @@ inline void instr_LOADR(Runtime &runtine, InstructionView view)
 void instr_STOREA(Runtime &runtime, InstructionView view)
 {
     runtime.memory.write(
-        view.get_d1(runtime, true),
+        view.get_d1(runtime),
         runtime.registries.read(view.r1())
     );
 }
