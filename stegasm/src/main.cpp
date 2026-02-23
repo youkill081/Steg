@@ -4,14 +4,14 @@
 
 #include <iostream>
 #include "ByteBuffer.h"
-#include "compiler/Compiler.h"
+#include "assembler/Assembler.h"
 #include "interpreter/Vm.h"
 
 int main(int argc, char* argv[])
 {
     try
     {
-        auto binary = compiler::Compiler::compile(argv[1]);
+        auto binary = assembler::Assembler::assemble(argv[1]);
         Vm::run(binary);
     } catch (std::exception &e)
     {

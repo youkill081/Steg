@@ -8,10 +8,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(STEGASM_LIB_SOURCES
         src/instructions.h
         src/interpreter/runtime/Runtime.h
-        src/compiler/TextParser.cpp
-        src/compiler/TextParser.h
-        src/compiler/Compiler.cpp
-        src/compiler/Compiler.h
+        src/assembler/TextParser.cpp
+        src/assembler/TextParser.h
+        src/assembler/Assembler.cpp
+        src/assembler/Assembler.h
         src/instruction_utils.hpp
         src/interpreter/Loader.cpp
         src/interpreter/Loader.h

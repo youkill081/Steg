@@ -2,16 +2,16 @@
 // Created by Roumite on 20/02/2026.
 //
 
-#include "Compiler.h"
+#include "Assembler.h"
 
 #include <charconv>
 #include <iostream>
 
 #include "utils/utils.hpp"
 
-using namespace compiler;
+using namespace assembler;
 
-std::span<const ParsedLine> Compiler::getSectionLines(
+std::span<const ParsedLine> Assembler::getSectionLines(
     const std::vector<ParsedLine>& lines,
     const std::string &sectionName,
     bool throwIfNotFound
@@ -47,11 +47,11 @@ std::span<const ParsedLine> Compiler::getSectionLines(
         return {lines.data() + section_start_index + 1, number_line_section};
 
     if (throwIfNotFound)
-        throw CompilerError("Mandatory section \"" + sectionName + "\" not found");
+        throw AssemblerError("Mandatory section \"" + sectionName + "\" not found");
     return {};
 }
 
-std::vector<uint16_t> Compiler::tokenToData(const std::string& token, const std::string &variableName)
+std::vector<uint16_t> Assembler::tokenToData(const std::string& token, const std::string &variableName)
 {
     uint16_t result;
     auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
@@ -68,15 +68,15 @@ std::vector<uint16_t> Compiler::tokenToData(const std::string& token, const std:
 
     if (ec == std::errc::result_out_of_range)
     {
-        throw CompilerError("Value \"" + token + "\" for variable \"" + variableName + "\" is out of range");
+        throw AssemblerError("Value \"" + token + "\" for variable \"" + variableName + "\" is out of range");
     }
-    throw CompilerError("Failed to parse token \"" + token + "\" for variable \"" + variableName + "\"");
+    throw AssemblerError("Failed to parse token \"" + token + "\" for variable \"" + variableName + "\"");
 }
 
-Variable Compiler::parsedLineToVariable(const ParsedLine& line)
+Variable Assembler::parsedLineToVariable(const ParsedLine& line)
 {
     if (line.tokens.size() < 2)
-        throw CompilerError("Invalid variable declaration: " + line.original_line);
+        throw AssemblerError("Invalid variable declaration: " + line.original_line);
 
     std::vector<uint16_t> data;
     std::string variable_name = line.tokens[0];
@@ -94,7 +94,7 @@ Variable Compiler::parsedLineToVariable(const ParsedLine& line)
     };
 }
 
-VariableSet Compiler::parseVariables(const std::vector<ParsedLine> &lines)
+VariableSet Assembler::parseVariables(const std::vector<ParsedLine> &lines)
 {
     const auto variables_lines = getSectionLines(lines, VARIABLE_SECTION_NAME);
     if (variables_lines.empty())
@@ -108,7 +108,7 @@ VariableSet Compiler::parseVariables(const std::vector<ParsedLine> &lines)
     return variables;
 }
 
-const InstructionDesc &Compiler::getInstructionDescFromParsedLine(const ParsedLine& line)
+const InstructionDesc &Assembler::getInstructionDescFromParsedLine(const ParsedLine& line)
 {
     std::string instruction_name = line.tokens[0];
     for (auto &instruction : instructionSet)
@@ -117,17 +117,17 @@ const InstructionDesc &Compiler::getInstructionDescFromParsedLine(const ParsedLi
             return instruction;
     }
 
-    throw CompilerError("Unknown instruction \"" + instruction_name + "\"");
+    throw AssemblerError("Unknown instruction \"" + instruction_name + "\"");
 }
 
-RegNames Compiler::stringToRegName(const std::string& reg_name)
+RegNames Assembler::stringToRegName(const std::string& reg_name)
 {
     if (not stringToRegistry.contains(reg_name))
-        throw CompilerError("Unknown register \"" + reg_name + "\"");
+        throw AssemblerError("Unknown register \"" + reg_name + "\"");
     return stringToRegistry.at(reg_name);
 }
 
-UsedRegistries Compiler::getUsedRegistriesFromParsedLine(const InstructionDesc &desc, const ParsedLine& line)
+UsedRegistries Assembler::getUsedRegistriesFromParsedLine(const InstructionDesc &desc, const ParsedLine& line)
 {
     UsedRegistries registries;
     for (uint32_t i = 1; i < static_cast<uint32_t>(desc.regCount) + 1; i++)
@@ -138,19 +138,19 @@ UsedRegistries Compiler::getUsedRegistriesFromParsedLine(const InstructionDesc &
 /*
  * Basically this function remove brackets from strings ([variable] -> variable)
  */
-std::string Compiler::userVariableWriteAsAddressToString(const std::string& token)
+std::string Assembler::userVariableWriteAsAddressToString(const std::string& token)
 {
     if (not user_write_value_in_bracket(token))
-        throw CompilerError("[userVariableWriteAsAddressToString] Invalid variable address \"" + token + "\"");
+        throw AssemblerError("[userVariableWriteAsAddressToString] Invalid variable address \"" + token + "\"");
     return token.substr(1, token.size() - 2);
 }
 
-bool Compiler::user_write_value_in_bracket(const std::string& token)
+bool Assembler::user_write_value_in_bracket(const std::string& token)
 {
     return token[0] == '[' && token[token.size() - 1] == ']';
 }
 
-uint16_t Compiler::tokenToUint16(const std::string& token)
+uint16_t Assembler::tokenToUint16(const std::string& token)
 {
     if (tokenIsValidValue(token))
     {
@@ -158,17 +158,17 @@ uint16_t Compiler::tokenToUint16(const std::string& token)
         std::from_chars(token.data(), token.data() + token.size(), result);
         return result;
     }
-    throw CompilerError("Invalid uint16 value \"" + token + "\"");
+    throw AssemblerError("Invalid uint16 value \"" + token + "\"");
 }
 
-bool Compiler::tokenIsValidValue(const std::string& token)
+bool Assembler::tokenIsValidValue(const std::string& token)
 {
     uint16_t result;
     auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
     return ec == std::errc();
 }
 
-DataValueParsingResult Compiler::parseDataValue(std::string token, const VariableSet &variables, const LabelMap &labels)
+DataValueParsingResult Assembler::parseDataValue(std::string token, const VariableSet &variables, const LabelMap &labels)
 {
     bool is_in_bracket = user_write_value_in_bracket(token);
     if (is_in_bracket) // User hardcoded address ex : LOAD A [5]
@@ -193,7 +193,7 @@ DataValueParsingResult Compiler::parseDataValue(std::string token, const Variabl
     };
 }
 
-DataValues Compiler::getDataValuesFromParsedLine(
+DataValues Assembler::getDataValuesFromParsedLine(
     const InstructionDesc& desc,
     const ParsedLine& line,
     const LabelMap &labels,
@@ -219,13 +219,13 @@ DataValues Compiler::getDataValuesFromParsedLine(
     }
 }
 
-Instruction Compiler::parsedLineToInstruction(const ParsedLine& line, const VariableSet& variables, const LabelMap &labels)
+Instruction Assembler::parsedLineToInstruction(const ParsedLine& line, const VariableSet& variables, const LabelMap &labels)
 {
     const InstructionDesc &desc = getInstructionDescFromParsedLine(line);
     uint32_t token_needed = static_cast<uint32_t>(desc.dataCount) + static_cast<uint32_t>(desc.regCount) + 1;
 
     if (line.tokens.size() != token_needed)
-        throw CompilerError("Number of token missmatch for instruction \"" + line.original_line + "\"");
+        throw AssemblerError("Number of token missmatch for instruction \"" + line.original_line + "\"");
 
     return {
         .desc = desc,
@@ -234,11 +234,11 @@ Instruction Compiler::parsedLineToInstruction(const ParsedLine& line, const Vari
     };
 }
 
-InstructionSet Compiler::parseInstructions(const std::vector<ParsedLine>& lines, const VariableSet& variables)
+InstructionSet Assembler::parseInstructions(const std::vector<ParsedLine>& lines, const VariableSet& variables)
 {
     auto instructions_lines = getSectionLines(lines, INSTRUCTION_SECTION_NAME, true);
     if (instructions_lines.empty())
-        throw CompilerError("No instructions in .text section !");
+        throw AssemblerError("No instructions in .text section !");
 
     LabelMap labels = parseLabels(instructions_lines, variables);
     InstructionSet instructions;
@@ -251,12 +251,12 @@ InstructionSet Compiler::parseInstructions(const std::vector<ParsedLine>& lines,
     return instructions;
 }
 
-bool Compiler::is_label(const ParsedLine &line)
+bool Assembler::is_label(const ParsedLine &line)
 {
     return line.tokens.size() == 1 && line.tokens[0].ends_with(':');
 }
 
-LabelMap Compiler::parseLabels(const std::span<const ParsedLine> &lines, const VariableSet &variables)
+LabelMap Assembler::parseLabels(const std::span<const ParsedLine> &lines, const VariableSet &variables)
 {
     LabelMap labels{};
     uint64_t current_instruction_idx = 0;
@@ -273,9 +273,9 @@ LabelMap Compiler::parseLabels(const std::span<const ParsedLine> &lines, const V
             line.is_instruction = false;
             std::string label_name = line.tokens[0].substr(0, line.tokens[0].size() - 1);
             if (variables.contains_variable_by_name(label_name))
-                throw CompilerError("Label \"" + label_name + "\" is already used as variable name");
+                throw AssemblerError("Label \"" + label_name + "\" is already used as variable name");
             if (labels.contains(label_name))
-                throw CompilerError("Label \"" + label_name + "\" is already used");
+                throw AssemblerError("Label \"" + label_name + "\" is already used");
             labels[label_name] = current_instruction_idx;
         }
     }
@@ -283,7 +283,7 @@ LabelMap Compiler::parseLabels(const std::span<const ParsedLine> &lines, const V
     return labels;
 }
 
-CompiledFile Compiler::compileFile(const std::string& path)
+CompiledFile Assembler::compileFile(const std::string& path)
 {
     TextParser parser(path);
 
@@ -299,11 +299,11 @@ CompiledFile Compiler::compileFile(const std::string& path)
         };
     } catch (const TextParserError &error)
     {
-        throw CompilerError(error.what());
+        throw AssemblerError(error.what());
     }
 }
 
-void Compiler::writeRegXInBuffer(
+void Assembler::writeRegXInBuffer(
     uint8_t reg_x,
     const RegCount& reg_count,
     const UsedRegistries& registries,
@@ -324,7 +324,7 @@ void Compiler::writeRegXInBuffer(
     }
 }
 
-void Compiler::writeDatasFlagInBuffer(
+void Assembler::writeDatasFlagInBuffer(
     const DataCount& data_count,
     const DataValues& data_parsing_result,
     ByteBuffer& buffer)
@@ -336,7 +336,7 @@ void Compiler::writeDatasFlagInBuffer(
     buffer.push_bit(second_bit_value);
 }
 
-ByteBuffer Compiler::compiledFileToBytebuffer(const CompiledFile& compiledFile)
+ByteBuffer Assembler::compiledFileToBytebuffer(const CompiledFile& compiledFile)
 {
     ByteBuffer buffer;
 
@@ -384,7 +384,7 @@ ByteBuffer Compiler::compiledFileToBytebuffer(const CompiledFile& compiledFile)
     return buffer;
 }
 
-ByteBuffer Compiler::compile(const std::string& path)
+ByteBuffer Assembler::assemble(const std::string& path)
 {
     CompiledFile file = compileFile(path);
     return compiledFileToBytebuffer(file);

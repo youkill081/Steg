@@ -4,7 +4,7 @@
 
 #include "CodeHandler.h"
 
-#include "../../stegasm/src/compiler/Compiler.h"
+#include "../../stegasm/src/assembler/Assembler.h"
 #include "../../stegasm/src/interpreter/Vm.h"
 
 std::string CodeHandler::get_name()
@@ -17,7 +17,7 @@ ByteBuffer CodeHandler::encode(const Parameters& parameters)
     if (parameters.get_parameters().empty())
         throw HandlerError("Missing file to encode !");
 
-    return compiler::Compiler::compile(parameters.get_parameters()[0]);
+    return assembler::Assembler::assemble(parameters.get_parameters()[0]);
 }
 
 void CodeHandler::decode(const Parameters& parameters, ByteBuffer& buffer)

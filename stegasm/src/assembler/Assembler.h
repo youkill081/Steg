@@ -20,11 +20,11 @@
 #define VARIABLE_SECTION_NAME ".data"
 #define INSTRUCTION_SECTION_NAME ".text"
 
-namespace compiler
+namespace assembler
 {
-    struct CompilerError : public std::runtime_error
+    struct AssemblerError : public std::runtime_error
     {
-        explicit CompilerError(const std::string& Message) : std::runtime_error(Message) {}
+        explicit AssemblerError(const std::string& Message) : std::runtime_error(Message) {}
     };
 
     /*
@@ -60,7 +60,7 @@ namespace compiler
             for (const auto &variable : *this)
             {
                 if (string_equal(variable.name, new_variable.name))
-                    throw CompilerError("Multiple variable with name " + new_variable.name + " !");
+                    throw AssemblerError("Multiple variable with name " + new_variable.name + " !");
             }
             this->push_back(new_variable);
 
@@ -71,7 +71,7 @@ namespace compiler
         [[nodiscard]] uint16_t get_variable_address(const Variable &variable) const
         {
             if (not this->variables_address.contains(variable))
-                throw CompilerError("[get_variable_address] Variable \"" + variable.name + "\" not found !");
+                throw AssemblerError("[get_variable_address] Variable \"" + variable.name + "\" not found !");
             return this->variables_address.at(variable);
         }
 
@@ -80,7 +80,7 @@ namespace compiler
             for (const auto &variable : *this)
                 if (variable.name == name)
                     return variable;
-            throw CompilerError("[get_variable_by_name] Variable \"" + name + "\" not found !");
+            throw AssemblerError("[get_variable_by_name] Variable \"" + name + "\" not found !");
         }
 
         [[nodiscard]] bool contains_variable_by_name(const std::string& name) const
@@ -161,7 +161,7 @@ namespace compiler
         InstructionSet instructions;
     };
 
-    class Compiler
+    class Assembler
     {
     private:
         static std::span<const ParsedLine> getSectionLines(
@@ -195,6 +195,6 @@ namespace compiler
         static void writeDatasFlagInBuffer(const DataCount &data_count, const DataValues &data_parsing_result, ByteBuffer &buffer);
         static ByteBuffer compiledFileToBytebuffer(const CompiledFile &compiledFile);
     public:
-        static ByteBuffer compile(const std::string &path);
+        static ByteBuffer assemble(const std::string &path);
     };
 }
