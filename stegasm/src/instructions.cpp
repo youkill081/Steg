@@ -8,6 +8,7 @@
 #include "instructions.h"
 
 #include "Logger.h"
+#include "interpreter/exceptions.h"
 #include "interpreter/runtime/Runtime.h"
 
 uint16_t InstructionView::get_d1(const Runtime &rt, bool force_as_address) const
@@ -215,4 +216,21 @@ void instr_ADDA(Runtime& runtime, InstructionView view)
         view.r1(),
         runtime.registries.read(view.r1()) + view.get_d1(runtime)
     );
+}
+
+void instr_CALL(Runtime& runtime, InstructionView view)
+{
+    runtime.stack.push(runtime.instruction_pointer);
+    runtime.instruction_pointer = view.get_d1(runtime);
+}
+
+void instr_RET(Runtime& runtime, InstructionView view)
+{
+    if (runtime.stack.empty())
+    {
+        throw InterpreterError("[RET] Try to pop empty stack");
+    }
+
+    runtime.instruction_pointer = runtime.stack.top();
+    runtime.stack.pop();
 }

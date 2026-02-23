@@ -90,4 +90,6 @@ Toutes les opération auront des signatures fixe ; cet a dire qu'on connaits leu
 |  DEBUG_R   |  0x19  |                        |                                       Affiche l'état de tous les registres                                       |
 |  DEBUG_M   |  0x1A  |                        |                                           Affiche l'état de la mémoire                                           |
 |    ADDA    |  0x1B  |     RegX(1), data1     |                  Additionne RegX(1) avec le contenus de data1 ; stock le résultat dans RegX(1)                   |
+|    CALL    |  0x1C  |         data1          |                            Stock l'instruction pointeur dans la stack et jump à data1                            |
+|    RET     |  0x1D  |                        |                                    Pop la stack et jump à la valeurs récupéré                                    |
 

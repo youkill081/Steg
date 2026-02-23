@@ -104,6 +104,8 @@ inline void instr_FREE(Runtime &runtime, InstructionView view);
 inline void instr_DEBUG_R(Runtime &runtime, InstructionView view);
 inline void instr_DEBUG_M(Runtime &runtime, InstructionView view);
 inline void instr_ADDA(Runtime &runtime, InstructionView view);
+inline void instr_CALL(Runtime &runtime, InstructionView view);
+inline void instr_RET(Runtime &runtime, InstructionView view);
 
 constexpr std::array instructionSet =
 {
@@ -134,6 +136,8 @@ constexpr std::array instructionSet =
     InstructionDesc{ "DEBUG_R", 0x19, NO_REG, NO_DATA, &instr_DEBUG_R },
     InstructionDesc{ "DEBUG_M", 0x1A, NO_REG, NO_DATA, &instr_DEBUG_M },
     InstructionDesc{ "ADDA", 0x1B, ONE_REG, ONE_DATA, &instr_ADDA },
+    InstructionDesc{ "CALL", 0x1C, NO_REG, ONE_DATA, &instr_CALL },
+    InstructionDesc{ "RET", 0x1D, NO_REG, NO_DATA, &instr_RET },
 };
 
 #include "check_instructions.hpp"

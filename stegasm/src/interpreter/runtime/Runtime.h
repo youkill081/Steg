@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <stack>
 #include <vector>
 
 #include "Memory.h"
@@ -30,6 +31,7 @@ public:
     ComparisonFlag comparison_flag;
 
     std::vector<LoadedInstruction> instructions{};
+    std::stack<uint16_t> stack{};
     uint64_t instruction_pointer = 0;
     bool is_running = true;
 
