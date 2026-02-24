@@ -323,3 +323,104 @@ void instr_WINDOW_DRAW_TEXT(Runtime& runtime, InstructionView view)
 
     runtime.graphical_backend.draw_text(text, x, y);
 }
+
+void instr_FILE_OPEN(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.open_file(runtime.utils.get_string_from_address(view.get_d1(runtime)))
+    );
+}
+
+void instr_FILE_CREATE(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.create_file(runtime.utils.get_string_from_address(view.get_d1(runtime)))
+    );
+}
+
+void instr_FILE_SAVE(Runtime& runtime, InstructionView view)
+{
+    runtime.files[
+        runtime.registries.read(view.r1())
+    ].save();
+}
+
+void instr_FILE_DELETE(Runtime& runtime, InstructionView view)
+{
+    runtime.files.delete_file(
+        runtime.registries.read(view.r1())
+    );
+}
+
+void instr_FILE_CLOSE(Runtime& runtime, InstructionView view)
+{
+    runtime.files.close_file(
+        runtime.registries.read(view.r1())
+    );
+}
+
+void instr_FILE_RESET_CURSOR(Runtime& runtime, InstructionView view)
+{
+    runtime.files[
+        runtime.registries.read(view.r1())
+    ].reset_cursor();
+}
+
+void instr_FILE_CLEAR_DATA(Runtime& runtime, InstructionView view)
+{
+    runtime.files[
+        runtime.registries.read(view.r1())
+    ].clear_data();
+}
+
+void instr_FILE_READ_BYTE(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files[
+            runtime.registries.read(view.r2())
+        ].read_byte()
+    );
+}
+
+void instr_FILE_READ_WORD(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files[
+            runtime.registries.read(view.r2())
+        ].read_word()
+    );
+}
+
+void instr_FILE_APPEND_BYTE(Runtime& runtime, InstructionView view)
+{
+    runtime.files[
+       runtime.registries.read(view.r2())
+   ].append_byte(runtime.registries.read(view.r1()));
+}
+
+void instr_FILE_APPEND_WORD(Runtime& runtime, InstructionView view)
+{
+    runtime.files[
+       runtime.registries.read(view.r2())
+   ].append_word(runtime.registries.read(view.r1()));
+}
+
+void instr_FILE_IS_BYTE_REMAINING(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files[runtime.registries.read(view.r2())].has_byte_remaining()
+    );
+}
+
+void instr_FILE_IS_WORD_REMAINING(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files[runtime.registries.read(view.r2())].has_word_remaining()
+    );
+}

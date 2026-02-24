@@ -51,5 +51,6 @@ public:
     [[nodiscard]] size_t remaining_uint32() const;
 
     [[nodiscard]] const std::vector<uint8_t>& data() const;
+    void clear_data();
 };
 

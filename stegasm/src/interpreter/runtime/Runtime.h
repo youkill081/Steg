@@ -7,6 +7,7 @@
 #include <stack>
 #include <vector>
 
+#include "Files.h"
 #include "GraphicalBackend.h"
 #include "Memory.h"
 #include "Registries.h"
@@ -31,6 +32,7 @@ public:
     Memory memory;
     Registries registries;
     ComparisonFlag comparison_flag;
+    Files files;
     std::stack<uint16_t> stack{};
     GraphicalBackend graphical_backend;
     Utils utils{*this};

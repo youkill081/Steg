@@ -109,6 +109,19 @@ void instr_WINDOW_SET_TARGET_FPS(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TEXT_SIZE(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TEXT_COLOR(Runtime &runtime, InstructionView view);
 void instr_WINDOW_DRAW_TEXT(Runtime &runtime, InstructionView view);
+void instr_FILE_OPEN(Runtime &runtime, InstructionView view);
+void instr_FILE_CREATE(Runtime &runtime, InstructionView view);
+void instr_FILE_SAVE(Runtime &runtime, InstructionView view);
+void instr_FILE_DELETE(Runtime &runtime, InstructionView view);
+void instr_FILE_CLOSE(Runtime &runtime, InstructionView view);
+void instr_FILE_RESET_CURSOR(Runtime &runtime, InstructionView view);
+void instr_FILE_CLEAR_DATA(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_BYTE(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_WORD(Runtime &runtime, InstructionView view);
+void instr_FILE_APPEND_BYTE(Runtime &runtime, InstructionView view);
+void instr_FILE_APPEND_WORD(Runtime &runtime, InstructionView view);
+void instr_FILE_IS_BYTE_REMAINING(Runtime &runtime, InstructionView view);
+void instr_FILE_IS_WORD_REMAINING(Runtime &runtime, InstructionView view);
 
 struct RawInstruction
 {
@@ -170,6 +183,19 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"WINDOW_SET_TEXT_SIZE", NO_REG, ONE_DATA, &instr_WINDOW_SET_TEXT_SIZE},
     RawInstruction{"WINDOW_SET_TEXT_COLOR", THREE_REG, NO_DATA, &instr_WINDOW_SET_TEXT_COLOR},
     RawInstruction{"WINDOW_DRAW_TEXT", TWO_REG, ONE_DATA, &instr_WINDOW_DRAW_TEXT},
+    RawInstruction{"FILE_OPEN", ONE_REG, ONE_DATA, &instr_FILE_OPEN},
+    RawInstruction{"FILE_CREATE", ONE_REG, ONE_DATA, &instr_FILE_CREATE},
+    RawInstruction{"FILE_SAVE", ONE_REG, NO_DATA, &instr_FILE_SAVE},
+    RawInstruction{"FILE_DELETE", ONE_REG, NO_DATA, &instr_FILE_DELETE},
+    RawInstruction{"FILE_CLOSE", ONE_REG, NO_DATA, &instr_FILE_CLOSE},
+    RawInstruction{"FILE_RESET_CURSOR", ONE_REG, NO_DATA, &instr_FILE_RESET_CURSOR},
+    RawInstruction{"FILE_CLEAR_DATA", ONE_REG, NO_DATA, &instr_FILE_CLEAR_DATA},
+    RawInstruction{"FILE_READ_BYTE", TWO_REG, NO_DATA, &instr_FILE_READ_BYTE},
+    RawInstruction{"FILE_READ_WORD", TWO_REG, NO_DATA, &instr_FILE_READ_WORD},
+    RawInstruction{"FILE_APPEND_BYTE", TWO_REG, NO_DATA, &instr_FILE_APPEND_BYTE},
+    RawInstruction{"FILE_APPEND_WORD", TWO_REG, NO_DATA, &instr_FILE_APPEND_WORD},
+    RawInstruction{"FILE_IS_BYTE_REMAINING", TWO_REG, NO_DATA, &instr_FILE_IS_BYTE_REMAINING},
+    RawInstruction{"FILE_IS_WORD_REMAINING", TWO_REG, NO_DATA, &instr_FILE_IS_WORD_REMAINING},
 };
 
 constexpr std::array<InstructionDesc, rawInstructionSet.size()> compute_instructions()

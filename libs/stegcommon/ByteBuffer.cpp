@@ -132,3 +132,8 @@ const std::vector<uint8_t>& ByteBuffer::data() const
 {
     return buffer;
 }
+
+void ByteBuffer::clear_data()
+{
+    buffer.clear();
+}

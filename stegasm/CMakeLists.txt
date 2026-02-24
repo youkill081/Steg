@@ -27,6 +27,8 @@ set(STEGASM_LIB_SOURCES
         src/interpreter/runtime/GraphicalBackend.cpp
         src/interpreter/runtime/Utils.cpp
         src/interpreter/runtime/Utils.h
+        src/interpreter/runtime/Files.cpp
+        src/interpreter/runtime/Files.h
 )
 
 add_library(stegasm_lib STATIC ${STEGASM_LIB_SOURCES})

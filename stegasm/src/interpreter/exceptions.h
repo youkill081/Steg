@@ -31,3 +31,8 @@ class GraphicalBackendError final: public InterpreterError
 {
     using InterpreterError::InterpreterError;
 };
+
+class FileError final: public InterpreterError
+{
+    using InterpreterError::InterpreterError;
+};
