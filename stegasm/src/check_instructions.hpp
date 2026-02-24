@@ -3,6 +3,7 @@
 //
 
 #pragma once
+
 #include <unordered_set>
 
 constexpr bool is_lower(char c) {

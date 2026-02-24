@@ -68,15 +68,6 @@ struct InstructionView
 
 using InstructionFct = void(*)(Runtime &, InstructionView raw_data);
 
-struct InstructionDesc
-{
-    const std::string_view name;
-    uint8_t opcode;
-    RegCount regCount;
-    DataCount dataCount;
-    InstructionFct fn;
-};
-
 void instr_LOADA(Runtime &runtime, InstructionView view);
 void instr_LOADR(Runtime &runtime, InstructionView view);
 void instr_STOREA(Runtime &runtime, InstructionView view);
@@ -116,47 +107,83 @@ void instr_WINDOW_KEY_PRESSED(Runtime &runtime, InstructionView view);
 void instr_WINDOW_KEY_DOWN(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TARGET_FPS(Runtime &runtime, InstructionView view);
 
-constexpr std::array instructionSet =
+struct RawInstruction
 {
-    InstructionDesc{ "LOADA", 0x1, ONE_REG, ONE_DATA, &instr_LOADA },
-    InstructionDesc{ "LOADR", 0x2, TWO_REG, NO_DATA, &instr_LOADR },
-    InstructionDesc{ "STOREA", 0x3, ONE_REG, ONE_DATA, &instr_STOREA },
-    InstructionDesc{ "STORER", 0x4, TWO_REG, NO_DATA, &instr_STORER },
-    InstructionDesc{ "MOV", 0x5, TWO_REG, NO_DATA, &instr_MOV },
-    InstructionDesc{ "ADD", 0x6, TWO_REG, NO_DATA, &instr_ADD },
-    InstructionDesc{ "SUB", 0x7, TWO_REG, NO_DATA, &instr_SUB },
-    InstructionDesc{ "JMP", 0x8, NO_REG, ONE_DATA, &instr_JMP },
-    InstructionDesc{ "CMPR", 0x9, TWO_REG, NO_DATA, &instr_CMPR },
-    InstructionDesc{ "CMPA", 0xA, ONE_REG, ONE_DATA, &instr_CMPA },
-    InstructionDesc{ "JE", 0xB, NO_REG, ONE_DATA, &instr_JE },
-    InstructionDesc{ "JNE", 0xC, NO_REG, ONE_DATA, &instr_JNE },
-    InstructionDesc{ "JA", 0xD, NO_REG, ONE_DATA, &instr_JA },
-    InstructionDesc{ "JB", 0xE, NO_REG, ONE_DATA, &instr_JB },
-    InstructionDesc{ "DISPLAY_N", 0xF, ONE_REG, NO_DATA, &instr_DISPLAY_N },
-    InstructionDesc{ "DISPLAY_AN", 0x10, ONE_REG, NO_DATA, &instr_DISPLAY_AN },
-    InstructionDesc{ "DISPLAY_C", 0x11, ONE_REG, NO_DATA, &instr_DISPLAY_C },
-    InstructionDesc{ "DISPLAY_AC", 0x12, ONE_REG, NO_DATA, &instr_DISPLAY_AC },
-    InstructionDesc{ "DISPLAY_B", 0x13, ONE_REG, NO_DATA, &instr_DISPLAY_B },
-    InstructionDesc{ "DISPLAY_AB", 0x14, ONE_REG, NO_DATA, &instr_DISPLAY_AB },
-    InstructionDesc{ "HALT", 0x15, NO_REG, NO_DATA, &instr_HALT },
-    InstructionDesc{ "ALOCA", 0x16, ONE_REG, ONE_DATA, &instr_ALOCA },
-    InstructionDesc{ "ALOCR", 0x17, TWO_REG, NO_DATA, &instr_ALOCR },
-    InstructionDesc{ "FREE", 0x18, ONE_REG, NO_DATA, &instr_FREE },
-    InstructionDesc{ "DEBUG_R", 0x19, NO_REG, NO_DATA, &instr_DEBUG_R },
-    InstructionDesc{ "DEBUG_M", 0x1A, NO_REG, NO_DATA, &instr_DEBUG_M },
-    InstructionDesc{ "ADDA", 0x1B, ONE_REG, ONE_DATA, &instr_ADDA },
-    InstructionDesc{ "CALL", 0x1C, NO_REG, ONE_DATA, &instr_CALL },
-    InstructionDesc{ "RET", 0x1D, NO_REG, NO_DATA, &instr_RET },
-    InstructionDesc{ "WINDOW_CREATE", 0x1E, NO_REG, NO_DATA, &instr_WINDOW_CREATE },
-    InstructionDesc{ "WINDOW_CLOSE", 0x1F, NO_REG, NO_DATA, &instr_WINDOW_CLOSE },
-    InstructionDesc{ "WINDOW_POOL", 0x20, NO_REG, NO_DATA, &instr_WINDOW_POOL },
-    InstructionDesc{ "WINDOW_SHOULD_CLOSE", 0x21, ONE_REG, NO_DATA, &instr_WINDOW_SHOULD_CLOSE },
-    InstructionDesc{ "WINDOW_CLEAR", 0x22, THREE_REG, NO_DATA, &instr_WINDOW_CLEAR },
-    InstructionDesc{ "WINDOW_PRESENT", 0x23, NO_REG, NO_DATA, &instr_WINDOW_PRESENT },
-    InstructionDesc{ "WINDOW_KEY_PRESSED", 0x24, ONE_REG, ONE_DATA, &instr_WINDOW_KEY_PRESSED },
-    InstructionDesc{ "WINDOW_KEY_DOWN", 0x25, ONE_REG, ONE_DATA, &instr_WINDOW_KEY_DOWN },
-    InstructionDesc{ "WINDOW_SET_TARGET_FPS", 0x26, NO_REG, ONE_DATA, &instr_WINDOW_SET_TARGET_FPS },
+    const std::string_view name;
+    RegCount regCount;
+    DataCount dataCount;
+    InstructionFct fn;
 };
+
+struct InstructionDesc
+{
+    std::string_view name;
+    uint8_t opcode;
+    RegCount regCount;
+    DataCount dataCount;
+    InstructionFct fn;
+};
+
+constexpr std::array rawInstructionSet =
+{
+    RawInstruction{"LOADA", ONE_REG, ONE_DATA, &instr_LOADA},
+    RawInstruction{"LOADR", TWO_REG, NO_DATA, &instr_LOADR},
+    RawInstruction{"STOREA", ONE_REG, ONE_DATA, &instr_STOREA},
+    RawInstruction{"STORER", TWO_REG, NO_DATA, &instr_STORER},
+    RawInstruction{"MOV", TWO_REG, NO_DATA, &instr_MOV},
+    RawInstruction{"ADD", TWO_REG, NO_DATA, &instr_ADD},
+    RawInstruction{"SUB", TWO_REG, NO_DATA, &instr_SUB},
+    RawInstruction{"JMP", NO_REG, ONE_DATA, &instr_JMP},
+    RawInstruction{"CMPR", TWO_REG, NO_DATA, &instr_CMPR},
+    RawInstruction{"CMPA", ONE_REG, ONE_DATA, &instr_CMPA},
+    RawInstruction{"JE", NO_REG, ONE_DATA, &instr_JE},
+    RawInstruction{"JNE", NO_REG, ONE_DATA, &instr_JNE},
+    RawInstruction{"JA", NO_REG, ONE_DATA, &instr_JA},
+    RawInstruction{"JB", NO_REG, ONE_DATA, &instr_JB},
+    RawInstruction{"DISPLAY_N", ONE_REG, NO_DATA, &instr_DISPLAY_N},
+    RawInstruction{"DISPLAY_AN", ONE_REG, NO_DATA, &instr_DISPLAY_AN},
+    RawInstruction{"DISPLAY_C", ONE_REG, NO_DATA, &instr_DISPLAY_C},
+    RawInstruction{"DISPLAY_AC", ONE_REG, NO_DATA, &instr_DISPLAY_AC},
+    RawInstruction{"DISPLAY_B", ONE_REG, NO_DATA, &instr_DISPLAY_B},
+    RawInstruction{"DISPLAY_AB", ONE_REG, NO_DATA, &instr_DISPLAY_AB},
+    RawInstruction{"HALT", NO_REG, NO_DATA, &instr_HALT},
+    RawInstruction{"ALOCA", ONE_REG, ONE_DATA, &instr_ALOCA},
+    RawInstruction{"ALOCR", TWO_REG, NO_DATA, &instr_ALOCR},
+    RawInstruction{"FREE", ONE_REG, NO_DATA, &instr_FREE},
+    RawInstruction{"DEBUG_R", NO_REG, NO_DATA, &instr_DEBUG_R},
+    RawInstruction{"DEBUG_M", NO_REG, NO_DATA, &instr_DEBUG_M},
+    RawInstruction{"ADDA", ONE_REG, ONE_DATA, &instr_ADDA},
+    RawInstruction{"CALL", NO_REG, ONE_DATA, &instr_CALL},
+    RawInstruction{"RET", NO_REG, NO_DATA, &instr_RET},
+    RawInstruction{"WINDOW_CREATE", NO_REG, NO_DATA, &instr_WINDOW_CREATE},
+    RawInstruction{"WINDOW_CLOSE", NO_REG, NO_DATA, &instr_WINDOW_CLOSE},
+    RawInstruction{"WINDOW_POOL", NO_REG, NO_DATA, &instr_WINDOW_POOL},
+    RawInstruction{"WINDOW_SHOULD_CLOSE", ONE_REG, NO_DATA, &instr_WINDOW_SHOULD_CLOSE},
+    RawInstruction{"WINDOW_CLEAR", THREE_REG, NO_DATA, &instr_WINDOW_CLEAR},
+    RawInstruction{"WINDOW_PRESENT", NO_REG, NO_DATA, &instr_WINDOW_PRESENT},
+    RawInstruction{"WINDOW_KEY_PRESSED", ONE_REG, ONE_DATA, &instr_WINDOW_KEY_PRESSED},
+    RawInstruction{"WINDOW_KEY_DOWN", ONE_REG, ONE_DATA, &instr_WINDOW_KEY_DOWN},
+    RawInstruction{"WINDOW_SET_TARGET_FPS", NO_REG, ONE_DATA, &instr_WINDOW_SET_TARGET_FPS},
+};
+
+constexpr std::array<InstructionDesc, rawInstructionSet.size()> compute_instructions()
+{
+    std::array<InstructionDesc, rawInstructionSet.size()> result{};
+    uint8_t current_op_code = 0;
+    for (size_t i = 0; i < rawInstructionSet.size(); ++i)
+    {
+        result.data()[i] = InstructionDesc{
+            rawInstructionSet[i].name,
+            current_op_code++,
+            rawInstructionSet[i].regCount,
+            rawInstructionSet[i].dataCount,
+            rawInstructionSet[i].fn
+        };
+    }
+    return result;
+}
+
+constexpr std::array instructionSet = compute_instructions();
 
 #include "check_instructions.hpp"
 #include "instruction_utils.hpp"
