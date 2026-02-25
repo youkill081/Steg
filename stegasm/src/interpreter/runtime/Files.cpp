@@ -2,14 +2,20 @@
 // Created by Roumite on 23/02/2026.
 //
 
-#include <fstream>
-
 #include "Files.h"
-
-#include <filesystem>
-
 #include "Logger.h"
 
+#include <filesystem>
+#include <fstream>
+
+#ifdef _WIN32
+    #include <windows.h>
+# elif __linux__
+    #include <unistd.h>
+    #include <fcntl.h>
+#else
+    #pragma message("Unsupported platform")
+#endif
 void File::read_data_if_needed()
 {
     if (data_was_read || new_file)
@@ -36,8 +42,53 @@ File::~File()
         Logger::log("Warning: Modifier file was closed without saving !");
 }
 
+std::filesystem::path get_available_temp_path()
+{
+#ifdef _WIN32
+    wchar_t tempFile[MAX_PATH];
+    UINT result = GetTempFileNameW(
+        std::filesystem::temp_directory_path().c_str(), // Directory to create
+        L"stg", // Prefix
+        0,
+        tempFile
+    );
+
+    if (!result)
+        throw FileError("Can't create temporary file");
+    return std::filesystem::path(tempFile);
+#elif __linux__
+    std::string tmpl = (std::filesystem::temp_directory_path() / "stgXXXXXX").string();
+    int fd = mkstemp(&tmpl[0]);
+    if (fd == -1)
+        throw FileError("Can't create temporary file");
+    close(fd);
+    return std::filesystem::path(tmpl);
+#endif
+}
+
+std::filesystem::path write_buffer_to_file(ByteBuffer &buffer)
+{
+    std::filesystem::path path = get_available_temp_path();
+    Logger::log("Temporary file path : " + path.string(), "Files");
+
+    std::ofstream file(path, std::ios::binary);
+    if (!file.is_open())
+        throw FileError("Can't open file");
+
+    buffer.reset_cursor();
+    while (buffer.remaining_uint8() != 0)
+        file.put(buffer.read_uint8());
+    file.close();
+    return path;
+}
+
 const std::string& File::get_path()
 {
+    if (this->_path.empty() && this->file_from_bytebuffer)
+    {
+        auto path = write_buffer_to_file(this->_file_data);
+        this->_path = path.string();
+    }
     return _path;
 }
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <cstdint>
 #include <vector>
 
 #define COMMENT_CHAR ';'

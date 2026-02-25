@@ -7,6 +7,8 @@
 #include "utils.h"
 #include "assembler/assembler_exception.h"
 
+#include <iostream>
+
 void assembler::VariableSet::push_variable(const std::string& name, const std::vector<uint16_t>& value)
 {
     Variable new_variable = {name, value};

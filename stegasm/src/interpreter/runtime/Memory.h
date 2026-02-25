@@ -8,6 +8,7 @@
 
 #include <array>
 #include <vector>
+#include <cstdint>
 
 enum BlockType
 {
