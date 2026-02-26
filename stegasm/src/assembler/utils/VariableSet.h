@@ -24,8 +24,9 @@ namespace assembler
         }
     };
 
-    class VariableSet : public std::vector<Variable>
+    class VariableSet : private std::vector<Variable>
     {
+        using Base = std::vector<Variable>;
     private:
         std::map<Variable, uint16_t> variables_address;
         uint16_t current_address = 0;
@@ -41,5 +42,10 @@ namespace assembler
         void display() const;
 
         static VariableSet from_parsed_lines(const std::vector<ParsedLine> &lines);
+
+        using Base::begin;
+        using Base::end;
+        using Base::size;
+        using Base::operator[];
     };
 }

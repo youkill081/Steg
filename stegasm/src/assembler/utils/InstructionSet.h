@@ -34,8 +34,9 @@ namespace assembler
         DataValues datas;
     };
 
-    class InstructionSet : public std::vector<Instruction>
+    class InstructionSet : private std::vector<Instruction>
     {
+        using Base = std::vector<Instruction>;
     private:
         static const InstructionDesc &get_instruction_desc_from_parsed_line(const ParsedLine &line);
         static RegNames string_to_reg_name(const std::string &reg_name);
@@ -52,5 +53,10 @@ namespace assembler
     public:
         void display() const;
         static InstructionSet from_parsed_lines(const std::vector<ParsedLine> &lines, const VariableSet &variables, const FileSet &files);
+
+        using Base::begin;
+        using Base::end;
+        using Base::size;
+        using Base::operator[];
     };
 }
