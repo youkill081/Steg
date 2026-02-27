@@ -40,7 +40,7 @@ public:
     std::vector<LoadedInstruction> instructions{};
 
     uint64_t instruction_pointer = 0;
-    bool is_running = true;
 
+    bool is_running = true;
     uint16_t return_value = 0;
 };
