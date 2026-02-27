@@ -10,6 +10,7 @@ add_subdirectory(libs/stegcommon)
 add_subdirectory(libs/raylib)
 add_subdirectory(libs/json)
 add_subdirectory(stegasm)
+add_subdirectory(stegasmLspServer)
 add_subdirectory(test)
 
 set(LIB_SOURCES
@@ -38,6 +39,7 @@ set(LIB_SOURCES
         steganographer/handlers/FileHandler.h
         steganographer/handlers/CodeHandler.cpp
         steganographer/handlers/CodeHandler.h
+        stegasmLspServer/src/main.cpp
 )
 
 add_library(stegnocode_lib STATIC ${LIB_SOURCES})
