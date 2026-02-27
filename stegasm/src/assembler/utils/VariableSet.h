@@ -9,6 +9,8 @@
 #include <string>
 #include <map>
 
+#include "assembler/ISymbolSource.h"
+
 namespace assembler
 {
     struct ParsedLine;
@@ -24,7 +26,7 @@ namespace assembler
         }
     };
 
-    class VariableSet : private std::vector<Variable>
+    class VariableSet : private std::vector<Variable>, public ISymbolSource
     {
         using Base = std::vector<Variable>;
     private:
@@ -42,6 +44,7 @@ namespace assembler
         void display() const;
 
         static VariableSet from_parsed_lines(const std::vector<ParsedLine> &lines);
+        [[nodiscard]] SymbolSet get_symbols() const override;
 
         using Base::begin;
         using Base::end;

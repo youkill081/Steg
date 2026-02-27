@@ -24,7 +24,7 @@ namespace assembler
         std::vector<std::string> tokens;
 
         mutable uint64_t line_number_in_section = 0; // Used by compiler
-        mutable bool is_instruction; // Used by compiler
+        mutable bool is_instruction; // Used by assembler
     };
 
     class TextParser

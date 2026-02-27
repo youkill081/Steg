@@ -37,73 +37,51 @@ UsedRegistries InstructionSet::get_used_registries_from_parsed_line(const Instru
     return registries;
 }
 
-std::string InstructionSet::user_variable_write_as_address_to_string(const std::string &token)
+std::string InstructionSet::remove_brackets(const std::string &token)
 {
-    if (not user_write_value_in_bracket(token))
+    if (not token_is_in_brackets(token))
         throw AssemblerError("[userVariableWriteAsAddressToString] Invalid variable address \"" + token + "\"");
     return token.substr(1, token.size() - 2);
 }
 
-bool InstructionSet::user_write_value_in_bracket(const std::string &token)
+bool InstructionSet::token_is_in_brackets(const std::string &token)
 {
     return token[0] == '[' && token[token.size() - 1] == ']';
 }
 
-uint16_t InstructionSet::token_to_uint16(const std::string &token)
+DataValueParsingResult InstructionSet::parse_data_value(std::string token, const SymbolSet &symbols)
 {
-    if (token_is_valid_value(token))
-    {
-        uint16_t result;
-        std::from_chars(token.data(), token.data() + token.size(), result);
-        return result;
-    }
-    throw AssemblerError("Invalid uint16 value \"" + token + "\"");
-}
-
-bool InstructionSet::token_is_valid_value(const std::string &token)
-{
-    uint16_t result;
-    auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
-    return ec == std::errc();
-}
-
-DataValueParsingResult InstructionSet::parse_data_value(std::string token, const VariableSet &variables, const LabelMap &labels)
-{
-    bool is_in_bracket = user_write_value_in_bracket(token);
+    bool is_in_bracket = token_is_in_brackets(token);
     if (is_in_bracket)
-        token = user_variable_write_as_address_to_string(token);
+        token = remove_brackets(token);
 
-    if (token_is_valid_value(token))
+    if (token_is_uint16_value(token))
         return { .is_address = is_in_bracket, .value = token_to_uint16(token) };
 
-    if (labels.contains(token))
-        return { .is_address = false, .value = labels.at(token) };
+    if (!symbols.contains(token))
+        throw AssemblerError("Unknown symbol \"" + token + "\"");
 
-    return {
-        .is_address = is_in_bracket,
-        .value = variables.get_variable_address(variables.get_variable_by_name(token))
-    };
+    return { .is_address = is_in_bracket, .value = symbols.at(token).value };
 }
 
 DataValues InstructionSet::get_data_values_from_parsed_line(
     const InstructionDesc &desc,
     const ParsedLine &line,
-    const LabelMap &labels,
-    const VariableSet &variables)
+    const SymbolSet &symbols)
 {
     DataValues data{};
     switch (desc.dataCount)
     {
     case TWO_DATA:
-        data[1] = parse_data_value(line.tokens[desc.regCount + 2], variables, labels);
+        data[1] = parse_data_value(line.tokens[desc.regCount + 2], symbols);
     case ONE_DATA:
-        data[0] = parse_data_value(line.tokens[desc.regCount + 1], variables, labels);
+        data[0] = parse_data_value(line.tokens[desc.regCount + 1], symbols);
     default:
         return data;
     }
 }
 
-Instruction InstructionSet::parsed_line_to_instruction(const ParsedLine &line, const VariableSet &variables, const LabelMap &labels)
+Instruction InstructionSet::parsed_line_to_instruction(const ParsedLine &line, const SymbolSet &symbols)
 {
     const InstructionDesc &desc = get_instruction_desc_from_parsed_line(line);
     uint32_t token_needed = static_cast<uint32_t>(desc.dataCount) + static_cast<uint32_t>(desc.regCount) + 1;
@@ -114,67 +92,28 @@ Instruction InstructionSet::parsed_line_to_instruction(const ParsedLine &line, c
     return {
         .desc = desc,
         .registries = get_used_registries_from_parsed_line(desc, line),
-        .datas = get_data_values_from_parsed_line(desc, line, labels, variables)
+        .datas = get_data_values_from_parsed_line(desc, line, symbols)
     };
-}
-
-bool InstructionSet::is_label(const ParsedLine &line)
-{
-    return line.tokens.size() == 1 && line.tokens[0].ends_with(':');
-}
-
-LabelMap InstructionSet::parse_labels(const std::span<const ParsedLine> &lines, const VariableSet &variables)
-{
-    LabelMap labels{};
-    uint64_t current_instruction_idx = 0;
-
-    for (auto &line : lines)
-    {
-        if (!is_label(line))
-        {
-            line.line_number_in_section = current_instruction_idx++;
-            line.is_instruction = true;
-        }
-        else
-        {
-            line.is_instruction = false;
-            std::string label_name = line.tokens[0].substr(0, line.tokens[0].size() - 1);
-            if (variables.contains_variable_by_name(label_name))
-                throw AssemblerError("Label \"" + label_name + "\" is already used as variable name");
-            if (labels.contains(label_name))
-                throw AssemblerError("Label \"" + label_name + "\" is already used");
-            labels[label_name] = current_instruction_idx;
-        }
-    }
-    return labels;
 }
 
 InstructionSet InstructionSet::from_parsed_lines(
     const std::vector<ParsedLine> &lines,
-    const VariableSet &variables,
-    const FileSet &files)
+    const SymbolSet &symbols)
 {
     auto instructions_lines = get_section_lines(lines, INSTRUCTION_SECTION_NAME, true);
     if (instructions_lines.empty())
         throw AssemblerError("No instructions in .text section !");
-
-    LabelMap labels = parse_labels(instructions_lines, variables);
-    for (const auto &file : files) // Handle files like labels
-    {
-        if (labels.contains(file.user_name))
-            throw AssemblerError("File name collide with label \"" + file.user_name + "\"");
-        labels[file.user_name] = file.descriptor;
-    }
 
     InstructionSet instructions;
     for (const auto &line : instructions_lines)
     {
         if (not line.is_instruction)
             continue;
-        instructions.push_back(parsed_line_to_instruction(line, variables, labels));
+        instructions.push_back(parsed_line_to_instruction(line, symbols));
     }
     return instructions;
 }
+
 
 void InstructionSet::display() const
 {

@@ -13,6 +13,7 @@
 #define SECTION_KEYWORD "section"
 #define VARIABLE_SECTION_NAME ".data"
 #define FILES_SECTION_NAME ".files"
+#define SUBTEXTURES_SECTION_NAME ".subtextures"
 #define INSTRUCTION_SECTION_NAME ".text"
 
 namespace assembler

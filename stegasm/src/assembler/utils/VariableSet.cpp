@@ -62,6 +62,14 @@ VariableSet VariableSet::from_parsed_lines(const std::vector<ParsedLine> &lines)
     return variables;
 }
 
+SymbolSet VariableSet::get_symbols() const
+{
+    SymbolSet symbols;
+    for (const auto &var : *this)
+        symbols.insert_symbol(var.name, get_variable_address(var), SymbolType::Variable);
+    return symbols;
+}
+
 void VariableSet::push_variable(const std::string &name, const std::vector<uint16_t> &value)
 {
     Variable new_variable = {name, value};

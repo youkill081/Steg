@@ -9,6 +9,8 @@
 
 #include "assembler_exception.h"
 #include "TextParser.h"
+#include "utils/LabelSet.h"
+#include "utils/SubtexturesSet.h"
 #include "utils/utils.h"
 
 using namespace assembler;
@@ -20,8 +22,13 @@ CompiledFile Assembler::compile_file(const std::string &path)
     {
         const auto lines = parser.parse();
         auto files = FileSet::from_parsed_lines(lines);
+        auto subtextures = SubtexturesSet::from_parsed_lines(lines, files);
         auto variables = VariableSet::from_parsed_lines(lines);
-        auto instructions = InstructionSet::from_parsed_lines(lines, variables, files);
+        auto labels = LabelSet::from_parsed_lines(lines);
+
+        auto symbols = files.get_symbols() + subtextures.get_symbols() + variables.get_symbols() + labels.get_symbols();
+
+        auto instructions = InstructionSet::from_parsed_lines(lines, symbols);
         return {
             .files = std::move(files),
             .variables = std::move(variables),

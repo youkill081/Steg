@@ -38,6 +38,13 @@ set(STEGASM_LIB_SOURCES
         src/assembler/utils/FileSet.h
         src/assembler/utils/utils.h
         src/assembler/utils/utils.cpp
+        src/assembler/utils/SubtexturesSet.cpp
+        src/assembler/utils/SubtexturesSet.h
+        src/assembler/Symbol.h
+        src/assembler/ISymbolSource.h
+        src/assembler/Symbol.cpp
+        src/assembler/utils/LabelSet.cpp
+        src/assembler/utils/LabelSet.h
 )
 
 add_library(stegasm_lib STATIC ${STEGASM_LIB_SOURCES})

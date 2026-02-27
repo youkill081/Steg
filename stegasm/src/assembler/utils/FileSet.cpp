@@ -13,12 +13,17 @@
 
 using namespace assembler;
 
+uint16_t FileSet::get_next_descriptor() const
+{
+    return current_descriptor;
+}
+
 void FileSet::push_file(
     const std::string &user_name,
     const std::string &path,
     const std::string &extension)
 {
-    File new_file = {user_name, path, extension, current_descriptor++};
+    File new_file = {user_name, path, extension, get_next_descriptor()};
     if (not std::filesystem::exists(path))
         throw AssemblerError("File \"" + path + "\" not found !");
     std::ifstream file_stream(path, std::ios::binary);
@@ -49,4 +54,12 @@ FileSet FileSet::from_parsed_lines(const std::vector<ParsedLine> &lines)
     for (const auto &line : files_lines)
         files.push_file_from_parsed_line(line);
     return files;
+}
+
+SymbolSet FileSet::get_symbols() const
+{
+    SymbolSet symbols;
+    for (const auto &file : *this)
+        symbols.insert_symbol(file.user_name, file.descriptor, SymbolType::File);
+    return symbols;
 }

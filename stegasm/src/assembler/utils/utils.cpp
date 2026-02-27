@@ -50,4 +50,22 @@ namespace assembler
             throw assembler::AssemblerError("Mandatory section \"" + sectionName + "\" not found");
         return {};
     }
+
+    bool token_is_uint16_value(const std::string& token)
+    {
+        uint16_t result;
+        auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+        return ec == std::errc();
+    }
+
+    uint16_t token_to_uint16(const std::string& token)
+    {
+        if (token_is_uint16_value(token))
+        {
+            uint16_t result;
+            std::from_chars(token.data(), token.data() + token.size(), result);
+            return result;
+        }
+        throw AssemblerError("Invalid uint16 value \"" + token + "\"");
+    }
 }
