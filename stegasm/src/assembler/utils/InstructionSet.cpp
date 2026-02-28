@@ -104,10 +104,10 @@ InstructionSet InstructionSet::from_parsed_lines(
 ) {
     auto instructions_lines = get_section_lines(lines, INSTRUCTION_SECTION_NAME);
     if (instructions_lines.empty())
-        linter.inline_error("No instructions in .text section !");
+        return {};
 
     InstructionSet instructions;
-    linter.foreach(instructions_lines, [&](const ParsedLine &line)
+    linter.foreach_lines(instructions_lines, [&](const ParsedLine &line)
     {
         if (not line.is_instruction)
             return;

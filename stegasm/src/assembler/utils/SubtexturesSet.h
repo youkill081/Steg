@@ -39,7 +39,9 @@ namespace assembler
             FileSet &files,
             Linter &
         );
+
         [[nodiscard]] SymbolSet get_symbols() const override;
+        void merge(const SubtexturesSet &other, Linter& linter);
 
         using Base::begin;
         using Base::end;

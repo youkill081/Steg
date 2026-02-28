@@ -56,7 +56,7 @@ VariableSet VariableSet::from_parsed_lines(const std::vector<ParsedLine> &lines,
         return {};
 
     VariableSet variables;
-    linter.foreach(variables_lines, [&](const ParsedLine &line)
+    linter.foreach_lines(variables_lines, [&](const ParsedLine &line)
     {
         variables.push_variable(parsed_line_to_variable(line));
     });
@@ -69,6 +69,18 @@ SymbolSet VariableSet::get_symbols() const
     for (const auto &var : *this)
         symbols.insert_symbol(var.name, get_variable_address(var), SymbolType::Variable);
     return symbols;
+}
+
+void VariableSet::merge(const VariableSet& other, Linter& linter)
+{
+    linter.foreach(other, [&](const Variable& var)
+    {
+        if (this->contains(var))
+            Linter::error("Duplicate variable \"" + var.name + "\" !");
+        this->insert(var);
+        this->variables_address[var] = current_address;
+        current_address += var.value.size();
+    });
 }
 
 void VariableSet::push_variable(const std::string &name, const std::vector<uint16_t> &value)

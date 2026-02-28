@@ -54,7 +54,7 @@ FileSet FileSet::from_parsed_lines(const std::vector<ParsedLine> &lines, Linter 
         return {};
 
     FileSet files{};
-    linter.foreach(files_lines, [&](const ParsedLine &line)
+    linter.foreach_lines(files_lines, [&](const ParsedLine &line)
     {
         files.push_file_from_parsed_line(line);
     });
@@ -67,4 +67,15 @@ SymbolSet FileSet::get_symbols() const
     for (const auto &file : *this)
         symbols.insert_symbol(file.user_name, file.descriptor, SymbolType::File);
     return symbols;
+}
+
+void FileSet::merge(const FileSet& other, Linter& linter)
+{
+
+    linter.foreach(other, [&](const File& file)
+    {
+        if (this->contains(file))
+            Linter::error("Duplicate file  \"" + file.user_name + "\" !");
+        this->insert(file);
+    });
 }

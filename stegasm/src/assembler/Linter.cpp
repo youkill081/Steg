@@ -55,7 +55,7 @@ void Linter::inline_warning(const std::string& message)
     display_warning(final_message);
 }
 
-void Linter::foreach(std::span<const ParsedLine> lines, const std::function<void(const ParsedLine&)> &callback)
+void Linter::foreach_lines(std::span<const ParsedLine> lines, const std::function<void(const ParsedLine&)> &callback)
 {
     current = this;
     for (const auto &line : lines)
@@ -68,4 +68,16 @@ void Linter::foreach(std::span<const ParsedLine> lines, const std::function<void
         }
     }
     current = nullptr;
+}
+
+void Linter::error_guard(const std::function<void()>& callback)
+{
+    try
+    {
+        callback();
+    } catch (const LinterError &e) {
+        auto message = LinterMessage{ 0, "", e.message, e.token_index };
+        errors.push_back(message);
+        display_error(message);
+    }
 }

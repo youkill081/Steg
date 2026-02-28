@@ -30,7 +30,7 @@ LabelSet LabelSet::from_parsed_lines(const std::vector<ParsedLine> &lines, Linte
     LabelSet label_set;
     uint64_t current_instruction_idx = 0;
 
-    linter.foreach(instructions_lines, [&](const ParsedLine &line)
+    linter.foreach_lines(instructions_lines, [&](const ParsedLine &line)
     {
         if (!is_label(line))
         {

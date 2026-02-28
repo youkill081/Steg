@@ -23,12 +23,14 @@ namespace assembler
 {
     struct CompiledFile
     {
-        FileSet files;
-        VariableSet variables;
-        InstructionSet instructions;
-        SubtexturesSet subtextures;
+        FileSet files{};
+        VariableSet variables{};
+        SubtexturesSet subtextures{};
 
-        SymbolSet symbols;
+        SymbolSet symbols{};
+        InstructionSet instructions{};
+
+        void merge(const CompiledFile &other, Linter &linter);
     };
 
     class Assembler
@@ -36,9 +38,11 @@ namespace assembler
     private:
         static void write_reg_x_in_buffer(uint8_t reg_x, const RegCount &reg_count, const UsedRegistries &registries, ByteBuffer &buffer);
         static void write_datas_flag_in_buffer(const DataCount &data_count, const DataValues &data_parsing_result, ByteBuffer &buffer);
-        static ByteBuffer compiled_file_to_bytebuffer(CompiledFile &compiledFile);
-        static CompiledFile compile_imported_files(const std::vector<ParsedLine> &lines, Linter &linter);
-        static CompiledFile compile_file(TextParser &parser, Linter &linter);
+        static ByteBuffer compiled_file_to_bytebuffer(CompiledFile &compiledFile, Linter &linter);
+        static void compile_symbols(CompiledFile &compiled_file, const std::vector<ParsedLine> &lines, Linter &linter);
+        static void compile_instructions(CompiledFile &compiled_file, const std::vector<ParsedLine> &lines, Linter &linter);
+        static void compile_imported_files(CompiledFile &compiled_file, const std::vector<ParsedLine> &lines, Linter &linter);
+        static void compile_file(CompiledFile &compiled_file, TextParser &parser, Linter &linter);
     public:
         static ByteBuffer assemble(const std::string &path, Linter &linter, bool throw_if_error = true);
         static ByteBuffer assemble_from_text(const std::string &text_data, Linter &linter, bool throw_if_error = true);

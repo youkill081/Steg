@@ -59,7 +59,7 @@ assembler::SubtexturesSet assembler::SubtexturesSet::from_parsed_lines(
         return {};
 
     SubtexturesSet textures{};
-    linter.foreach(files_lines, [&](const ParsedLine &line)
+    linter.foreach_lines(files_lines, [&](const ParsedLine &line)
     {
         textures.push_subtexture_from_parsed_line(line, files);
     });
@@ -72,6 +72,16 @@ assembler::SymbolSet assembler::SubtexturesSet::get_symbols() const
     for (const auto &sub : *this)
         symbols.insert_symbol(sub.name, sub.descriptor, SymbolType::Subtexture);
     return symbols;
+}
+
+void assembler::SubtexturesSet::merge(const SubtexturesSet& other, Linter& linter)
+{
+    linter.foreach(other, [&](const Subtexture& sub)
+    {
+        if (this->contains(sub))
+            Linter::error("Duplicate subtexture \"" + sub.name + "\" !");
+        this->insert(sub);
+    });
 }
 
 
