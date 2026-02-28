@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <string>
+#include <set>
 #include <map>
 
 #include "assembler/ISymbolSource.h"
@@ -20,16 +20,15 @@ namespace assembler
     {
         std::string name;
         std::vector<uint16_t> value;
+
         bool operator<(const Variable &other) const {
-            if (name != other.name)
-                return name < other.name;
-            return value < other.value;
+            return name < other.name;
         }
     };
 
-    class VariableSet : private std::vector<Variable>, public ISymbolSource
+    class VariableSet : private std::set<Variable>, public ISymbolSource
     {
-        using Base = std::vector<Variable>;
+        using Base = std::set<Variable>;
     private:
         std::map<Variable, uint16_t> variables_address;
         uint16_t current_address = 0;
@@ -50,6 +49,5 @@ namespace assembler
         using Base::begin;
         using Base::end;
         using Base::size;
-        using Base::operator[];
     };
 }

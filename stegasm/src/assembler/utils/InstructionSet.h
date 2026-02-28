@@ -51,6 +51,5 @@ namespace assembler
         using Base::begin;
         using Base::end;
         using Base::size;
-        using Base::operator[];
     };
 }

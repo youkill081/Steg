@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include <unordered_map>
+#include <set>
 #include <vector>
-#include <span>
 
 #include "assembler/ISymbolSource.h"
 #include "assembler/Linter.h"

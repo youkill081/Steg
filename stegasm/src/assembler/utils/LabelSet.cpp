@@ -43,7 +43,7 @@ LabelSet LabelSet::from_parsed_lines(const std::vector<ParsedLine> &lines, Linte
             std::string label_name = line.tokens[0].substr(0, line.tokens[0].size() - 1);
 
             if (label_set.labels.contains(label_name))
-                linter.error("Label already defined !", 0);
+                Linter::error("Duplicate label \"" + label_name + "\" !");
 
             label_set.labels[label_name] = current_instruction_idx;
         }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <vector>
+#include <set>
 #include <string>
 #include "ByteBuffer.h"
 
@@ -21,16 +21,19 @@ namespace assembler
         std::string path;
         std::string extension;
         uint16_t descriptor = 0;
-        ByteBuffer file_data{};
+        mutable ByteBuffer file_data{};
+
+        bool operator<(const File &other) const
+        {
+            return user_name < other.user_name;
+        }
     };
 
-    class FileSet : private std::vector<File>, public ISymbolSource
+    class FileSet : private std::set<File>, public ISymbolSource
     {
-        using Base = std::vector<File>;
-    private:
-        uint16_t current_descriptor = 0;
+        using Base = std::set<File>;
     public:
-        uint16_t get_next_descriptor();
+        static uint16_t get_next_descriptor();
 
         void push_file(const std::string &user_name, const std::string &path, const std::string &extension);
         void push_file_from_parsed_line(const ParsedLine &line);
@@ -41,6 +44,5 @@ namespace assembler
         using Base::begin;
         using Base::end;
         using Base::size;
-        using Base::operator[];
     };
 }

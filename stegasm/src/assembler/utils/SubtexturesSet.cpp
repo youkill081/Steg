@@ -34,15 +34,19 @@ void assembler::SubtexturesSet::push_subtexture_from_parsed_line(const ParsedLin
     const uint16_t y = token_to_uint16(line.tokens[3]);
     const uint16_t w = token_to_uint16(line.tokens[4]);
     const uint16_t h = token_to_uint16(line.tokens[5]);
-    this->push_back({
+
+    Subtexture new_subtexture = {
         .origin_file = file,
         .name = line.tokens[0],
-        .descriptor = files.get_next_descriptor(),
+        .descriptor = FileSet::get_next_descriptor(),
         .x = x,
         .y = y,
         .width = w,
         .height = h
-    });
+    };
+    if (this->contains(new_subtexture))
+        Linter::error("Duplicate subtexture \"" + new_subtexture.name + "\" !");
+    this->insert(new_subtexture);
 }
 
 assembler::SubtexturesSet assembler::SubtexturesSet::from_parsed_lines(

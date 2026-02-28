@@ -8,6 +8,8 @@
 
 namespace assembler
 {
+    class Linter;
+
     class ISymbolSource
     {
     public:

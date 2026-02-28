@@ -79,12 +79,9 @@ void VariableSet::push_variable(const std::string &name, const std::vector<uint1
 
 void VariableSet::push_variable(const Variable &new_variable)
 {
-    for (const auto &variable : *this)
-    {
-        if (string_equal(variable.name, new_variable.name))
-            Linter::error("Variable \"" + new_variable.name + "\" already defined !");
-    }
-    this->push_back(new_variable);
+    if  (this->contains(new_variable))
+        Linter::error("Duplicate variable \"" + new_variable.name + "\" !");
+    this->insert(new_variable);
     this->variables_address[new_variable] = current_address;
     current_address += new_variable.value.size();
 }

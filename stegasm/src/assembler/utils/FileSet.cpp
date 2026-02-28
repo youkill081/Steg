@@ -15,14 +15,15 @@ using namespace assembler;
 
 uint16_t FileSet::get_next_descriptor()
 {
+    static uint16_t current_descriptor = 0; // Ensure counter is the same for all FileSet instances
     return ++current_descriptor;
 }
 
 void FileSet::push_file(
     const std::string &user_name,
     const std::string &path,
-    const std::string &extension)
-{
+    const std::string &extension
+) {
     File new_file = {user_name, path, extension, get_next_descriptor()};
     if (not std::filesystem::exists(path))
         Linter::error("File at path \"" + path + "\" not found !");
@@ -30,7 +31,9 @@ void FileSet::push_file(
     int byte = 0;
     while ((byte = file_stream.get()) != EOF)
         new_file.file_data.write_uint8(byte);
-    this->push_back(new_file);
+    if (this->contains(new_file))
+        Linter::error("Duplicate file  \"" + new_file.user_name + "\" !");
+    this->insert(new_file);
 }
 
 void FileSet::push_file_from_parsed_line(const ParsedLine &line)

@@ -4,9 +4,6 @@
 
 #include "Assembler.h"
 
-#include <charconv>
-#include <iostream>
-
 #include "assembler_exception.h"
 #include "TextParser.h"
 #include "utils/LabelSet.h"
@@ -15,11 +12,28 @@
 
 using namespace assembler;
 
+CompiledFile Assembler::compile_imported_files(const std::vector<ParsedLine> &lines, Linter &linter)
+{
+    auto section_line = get_section_lines(lines, IMPORT_SECTION_NAME);
+    if (section_line.empty())
+        return {};
+
+    linter.foreach(section_line, [&](const ParsedLine& line)
+    {
+       if (line.tokens.size() != 2)
+           Linter::error("Number of token missmatch for import");
+        TextParser parser(line.tokens[1]);
+        auto compiled_file = Assembler::compile_file(parser, linter);
+    });
+}
+
 CompiledFile Assembler::compile_file(TextParser &parser, Linter &linter)
 {
     try
     {
         const auto lines = parser.parse();
+
+        // CompiledFile compiled_file = compile_imported_files(lines, linter);
         auto files = FileSet::from_parsed_lines(lines, linter);
         auto subtextures = SubtexturesSet::from_parsed_lines(lines, files, linter);
         auto variables = VariableSet::from_parsed_lines(lines, linter);
@@ -33,6 +47,7 @@ CompiledFile Assembler::compile_file(TextParser &parser, Linter &linter)
             .variables = std::move(variables),
             .instructions = std::move(instructions),
             .subtextures = std::move(subtextures),
+            .symbols = std::move(symbols),
         };
     }
     catch (const TextParserError &error)
