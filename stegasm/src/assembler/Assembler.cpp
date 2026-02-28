@@ -15,9 +15,8 @@
 
 using namespace assembler;
 
-CompiledFile Assembler::compile_file(const std::string &path, Linter &linter)
+CompiledFile Assembler::compile_file(TextParser &parser, Linter &linter)
 {
-    TextParser parser(path);
     try
     {
         const auto lines = parser.parse();
@@ -152,12 +151,30 @@ ByteBuffer Assembler::compiled_file_to_bytebuffer(CompiledFile &compiledFile)
     return buffer;
 }
 
-ByteBuffer Assembler::assemble(const std::string& path)
+ByteBuffer Assembler::assemble(const std::string& path, Linter &linter, bool throw_if_error)
 {
-    Linter linter;
-    CompiledFile file = compile_file(path, linter);
+    auto parser = TextParser(path);
+    CompiledFile file = compile_file(parser, linter);
 
     if (linter.has_errors())
-        throw AssemblerError("Errors found in file \"" + path + "\"");
+    {
+        if (throw_if_error)
+            throw AssemblerError("Errors found in file \"" + path + "\"");
+        return {};
+    }
+    return compiled_file_to_bytebuffer(file);
+}
+
+ByteBuffer Assembler::assemble_from_text(const std::string& text_data, Linter& linter, bool throw_if_error)
+{
+    auto parser = TextParser::from_string(text_data);
+    CompiledFile file = compile_file(parser, linter);
+
+    if (linter.has_errors())
+    {
+        if (throw_if_error)
+            throw AssemblerError("Errors found in text data");
+        return {};
+    }
     return compiled_file_to_bytebuffer(file);
 }

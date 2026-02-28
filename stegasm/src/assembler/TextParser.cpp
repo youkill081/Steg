@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <utility>
+#include <sstream>
 
 using namespace assembler;
 
@@ -92,17 +93,37 @@ std::vector<std::string> TextParser::tokenize(const std::string &line)
 
 TextParser::TextParser(std::string file_path) : _file_path(std::move(file_path)) {}
 
+TextParser TextParser::from_string(const std::string& file_content)
+{
+    auto text_parser = TextParser{""};
+    text_parser.set_file_content(file_content);
+    return text_parser;
+}
+
+void TextParser::set_file_content(const std::string &file_content)
+{
+    this->_file_content = file_content;
+}
+
 std::vector<ParsedLine> TextParser::parse() const
 {
-    std::ifstream file(_file_path);
-    if (!file.is_open())
-        throw TextParserError("Failed to open file: " + _file_path);
+    std::unique_ptr<std::istream> stream;
+
+    if (!_file_content.empty())
+        stream = std::make_unique<std::istringstream>(_file_content);
+    else
+    {
+        auto file = std::make_unique<std::ifstream>(_file_path);
+        if (!file->is_open())
+            throw TextParserError("Failed to open file: " + _file_path);
+        stream = std::move(file);
+    }
 
     std::vector<ParsedLine> result;
     std::string line;
     size_t lineNumber = 0;
 
-    while (std::getline(file, line))
+    while (std::getline(*stream, line))
     {
         lineNumber++;
         std::string clean_string = trim(remove_comments(line));

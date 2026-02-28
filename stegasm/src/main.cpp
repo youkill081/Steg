@@ -12,7 +12,8 @@ int main(int argc, char* argv[])
 {
     try
     {
-        auto binary = assembler::Assembler::assemble(argv[1]);
+        assembler::Linter linter;
+        auto binary = assembler::Assembler::assemble(argv[1], linter);
         Vm::run(binary);
     } catch (assembler::AssemblerError &) { return 1; }
     catch (std::exception &e)

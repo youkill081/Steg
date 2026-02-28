@@ -31,13 +31,16 @@ namespace assembler
     {
     private:
         std::string _file_path;
+        std::string _file_content;
 
         static std::string remove_comments(const std::string &line);
         static std::string trim(const std::string &line);
         static std::vector<std::string> tokenize(const std::string &line);
     public:
         explicit TextParser(std::string file_path);
+        static TextParser from_string(const std::string &file_content);
 
+        void set_file_content(const std::string &file_content);
         [[nodiscard]] std::vector<ParsedLine> parse() const;
     };
 }

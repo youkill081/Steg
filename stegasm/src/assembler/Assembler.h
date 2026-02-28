@@ -34,8 +34,9 @@ namespace assembler
         static void write_reg_x_in_buffer(uint8_t reg_x, const RegCount &reg_count, const UsedRegistries &registries, ByteBuffer &buffer);
         static void write_datas_flag_in_buffer(const DataCount &data_count, const DataValues &data_parsing_result, ByteBuffer &buffer);
         static ByteBuffer compiled_file_to_bytebuffer(CompiledFile &compiledFile);
-        static CompiledFile compile_file(const std::string &path, Linter &linter);
+        static CompiledFile compile_file(TextParser &parser, Linter &linter);
     public:
-        static ByteBuffer assemble(const std::string &path);
+        static ByteBuffer assemble(const std::string &path, Linter &linter, bool throw_if_error = true);
+        static ByteBuffer assemble_from_text(const std::string &text_data, Linter &linter, bool throw_if_error = true);
     };
 }

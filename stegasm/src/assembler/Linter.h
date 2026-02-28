@@ -41,5 +41,8 @@ namespace assembler
 
         [[nodiscard]] bool has_errors() const { return not errors.empty(); }
         [[nodiscard]] bool has_warning() const { return not warnings.empty(); }
+
+        [[nodiscard]] const std::vector<LinterMessage> &get_errors() const { return errors; }
+        [[nodiscard]] const std::vector<LinterMessage> &get_warnings() const { return warnings; }
     };
 }
