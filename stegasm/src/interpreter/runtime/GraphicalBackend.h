@@ -13,6 +13,9 @@
 #include <memory>
 #include <map>
 
+#define FONT_BASE_SIZE 256
+#define FONT_TEXT_SPACING 1.0f
+
 class GraphicalBackend
 {
 private:
@@ -30,6 +33,10 @@ private:
     uint16_t _viewport_height = 0;
     bool _viewport_active = false;
     RenderTexture2D _target{}; // Used by viewport
+
+    Font _current_font{};
+    bool _font_loaded = false;
+    std::string _last_font_path;
 
     Color last_clear_color = BLACK;
 public:
@@ -52,9 +59,10 @@ public:
     void clear_window(const Color &color);
     void present_window() const;
 
-    void set_text_size(const uint16_t size) { _text_size = size; }
+    void set_text_size(const uint16_t size);
     void set_text_color(const Color &color) { _text_color = color; }
     void draw_text(const std::string &text, int x, int y);
+    void set_font(const std::shared_ptr<FileBase> &file);
 
     void draw_texture(const std::shared_ptr<FileBase> &file, int x, int y);
 

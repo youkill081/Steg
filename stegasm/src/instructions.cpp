@@ -378,6 +378,13 @@ void instr_WINDOW_SET_TEXT_COLOR(Runtime& runtime, InstructionView view)
     });
 }
 
+void instr_WINDOW_SET_FONT(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.set_font(
+        runtime.files[view.get_d1(runtime)]
+    );
+}
+
 void instr_WINDOW_DRAW_TEXT(Runtime& runtime, InstructionView view)
 {
     uint16_t x = runtime.registries.read(view.r1());

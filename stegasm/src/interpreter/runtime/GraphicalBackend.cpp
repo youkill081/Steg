@@ -144,8 +144,26 @@ void GraphicalBackend::present_window() const
         BeginDrawing();
         ClearBackground(last_clear_color);
 
+        float scale = std::floor(
+            std::min(
+                static_cast<float>(GetScreenWidth()) / _viewport_width,
+            static_cast<float>(GetScreenHeight()) / _viewport_height
+            )
+        );
+
+        float scaledWidth  = _viewport_width  * scale;
+        float scaledHeight = _viewport_height * scale;
+
+        float offsetX = (GetScreenWidth()  - scaledWidth)  / 2.0f;
+        float offsetY = (GetScreenHeight() - scaledHeight) / 2.0f;
+
+        Rectangle dest = {
+            offsetX,
+            offsetY,
+            scaledWidth,
+            scaledHeight
+        };
         Rectangle source = { 0.0f, 0.0f, static_cast<float>(_viewport_width), - static_cast<float>(_viewport_height) };
-        Rectangle dest = { 0.0f, 0.0f, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight()) };
         Vector2 origin = { 0.0f, 0.0f };
 
         DrawTexturePro(_target.texture, source, dest, origin, 0.0f, WHITE);
@@ -154,11 +172,53 @@ void GraphicalBackend::present_window() const
     EndDrawing();
 }
 
+void GraphicalBackend::set_text_size(const uint16_t size)
+{
+    check_inited(true);
+
+    _text_size = size;
+}
+
+
 void GraphicalBackend::draw_text(const std::string& text, int x, int y)
 {
     check_inited(true);
 
-    DrawText(text.c_str(), x, y, _text_size, _text_color);
+    if (_font_loaded)
+    {
+        DrawTextEx(
+            _current_font,
+            text.c_str(),
+            { static_cast<float>(x), static_cast<float>(y) },
+            _text_size,
+            FONT_TEXT_SPACING,
+            _text_color
+        );
+    }
+    else
+    {
+        DrawText(text.c_str(), x, y, _text_size, _text_color);
+    }
+}
+
+void GraphicalBackend::set_font(const std::shared_ptr<FileBase>& file)
+{
+    check_inited(true);
+
+    const std::string& path = file->get_path();
+    if (_last_font_path != path)
+    {
+        Font f = LoadFontEx(path.c_str(), FONT_BASE_SIZE, nullptr, 0);
+        if (f.texture.id == 0)
+            throw GraphicalBackendError("Failed to load font");
+
+        SetTextureFilter(f.texture, TEXTURE_FILTER_BILINEAR);
+        SetTextureFilter(f.texture, TEXTURE_FILTER_BILINEAR);
+        _last_font_path = path;
+    }
+
+    _last_font_path = path;
+    _font_loaded = true;
 }
 
 void GraphicalBackend::draw_texture(const std::shared_ptr<FileBase> &file, int x, int y)
