@@ -8,6 +8,7 @@ section .import
     "examples/tetris/game/score.stegasm"
     "examples/tetris/game/level.stegasm"
     "examples/tetris/game/inputs/check_rotation.stegasm"
+    "examples/tetris/game/inputs/check_right_left.stegasm"
 
     "examples/tetris/game/map.stegasm"
 
@@ -81,6 +82,7 @@ pass:
     CALL display_level
 
     CALL check_rotation
+    CALL check_right_left
 
     ; Draw blocks
     CALL draw_map

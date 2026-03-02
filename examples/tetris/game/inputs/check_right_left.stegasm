@@ -1,0 +1,31 @@
+section .text
+check_right_left:
+    WINDOW_KEY_PRESSED R1, 262 ; 265 = KEY_RIGHT
+    CMPA R1, 1 ; If key was pressed
+    JE check_and_move_right
+
+    WINDOW_KEY_PRESSED R1, 263 ; 265 = KEY_LEFT
+    CMPA R1, 1 ; If key was pressed
+    JE check_and_move_left
+
+    RET
+
+check_and_move_left:
+    CALL can_current_move_left
+
+    CMPA R0, 0
+    JE check_right_left_end ; Go to end if can't move left
+
+    CALL move_current_left
+    RET
+
+check_and_move_right:
+    CALL can_current_move_right
+
+    CMPA R0, 0
+    JE check_right_left_end ; Go to end if can't move right
+
+    CALL move_current_right
+
+check_right_left_end:
+    RET
