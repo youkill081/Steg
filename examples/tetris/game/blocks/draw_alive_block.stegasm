@@ -64,8 +64,8 @@ draw_alive_block_loop:
     LOADA R5, [DAB_block_grid_y]
     ADD R2, R5
 
-    CMPA R2, 2
-    JB bypass_draw_current_block ; Ignore blocks on the bottom 2 rows
+;    CMPA R2, 2
+;    JB bypass_draw_current_block ; Ignore blocks on the bottom 2 rows
 
     CALL compute_block_position_from_coords ; GET R1 = X, R2 = Y RETURN R0 = Coordinates X RETURN R1 = Coordinates Y
 

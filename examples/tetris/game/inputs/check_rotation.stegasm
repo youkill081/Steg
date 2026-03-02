@@ -15,8 +15,6 @@ rotate_current:
     CALL compute_next_rotation ; R1 = next rotation
     STOREA R1, current_block_rotation ; Store the current rotation
 
-    DISPLAY_N R1
-
     RET
 
 
