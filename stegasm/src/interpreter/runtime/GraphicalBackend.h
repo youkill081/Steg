@@ -25,6 +25,13 @@ private:
 
     void load_texture(const std::shared_ptr<FileBase> &file);
     void unload_texture(const std::shared_ptr<FileBase> &file);
+
+    uint16_t _viewport_width = 0;
+    uint16_t _viewport_height = 0;
+    bool _viewport_active = false;
+    RenderTexture2D _target{}; // Used by viewport
+
+    Color last_clear_color = BLACK;
 public:
     // Windows Management
 
@@ -36,10 +43,14 @@ public:
     void set_target_fps(uint16_t fps);
     void set_window_icon(const std::shared_ptr<FileBase> &file);
 
+    // Viewport Management
+    void set_viewport_size(uint16_t width, uint16_t height);
+    void disable_viewport();
+
     // Drawing management
 
     void clear_window(const Color &color);
-    void present_window();
+    void present_window() const;
 
     void set_text_size(const uint16_t size) { _text_size = size; }
     void set_text_color(const Color &color) { _text_color = color; }
@@ -50,4 +61,11 @@ public:
     // Input management
     bool key_down(uint16_t key);
     bool key_pressed(uint16_t key);
+
+    // Utils
+
+    /*
+     *  Convert coordinate from screen to viewport (if viewport is active)
+     */
+    [[nodiscard]] Vector2 screen_to_viewport(const Vector2 &screenPos) const;
 };

@@ -80,17 +80,76 @@ void GraphicalBackend::set_window_icon(const std::shared_ptr<FileBase>& file)
     UnloadImage(icon);
 }
 
+void GraphicalBackend::set_viewport_size(uint16_t width, uint16_t height)
+{
+    check_inited(true);
+
+    if (_viewport_active && _target.id != 0) // Reset viewport
+    {
+        EndTextureMode();
+        UnloadRenderTexture(_target);
+        _target.id = 0;
+    }
+
+    if (width == 0 || height == 0)
+        throw GraphicalBackendError("Viewport size must be > 0");
+
+    _viewport_width  = width;
+    _viewport_height = height;
+
+    _target = LoadRenderTexture(_viewport_width, _viewport_height);
+    if (_target.id == 0)
+        throw GraphicalBackendError("Failed to create render texture for viewport");
+
+    SetTextureFilter(_target.texture, TEXTURE_FILTER_POINT);
+    _viewport_active = true;
+}
+
+void GraphicalBackend::disable_viewport()
+{
+    check_inited(true);
+
+    if (_viewport_active && _target.id != 0)
+    {
+        UnloadRenderTexture(_target);
+        _target.id = 0;
+    }
+    _viewport_active = false;
+}
+
 void GraphicalBackend::clear_window(const Color& color)
 {
     check_inited(true);
 
-    BeginDrawing();
-    ClearBackground(color);
+    if (_viewport_active && _target.id != 0)
+    {
+        BeginTextureMode(_target);
+        ClearBackground(color);
+    }
+    else
+    {
+        BeginDrawing();
+        ClearBackground(color);
+    }
+
+    last_clear_color = color;
 }
 
-void GraphicalBackend::present_window()
+void GraphicalBackend::present_window() const
 {
-    check_inited(true);
+    if (_viewport_active && _target.id != 0)
+    {
+        EndTextureMode();
+
+        BeginDrawing();
+        ClearBackground(last_clear_color);
+
+        Rectangle source = { 0.0f, 0.0f, static_cast<float>(_viewport_width), - static_cast<float>(_viewport_height) };
+        Rectangle dest = { 0.0f, 0.0f, static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight()) };
+        Vector2 origin = { 0.0f, 0.0f };
+
+        DrawTexturePro(_target.texture, source, dest, origin, 0.0f, WHITE);
+    }
 
     EndDrawing();
 }
@@ -133,5 +192,16 @@ bool GraphicalBackend::key_pressed(uint16_t key)
     check_inited(true);
 
     return IsKeyPressed(key);
+}
+
+Vector2 GraphicalBackend::screen_to_viewport(const Vector2& screenPos) const
+{
+    if (!_viewport_active || _target.id == 0)
+        return screenPos;
+
+    float sx = static_cast<float>(GetScreenWidth())  / static_cast<float>(_viewport_width);
+    float sy = static_cast<float>(GetScreenHeight()) / static_cast<float>(_viewport_height);
+
+    return { screenPos.x / sx, screenPos.y / sy };
 }
 

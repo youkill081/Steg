@@ -299,6 +299,19 @@ void instr_WINDOW_CLOSE(Runtime& runtime, InstructionView view)
     runtime.graphical_backend.close_window();
 }
 
+void instr_WINDOW_SET_VIEWPORT_SIZE(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.set_viewport_size(
+        runtime.registries.read(view.r1()),
+        runtime.registries.read(view.r2())
+    );
+}
+
+void instr_WINDOW_DISABLE_VIEWPORT(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.disable_viewport();
+}
+
 void instr_WINDOW_POOL(Runtime& runtime, InstructionView view)
 {
     runtime.graphical_backend.poll_events();

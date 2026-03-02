@@ -105,6 +105,8 @@ void instr_CALL(Runtime &runtime, InstructionView view);
 void instr_RET(Runtime &runtime, InstructionView view);
 void instr_WINDOW_CREATE(Runtime &runtime, InstructionView view);
 void instr_WINDOW_CLOSE(Runtime &runtime, InstructionView view);
+void instr_WINDOW_SET_VIEWPORT_SIZE(Runtime &runtime, InstructionView view);
+void instr_WINDOW_DISABLE_VIEWPORT(Runtime &runtime, InstructionView view);
 void instr_WINDOW_POOL(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SHOULD_CLOSE(Runtime &runtime, InstructionView view);
 void instr_WINDOW_CLEAR(Runtime &runtime, InstructionView view);
@@ -117,7 +119,6 @@ void instr_WINDOW_SET_TEXT_COLOR(Runtime &runtime, InstructionView view);
 void instr_WINDOW_DRAW_TEXT(Runtime &runtime, InstructionView view);
 void instr_WINDOW_DRAW_TEXTURE(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_ICON(Runtime &runtime, InstructionView view);
-void instr_FILE_OPEN(Runtime &runtime, InstructionView view);
 void instr_FILE_OPEN(Runtime &runtime, InstructionView view);
 void instr_FILE_CREATE(Runtime &runtime, InstructionView view);
 void instr_FILE_SAVE(Runtime &runtime, InstructionView view);
@@ -190,6 +191,8 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"RET", NO_REG, NO_DATA, &instr_RET},
     RawInstruction{"WINDOW_CREATE", TWO_REG, ONE_DATA, &instr_WINDOW_CREATE},
     RawInstruction{"WINDOW_CLOSE", NO_REG, NO_DATA, &instr_WINDOW_CLOSE},
+    RawInstruction{"WINDOW_SET_VIEWPORT_SIZE", TWO_REG, NO_DATA, &instr_WINDOW_SET_VIEWPORT_SIZE},
+    RawInstruction{"WINDOW_DISABLE_VIEWPORT", TWO_REG, NO_DATA, &instr_WINDOW_DISABLE_VIEWPORT},
     RawInstruction{"WINDOW_POOL", NO_REG, NO_DATA, &instr_WINDOW_POOL},
     RawInstruction{"WINDOW_SHOULD_CLOSE", ONE_REG, NO_DATA, &instr_WINDOW_SHOULD_CLOSE},
     RawInstruction{"WINDOW_CLEAR", THREE_REG, NO_DATA, &instr_WINDOW_CLEAR},
