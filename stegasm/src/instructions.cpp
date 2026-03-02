@@ -208,13 +208,13 @@ void instr_JNE(Runtime& runtime, InstructionView view)
 
 void instr_JA(Runtime& runtime, InstructionView view)
 {
-    if (not runtime.comparison_flag.greater)
+    if (runtime.comparison_flag.greater)
         runtime.instruction_pointer = view.get_d1(runtime);
 }
 
 void instr_JB(Runtime& runtime, InstructionView view)
 {
-    if (not runtime.comparison_flag.lower)
+    if (runtime.comparison_flag.lower)
         runtime.instruction_pointer = view.get_d1(runtime);
 }
 
