@@ -1,0 +1,41 @@
+section .text
+place_current_block_on_map:
+    CALL init_can_move_loop ; use can_move_loop to place current block on map
+place_current_block_on_map_loop:
+    CALL get_next_block_coords
+
+    CMPA R4, 16 ; Reach end of loop
+    JE ret
+
+    CALL compute_block_position_in_map ; Now R5 = X, R6 = Y
+
+    ; Compute index in map
+
+    PUSH R3 ; Save registries
+    PUSH R4
+    PUSH R7
+
+    MOV R4, R6 ; R4 = Y
+    MULA R4, 10 ; R4 = Y*10
+    ADD R4, R5 ; R4 = X + Y*10
+
+    LOADA R3, map
+    ADD R3, R4 ; R3 = block index in map
+
+    CALL compute_current_block_value_in_map ; set R4 = value in map
+    STORER R4, R3 ; Store 11 at R3 address
+
+    POP R7
+    POP R4
+    POP R3
+
+    JMP place_current_block_on_map_loop
+
+; -----
+
+compute_current_block_value_in_map: ; Save the value in R4
+    LOADA R4, [current_block_type]
+    MULA R4, 10
+    ADDA R4, [current_block_skin] ; R0 = next_block_type*10 + next_block_skin
+
+    RET

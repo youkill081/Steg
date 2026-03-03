@@ -5,6 +5,7 @@ section .import
     "examples/tetris/game/blocks/move_next_to_current.stegasm"
     "examples/tetris/game/blocks/draw_current_block.stegasm"
 
+    "examples/tetris/game/blocks/place_current_block_on_map.stegasm"
     "examples/tetris/game/blocks/move/can_current_move.stegasm"
     "examples/tetris/game/blocks/move/move_current.stegasm"
 

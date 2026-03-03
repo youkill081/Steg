@@ -15,7 +15,7 @@ check_move_down:
 ; -----
 
 check_move_down_key:
-    WINDOW_KEY_PRESSED R1 264
+    WINDOW_KEY_DOWN R1 264
     CMPA R1, 0
     JE ret ; If key is not pressed, return
 
@@ -58,5 +58,6 @@ check_move_down_reset_clock:
 ; -----
 
 emplace_current_block:
+    CALL place_current_block_on_map
     CALL move_next_to_current
     RET
