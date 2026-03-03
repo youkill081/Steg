@@ -1,10 +1,13 @@
 section .data
-    move_down_clock "."
+    move_down_clock     "."
+    move_down_key_clock "."
 
 section .text
 init_move_down:
     CLOCK_CREATE R0
-    STOREA R0 move_down_clock
+    STOREA R0, move_down_clock
+    CLOCK_CREATE R0
+    STOREA R0, move_down_key_clock
     RET
 
 check_move_down:
@@ -15,44 +18,48 @@ check_move_down:
 ; -----
 
 check_move_down_key:
-    WINDOW_KEY_DOWN R1 264
+    WINDOW_KEY_DOWN R1, 264
     CMPA R1, 0
-    JE ret ; If key is not pressed, return
+    JE check_move_down_key_end ; If key is not pressed, return
 
-    CALL check_move_down_reset_clock
+    LOADA R1, [move_down_key_clock]
+    CLOCK_GET_ELAPSED_MS R2, R1
+    CMPA R2, 75
+    JB check_move_down_key_end ; if < 75ms passed, end
 
-    CALL can_current_move_down
-    CMPA R0, 0 ; If can't move down
-    JE emplace_current_block ; Emplace the block in the map
-    CALL move_current_down ; Move the block down
+    LOADA R1, [move_down_key_clock]
+    CLOCK_RESET R1
+
+    CALL try_move_down
+
+check_move_down_key_end:
     RET
 
 ; -----
 
 check_move_down_clock:
     LOADA R1, [move_down_clock]
-
-    CLOCK_GET_ELAPSED_MS R2 R1
+    CLOCK_GET_ELAPSED_MS R2, R1
     CMPA R2, 500
-    JB check_move_down_clock_end ; if R2 < 500ms passed, end
+    JB check_move_down_clock_end ; if < 500ms passed, end
 
-    CALL check_move_down_reset_clock ; reset clock
+    LOADA R1, [move_down_clock]
+    CLOCK_RESET R1
 
-    CALL can_current_move_down
-    CMPA R0, 0 ; If can't move down
-    JE emplace_current_block ; Emplace the block in the map
-
-    CALL move_current_down ; Move the block down
-    RET
+    CALL try_move_down
 
 check_move_down_clock_end:
     RET
 
 ; -----
 
-check_move_down_reset_clock:
-    LOADA R1, [move_down_clock]
-    CLOCK_RESET R1
+; Shared: attempt to move current block down, or emplace it if it can't move
+try_move_down:
+    CALL can_current_move_down
+    CMPA R0, 0
+    JE emplace_current_block ; if can't move down, emplace it
+
+    CALL move_current_down ; Move down
     RET
 
 ; -----
