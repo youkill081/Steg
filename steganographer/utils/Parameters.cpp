@@ -49,10 +49,11 @@ std::vector<std::string> Parameters::parse_parameters(int ac, char** av)
 
 std::string Parameters::parse_image_path(int ac, char** av)
 {
+    if (ac == 2)
+        return std::string{av[1]};
     if (mode == DECODE)
         return std::string{av[2]};
-    else
-        return std::string{av[ac-2]};
+    return std::string{av[ac-2]};
 }
 
 std::string Parameters::parse_output_path(int ac, char** av)
@@ -62,8 +63,8 @@ std::string Parameters::parse_output_path(int ac, char** av)
 
 Parameters::Parameters(int ac, char** av)
 {
-    if (ac < 3) display_help();
-    mode = parse_mode(av[1]);
+    if (ac <= 1) display_help();
+    mode = ac == 2 ? DECODE : parse_mode(av[1]);
     image_path = parse_image_path(ac, av);
 
     if (mode == DECODE)
