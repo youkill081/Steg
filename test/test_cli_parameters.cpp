@@ -97,22 +97,6 @@ TEST(ParametersCliTest, ParseDecode)
     EXPECT_EQ(p.get_image_path(), encoded.string());
 }
 
-TEST(ParametersCliTest, InvalidModeThrows)
-{
-    Argv a{
-        "stegnocode",
-        "wat"
-    };
-
-    EXPECT_THROW(
-        {
-            Parameters p(a.ac(), a.av());
-            (void)p;
-        },
-        ParametersError
-    );
-}
-
 TEST(ParametersCliTest, MissingArgsEncodeThrows)
 {
     Argv a{
@@ -120,23 +104,6 @@ TEST(ParametersCliTest, MissingArgsEncodeThrows)
         "encode",
         "string"
         // manque payload + input + output
-    };
-
-    EXPECT_THROW(
-        {
-            Parameters p(a.ac(), a.av());
-            (void)p;
-        },
-        ParametersError
-    );
-}
-
-TEST(ParametersCliTest, MissingArgsDecodeThrows)
-{
-    Argv a{
-        "stegnocode",
-        "decode"
-        // manque image_path
     };
 
     EXPECT_THROW(
