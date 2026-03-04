@@ -22,6 +22,8 @@ Le projet est composé de deux éléments principaux :
       * [Décoder de la donnée (decode) :](#décoder-de-la-donnée-decode-)
     * [**Stegasm** (Compilateur et Interpréteur)](#stegasm-compilateur-et-interpréteur)
   * [Compilation](#compilation)
+  * [Exemples](#exemples)
+    * [Exécuter le Tetris depuis l'image](#exécuter-le-tetris-depuis-limage)
   * [Documentation](#documentation)
   * [Tests](#tests)
 <!-- TOC -->
@@ -110,6 +112,21 @@ Compilation du projet :
   cmake ..
   make
 ```
+
+## Exemples
+
+Pour illustrer concrètement les capacités de la machine virtuelle et du moteur stéganographique, un clone de tetris est présent dans le dossier `examples/tetris`.  
+
+### Exécuter le Tetris depuis l'image
+
+Une image déjà compliquer est accessible dans le dossier `examples/tetris/tetris.png`.    
+Pour lancer le programme, il suffit de lancer le binaire Stegnocode :    
+```shell
+    ./stegnocode examples/tetris/tetris.png
+```
+
+Vous pouvez également le lancer ou le compiler dans une image à partir du fichier `examples/tetris/tetris.stegasm`  
+Assurez-vous de faire les commandes ./stegasm ou ./stegnocode directement depuis la racine du repo. Sinon les import seront invalides dans les fichiers .stegasm.
 
 ## Documentation
 
