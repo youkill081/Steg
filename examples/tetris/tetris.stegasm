@@ -18,7 +18,7 @@ section .import
     "examples/tetris/game/blocks/block_definition.stegasm"
 
 section .files
-    icon "cmake-build-debug/texture.png"
+    icon "examples/tetris/ressources/icon.png"
     tetrisNesFont "examples/tetris/ressources/tetris-nes-front.ttf"
     backgroundImage "examples/tetris/ressources/background.png"
 
