@@ -7,6 +7,8 @@ Le projet est composé de deux éléments principaux :
  - Stegasm : Un langage de programmation complet (inspiré de l'assembleur, avec des fonctionnalités de haut niveau comme la création de fenêtres), conçu pour être compilé en ByteCode.
  - Stegnocode : L'outil de stéganographie sur-mesure permettant d'injecter et d'exécuter ce ByteCode (ou de cacher des textes/fichiers) au sein des pixels d'une image, en altérant celle-ci le moins possible.
 
+![](doc/demo.gif)
+
 ## table des matières
 
 <!-- TOC -->
