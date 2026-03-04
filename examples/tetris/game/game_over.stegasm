@@ -2,13 +2,14 @@ section .data
     game_over_string "Game Over !"
     game_over_string2 "Press 'R' to restart"
 
+    hide_game_hover_text 0
+
 section .text
 ; Set the game over
 set_game_over:
     LOADA R1, 2 ; game over flag
     STOREA R1, game_state
 
-    DISPLAY_N R1
     RET
 
 handle_game_over:
@@ -17,6 +18,11 @@ handle_game_over:
     JNE game_over_end ; Return if game is not over
 
     CALL handle_restart_key
+    CALL handle_tab_key
+
+    LOADA R1 [hide_game_hover_text]
+    CMPA R1, 1 ; Skip next part if menu is hidden
+    JE game_over_end
 
     ; Draw game over main string
 
@@ -47,6 +53,21 @@ handle_game_over:
 game_over_end:
     RET
 
+;-----
+
+handle_tab_key:
+    WINDOW_KEY_PRESSED R1 258 ; 258 = KEY_TAB
+    CMPA R1, 1
+    JNE game_over_end ; Return if key is not pressed
+
+    LOADA R1 [hide_game_hover_text]
+    ADDA R1 1
+    MODA R1 2
+    STOREA R1, hide_game_hover_text
+    RET
+
+; -----
+
 handle_restart_key:
     WINDOW_KEY_PRESSED R1 82 ; 82 = KEY_R
     CMPA R1, 1
@@ -57,6 +78,7 @@ handle_restart_key:
     STOREA R1, level ; level = 0
     STOREA R1, broken_lines ; broken_lines = 0
     STOREA R1, game_state ; game_state = 0
+    STOREA R1, hide_game_hover_text ; hide_game_hover_text = 0
 
     CALL reset_map
     CALL reset_stats_values
