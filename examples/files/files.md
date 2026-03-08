@@ -1,6 +1,6 @@
 # Examples Fichiers
 
-Plusieurs exemples ici sont présents pour montrer la capacité de gestion
+Plusieurs exemples ici sont présents pour montrer la capacité de gestion des fichiers
 
 ## Readfile
 
