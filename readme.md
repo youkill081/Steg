@@ -131,6 +131,12 @@ Pour lancer le programme, il suffit de lancer le binaire Stegnocode :
 Vous pouvez également le lancer ou le compiler dans une image à partir du fichier `examples/tetris/tetris.stegasm`  
 Assurez-vous de faire les commandes ./stegasm ou ./stegnocode directement depuis la racine du repo. Sinon les import seront invalides dans les fichiers .stegasm.
 
+### Autres exemples
+
+Deux autres exemples sont disponibles :  
+- Suite de fibonacci -> [ici](/examples/fibonacci/fibonacci.md) 
+- Création et lecture de fichier -> [ici](/examples/files/files.md) 
+
 ## Documentation
 
 Une documentation du fonctionnement en interne des outils est disponible dans ces différents fichiers :  
