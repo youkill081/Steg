@@ -100,6 +100,7 @@ Il utilise le même environement de compilation et d'éxécution que Stegnocode,
 ## Compilation
 
 Le projet utilise CMake comme système de build standard.  
+La compilation a été tester sur Windows et Linux (Fedora), CMake 4.0 est nécéssaire.    
 Puisque le projet utilise des dépendances externes, il vous devez récupérer les submodules avant de lancer la compilation :  
 
 ```shell
