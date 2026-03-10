@@ -85,13 +85,14 @@ void Loader::init_instructions(ByteBuffer& buffer, Runtime& runtime)
         auto current_instruction = InstructionView(static_cast<uint64_t>(instruction_beg) << 32);
         const auto &current_instruction_desc = get_instruction_desc(current_instruction.opcode());
 
-        if (current_instruction_desc.regCount > 2 || current_instruction_desc.dataCount > 1)
+        if (current_instruction.data_type() != NO_DATA)
         {
             current_instruction.raw_data |= static_cast<uint64_t>(buffer.read_uint32());
         }
         runtime.instructions.push_back({
             .view = current_instruction,
-            .desc = current_instruction_desc
+            .desc = current_instruction_desc,
+            .handler = current_instruction_desc.handlers[current_instruction.handler_number()]
         });
     }
 }

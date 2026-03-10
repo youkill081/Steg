@@ -50,24 +50,23 @@ struct InstructionView
 {
     uint64_t raw_data;
 
-    // opcode
     [[nodiscard]] uint8_t opcode() const { return static_cast<uint8_t>((raw_data >> 56) & 0xFF); }
 
-    // Registries
-    [[nodiscard]] RegNames r1() const { return static_cast<RegNames>((raw_data >> 53) & 0x7); }
-    [[nodiscard]] RegNames r2() const { return static_cast<RegNames>((raw_data >> 48) & 0x7); }
-    [[nodiscard]] RegNames r3() const { return static_cast<RegNames>((raw_data >> 29) & 0x7); }
-    [[nodiscard]] RegNames r4() const { return static_cast<RegNames>((raw_data >> 26) & 0x7); }
-    [[nodiscard]] RegNames r5() const { return static_cast<RegNames>((raw_data >> 23) & 0x7); }
-    [[nodiscard]] RegNames r6() const { return static_cast<RegNames>((raw_data >> 20) & 0x7); }
-    [[nodiscard]] RegNames r7() const { return static_cast<RegNames>((raw_data >> 17) & 0x7); }
+    [[nodiscard]] uint32_t header() const { return static_cast<uint32_t>((raw_data >> 32) & 0xFFFFFFFF); }
+    [[nodiscard]] uint8_t handler_number() const { return static_cast<uint8_t>((header() >> 22) & 0x03); }
 
-    // Datas
-    [[nodiscard]] bool is_d1_addr() const { return (raw_data >> 52) & 0x1; }
-    [[nodiscard]] bool is_d2_addr() const { return (raw_data >> 51) & 0x1; }
-    [[nodiscard]] uint16_t get_d1(const Runtime&, bool force_as_address=false) const;
-    [[nodiscard]] uint16_t get_d2(const Runtime&, bool force_as_address=false) const;
+    [[nodiscard]] bool is_r1_addr() const { return (header() >> 21) & 0x1; }
+    [[nodiscard]] RegNames r1() const { return static_cast<RegNames>((header() >> 16) & 0x1F); }
 
+    [[nodiscard]] bool is_r2_addr() const { return (header() >> 15) & 0x1; }
+    [[nodiscard]] RegNames r2() const { return static_cast<RegNames>((header() >> 10) & 0x1F); }
+
+    [[nodiscard]] bool is_r3_addr() const { return (header() >> 9) & 0x1; }
+    [[nodiscard]] RegNames r3() const { return static_cast<RegNames>((header() >> 4) & 0x1F); }
+
+    [[nodiscard]] uint8_t data_type() const { return static_cast<uint8_t>(header() & 0x3); }
+    [[nodiscard]] uint32_t get_raw_data() const { return static_cast<uint32_t>(raw_data & 0xFFFFFFFF); }
+    [[nodiscard]] uint32_t get_data(const Runtime& rt) const;
 };
 
 using InstructionFct = void(*)(Runtime &, InstructionView raw_data);

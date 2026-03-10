@@ -25,6 +25,7 @@ using LoadedInstruction = struct LoadedInstruction
 {
     InstructionView view;
     const InstructionDesc &desc;
+    const InstructionHandler &handler;
 };
 
 class Runtime

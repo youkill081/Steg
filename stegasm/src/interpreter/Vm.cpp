@@ -25,6 +25,6 @@ void Vm::run(ByteBuffer& buffer)
 
         const auto &current_instr = runtime.instructions[runtime.instruction_pointer];
         runtime.instruction_pointer++;
-        current_instr.desc.fn(runtime, current_instr.view);
+        current_instr.handler.fn(runtime, current_instr.view);
     }
 }
