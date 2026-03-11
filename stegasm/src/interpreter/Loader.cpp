@@ -7,7 +7,22 @@
 #include <iostream>
 
 #include "exceptions.h"
+#include "assembler/utils/VariableSet.h"
 #include "runtime/files/Subtexture.h"
+
+uint8_t get_variable_items_size_in_byte(assembler::VariableTypeFlag variable_type)
+{
+    switch (variable_type)
+    {
+        case assembler::VARIABLE_UINT8:
+            return 1;
+        case assembler::VARIABLE_UINT16:
+            return 2;
+        case assembler::VARIABLE_UINT32:
+            return 4;
+    }
+    throw LoaderError("Unknown variable type");
+}
 
 void Loader::init_variables(ByteBuffer& buffer, Runtime& runtime)
 {
@@ -15,13 +30,29 @@ void Loader::init_variables(ByteBuffer& buffer, Runtime& runtime)
 
     for (int i = 0; i < number_of_variable; i++)
     {
-        const uint16_t address = buffer.read_uint16();
+        const uint8_t flag = buffer.read_uint8();
+        const uint32_t address = buffer.read_uint32();
         const uint16_t size = buffer.read_uint16();
 
-        runtime.memory.allocate_at(address, size); // Allocate memory
+        uint8_t variable_type = (flag & 0b11000000);
+        uint8_t item_size = get_variable_items_size_in_byte(static_cast<assembler::VariableTypeFlag>(variable_type));
+
+        runtime.memory.allocate_at(address, size * item_size);
 
         for (int y = 0; y < size; y++)
-            runtime.memory.write(address + y, buffer.read_uint16());
+        {
+            uint32_t target_addr = address + (y * item_size);
+
+            if (item_size == 1) {
+                runtime.memory.write_uint8(target_addr, buffer.read_uint8());
+            }
+            else if (item_size == 2) {
+                runtime.memory.write_uint16(target_addr, buffer.read_uint16());
+            }
+            else if (item_size == 4) {
+                runtime.memory.write_uint32(target_addr, buffer.read_uint32());
+            }
+        }
     }
 }
 

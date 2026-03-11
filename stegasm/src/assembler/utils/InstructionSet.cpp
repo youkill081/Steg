@@ -42,9 +42,8 @@ bool InstructionSet::token_is_in_brackets(const std::string &token)
 
 uint16_t InstructionSet::parse_data_value(std::string token, const SymbolSet &symbols)
 {
-
-    if (token_is_uint16_value(token))
-        return token_to_uint16(token);
+    if (token_is_uint32_value(token))
+        return token_to_uint32(token);
 
     if (!symbols.contains(token))
         Linter::error("Unknown symbol \"" + token + "\"");
@@ -91,11 +90,18 @@ InstructionParameters InstructionSet::parse_data_and_registries_from_line(const 
 
 HandlerNumber InstructionSet::get_handler_number(const InstructionDesc &desc, const InstructionParameters &data_registries)
 {
+    auto reg_matches = [](RegTypes handler_type, RegTypes actual_type) -> bool
+    {
+        if (handler_type == REG_BOTH)
+            return actual_type == REG || actual_type == REG_ADDRESS;
+        return handler_type == actual_type;
+    };
+
     for (std::size_t i = 0; i < desc.handler_count; i++)
     {
-        if (desc.handlers[i].first_reg_type == data_registries.registries[0].type &&
-            desc.handlers[i].second_reg_type == data_registries.registries[1].type &&
-            desc.handlers[i].third_reg_type == data_registries.registries[2].type &&
+        if (reg_matches(desc.handlers[i].first_reg_type,  data_registries.registries[0].type) &&
+            reg_matches(desc.handlers[i].second_reg_type, data_registries.registries[1].type) &&
+            reg_matches(desc.handlers[i].third_reg_type,  data_registries.registries[2].type) &&
             desc.handlers[i].data_type == data_registries.data_value.data_count
         )
         {

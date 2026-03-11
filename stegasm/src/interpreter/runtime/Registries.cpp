@@ -13,23 +13,23 @@ void Registries::check_registry_valid(const uint16_t registry_number)
         throw RegistryError("Invalid registry number " + std::to_string(registry_number));
 }
 
-void Registries::write(const RegNames registry_name, const uint16_t value)
+void Registries::write(const RegNames registry_name, const uint32_t value)
 {
     this->registries[static_cast<uint16_t>(registry_name)] = value;
 }
 
-void Registries::write(const uint16_t registry_number, const uint16_t value)
+void Registries::write(const uint16_t registry_number, const uint32_t value)
 {
     check_registry_valid(registry_number);
     registries[registry_number] = value;
 }
 
-uint16_t Registries::read(const RegNames registry_name) const
+uint32_t Registries::read(const RegNames registry_name) const
 {
     return registries[static_cast<uint16_t>(registry_name)];
 }
 
-uint16_t Registries::read(uint16_t registry_number) const
+uint32_t Registries::read(uint16_t registry_number) const
 {
     check_registry_valid(registry_number);
     return registries[registry_number];

@@ -4,11 +4,10 @@
 
 #pragma once
 
-#define MAX_VALUE_IN_UINT16 65535
-
-#include <array>
 #include <vector>
 #include <cstdint>
+
+#define MAX_VALUE_IN_UINT32 4294967295
 
 enum BlockType
 {
@@ -18,45 +17,61 @@ enum BlockType
 
 struct MemoryBlock
 {
-    uint16_t start;
-    uint16_t size;
+    uint32_t start;
+    uint32_t size;
     BlockType free;
+    std::vector<uint8_t> data;
+
+    explicit MemoryBlock(uint32_t s = 0, uint32_t sz = 0, BlockType f = FREE)
+        : start(s), size(sz), free(f)
+    {
+        if (f == USED && sz > 0)
+            data.resize(sz);
+    }
 };
 
 class MemoryBlockSet
 {
 private:
-    std::vector<MemoryBlock> blocks = {{0, MAX_VALUE_IN_UINT16, FREE}};
+    std::vector<MemoryBlock> blocks;
 
     void merge_all_free_block();
-    [[nodiscard]] uint16_t find_address_block_index(uint16_t address) const;
-    [[nodiscard]] uint16_t find_free_block_index(uint16_t size) const;
+    [[nodiscard]] uint32_t find_address_block_index(uint32_t address) const;
+    [[nodiscard]] uint32_t find_free_block_index(uint32_t size) const;
 public:
+    MemoryBlockSet();
+
     [[nodiscard]] const std::vector<MemoryBlock>& get_blocks() const { return blocks; }
 
-    [[nodiscard]] bool is_address_free(uint16_t address) const;
-    [[nodiscard]] bool is_address_used(uint16_t address) const;
+    [[nodiscard]] bool is_address_free(uint32_t address) const;
+    [[nodiscard]] bool is_address_used(uint32_t address) const;
 
-    uint16_t allocate(uint16_t size);
-    void allocate_at(uint16_t address, uint16_t size);
+    uint32_t allocate(uint32_t size);
+    void allocate_at(uint32_t address, uint32_t size);
 
-    void free(uint16_t address);
+    void free(uint32_t address);
+
+    MemoryBlock& get_block_for_address(uint32_t address);
+    const MemoryBlock& get_block_for_address(uint32_t address) const;
 };
 
 class Memory
 {
 private:
-    std::array<uint16_t, MAX_VALUE_IN_UINT16> _memory{};
     MemoryBlockSet _blocks;
 public:
     Memory() = default;
 
-    uint16_t read(uint16_t address) const;
-    void write(uint16_t address, uint16_t value);
+    [[nodiscard]] uint8_t read_uint8(uint32_t address) const;
+    [[nodiscard]] uint16_t read_uint16(uint32_t address) const;
+    [[nodiscard]] uint32_t read_uint32(uint32_t address) const;
+    void write_uint8(uint32_t address, uint8_t value);
+    void write_uint16(uint32_t address, uint16_t value);
+    void write_uint32(uint32_t address, uint32_t value);
 
-    uint16_t allocate(uint16_t size);
-    void allocate_at(uint16_t address, uint16_t size);
-    void free(uint16_t address);
+    uint32_t allocate(uint32_t size);
+    void allocate_at(uint32_t address, uint32_t size);
+    void free(uint32_t address);
 
     void display() const;
 };

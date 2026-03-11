@@ -169,11 +169,23 @@ ByteBuffer Assembler::compiled_file_to_bytebuffer(CompiledFile &compiledFile, Li
         buffer.write_uint32(compiledFile.variables.size());
         for (const auto &variable : compiledFile.variables)
         {
-            buffer.write_uint16(compiledFile.variables.get_variable_address(variable));
+            buffer.write_uint8(variable.flags);
+            buffer.write_uint32(compiledFile.variables.get_variable_address(variable));
             buffer.write_uint16(variable.value.size());
             for (const auto &data : variable.value)
             {
-                buffer.write_uint16(data);
+                switch (variable.type)
+                {
+                    case VARIABLE_UINT8:
+                        buffer.write_uint8(std::get<uint8_t>(data));
+                        break;
+                    case VARIABLE_UINT16:
+                        buffer.write_uint16(std::get<uint16_t>(data));
+                        break;
+                    case VARIABLE_UINT32:
+                        buffer.write_uint32(std::get<uint32_t>(data));
+                        break;
+                }
             }
         }
 

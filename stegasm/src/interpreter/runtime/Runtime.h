@@ -19,6 +19,9 @@ using ComparisonFlag = struct ComparisonFlag
     bool equal = false;
     bool greater = false;
     bool lower = false;
+
+    bool signed_greater = false;
+    bool signed_lower = false;
 };
 
 using LoadedInstruction = struct LoadedInstruction

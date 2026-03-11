@@ -48,18 +48,18 @@ namespace assembler
         return {};
     }
 
-    bool token_is_uint16_value(const std::string& token)
+    bool token_is_uint32_value(const std::string& token)
     {
-        uint16_t result;
+        uint32_t result;
         auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
         return ec == std::errc();
     }
 
-    uint16_t token_to_uint16(const std::string& token)
+    uint16_t token_to_uint32(const std::string& token)
     {
-        if (token_is_uint16_value(token))
+        if (token_is_uint32_value(token))
         {
-            uint16_t result;
+            uint32_t result;
             std::from_chars(token.data(), token.data() + token.size(), result);
             return result;
         }

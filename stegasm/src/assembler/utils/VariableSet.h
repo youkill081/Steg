@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <variant>
 #include <cstdint>
 #include <string>
 #include <set>
@@ -16,10 +17,21 @@ namespace assembler
 {
     struct ParsedLine;
 
+    enum VariableTypeFlag {
+        VARIABLE_UINT8 = 0b01000000, // DB
+        VARIABLE_UINT16 = 0b10000000, // DW
+        VARIABLE_UINT32 = 0b11000000 // DD
+    };
+
+    using VariableType = std::variant<uint8_t, uint16_t, uint32_t>;
     struct Variable
     {
         std::string name;
-        std::vector<uint16_t> value;
+
+        VariableTypeFlag type = VARIABLE_UINT8;
+        std::vector<VariableType> value;
+
+        uint8_t flags = 0;
 
         bool operator<(const Variable &other) const {
             return name < other.name;
@@ -30,15 +42,15 @@ namespace assembler
     {
         using Base = std::set<Variable>;
     private:
-        std::map<Variable, uint16_t> variables_address;
-        uint16_t current_address = 0;
+        std::map<Variable, uint32_t> variables_address;
+        uint32_t current_address = 0;
 
-        static std::vector<uint16_t> token_to_data(const std::string &token, const std::string &variableName);
+        static VariableTypeFlag get_variable_type(const ParsedLine& line);
         static Variable parsed_line_to_variable(const ParsedLine &line);
     public:
-        void push_variable(const std::string &name, const std::vector<uint16_t> &value);
+        void push_variable(const std::string& name, const std::vector<VariableType>& value, VariableTypeFlag type, uint8_t flags = VARIABLE_UINT8);
         void push_variable(const Variable &new_variable);
-        [[nodiscard]] uint16_t get_variable_address(const Variable &variable) const;
+        [[nodiscard]] uint32_t get_variable_address(const Variable &variable) const;
         [[nodiscard]] const Variable &get_variable_by_name(const std::string &name) const;
         [[nodiscard]] bool contains_variable_by_name(const std::string &name) const;
         void display() const;

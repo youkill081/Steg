@@ -11,37 +11,59 @@
 #include "interpreter/exceptions.h"
 #include "interpreter/runtime/Runtime.h"
 
-uint32_t InstructionView::get_data(const Runtime& rt) const
+uint32_t InstructionView::get_data(const Runtime& rt, uint8_t size) const
 {
     uint32_t val = get_raw_data();
     if (data_type() == 0b10) {
-        return rt.memory.read(val);
+        switch (size) {
+        case 1: return rt.memory.read_uint8(val);
+        case 2: return rt.memory.read_uint16(val);
+        default: return rt.memory.read_uint32(val);
+        }
     }
     return val;
 }
 
-uint32_t InstructionView::get_r1(const Runtime& rt) const
+uint32_t InstructionView::get_r1(const Runtime& rt, uint8_t size) const
 {
-    uint16_t value = rt.registries.read(this->r1());
+    uint32_t value = rt.registries.read(this->r1());
     if (is_r1_addr())
-        return rt.memory.read(value);
+    {
+        switch (size) {
+        case 1: return rt.memory.read_uint8(value);
+        case 2: return rt.memory.read_uint16(value);
+        default: return rt.memory.read_uint32(value);
+        }
+    }
     return value;
 }
 
-uint32_t InstructionView::get_r2(const Runtime& rt) const
+uint32_t InstructionView::get_r2(const Runtime& rt, uint8_t size) const
 {
 
-    uint16_t value = rt.registries.read(this->r2());
+    uint32_t value = rt.registries.read(this->r2());
     if (is_r2_addr())
-        return rt.memory.read(value);
+    {
+        switch (size) {
+        case 1: return rt.memory.read_uint8(value);
+        case 2: return rt.memory.read_uint16(value);
+        default: return rt.memory.read_uint32(value);
+        }
+    }
     return value;
 }
 
-uint32_t InstructionView::get_r3(const Runtime& rt) const
+uint32_t InstructionView::get_r3(const Runtime& rt, uint8_t size) const
 {
-    uint16_t value = rt.registries.read(this->r3());
+    uint32_t value = rt.registries.read(this->r3());
     if (is_r3_addr())
-        return rt.memory.read(value);
+    {
+        switch (size) {
+        case 1: return rt.memory.read_uint8(value);
+        case 2: return rt.memory.read_uint16(value);
+        default: return rt.memory.read_uint32(value);
+        }
+    }
     return value;
 }
 
@@ -55,12 +77,12 @@ void instr_EOF(Runtime& runtime, InstructionView view)
     runtime.is_running = false;
 }
 
-inline void instr_LOADD(Runtime &runtine, InstructionView view)
+inline void instr_LOADD_32(Runtime &runtine, InstructionView view)
 {
     runtine.registries.write(view.r1(), view.get_data(runtine));
 }
 
-inline void instr_LOADR(Runtime &runtine, InstructionView view)
+inline void instr_LOADR_32(Runtime &runtine, InstructionView view)
 {
     runtine.registries.write(
         view.r1(),
@@ -68,19 +90,83 @@ inline void instr_LOADR(Runtime &runtine, InstructionView view)
     );
 }
 
-void instr_STORED(Runtime &runtime, InstructionView view)
+inline void instr_LOADD_16(Runtime &runtime, InstructionView view)
 {
-    runtime.memory.write(
-        view.get_data(runtime),
-        runtime.registries.read(view.r1())
+    runtime.registries.write(
+        view.r1(),
+        view.get_data(runtime, 2) & 0xFFFF
     );
 }
 
-void instr_STORER(Runtime &runtime, InstructionView view)
+inline void instr_LOADR_16(Runtime &runtime, InstructionView view)
 {
-    runtime.memory.write(
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime, 2) & 0xFFFF
+    );
+}
+
+inline void instr_LOADD_8(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_data(runtime, 1) & 0xFF
+    );
+}
+
+inline void instr_LOADR_8(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime, 1) & 0xFF
+    );
+}
+
+void instr_STORED_32(Runtime &runtime, InstructionView view)
+{
+    runtime.memory.write_uint32(
+        view.get_data(runtime),
+        view.get_r1(runtime) & 0xFFFFFFFF
+    );
+}
+
+void instr_STORER_32(Runtime &runtime, InstructionView view)
+{
+    runtime.memory.write_uint32(
         runtime.registries.read(view.r2()),
-        view.get_r1(runtime)
+        view.get_r1(runtime) & 0xFFFFFFFF
+    );
+}
+
+void instr_STORED_16(Runtime &runtime, InstructionView view)
+{
+    runtime.memory.write_uint16(
+        view.get_data(runtime),
+        view.get_r1(runtime, 2) & 0xFFFF
+    );
+}
+
+void instr_STORER_16(Runtime &runtime, InstructionView view)
+{
+    runtime.memory.write_uint16(
+        runtime.registries.read(view.r2()),
+        view.get_r1(runtime, 2) & 0xFFFF
+    );
+}
+
+void instr_STORED_8(Runtime &runtime, InstructionView view)
+{
+    runtime.memory.write_uint8(
+        view.get_data(runtime),
+        view.get_r1(runtime, 1) & 0xFF
+    );
+}
+
+void instr_STORER_8(Runtime &runtime, InstructionView view)
+{
+    runtime.memory.write_uint8(
+        runtime.registries.read(view.r2()),
+        view.get_r1(runtime, 1) & 0xFF
     );
 }
 
@@ -105,7 +191,7 @@ void instr_SUBR(Runtime &runtime, InstructionView view)
 {
     runtime.registries.write(
         view.r1(),
-        runtime.registries.read(view.r1()) - runtime.registries.read(view.r2())
+        view.get_r1(runtime) - view.get_r2(runtime)
     );
 }
 
@@ -113,7 +199,7 @@ void instr_SUBD(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(
         view.r1(),
-        runtime.registries.read(view.r1()) - view.get_data(runtime)
+        view.get_r1(runtime) - view.get_data(runtime)
     );
 }
 
@@ -159,7 +245,7 @@ void instr_MINR(Runtime& runtime, InstructionView view)
         view.r1(),
         std::min(
             runtime.registries.read(view.r1()),
-            static_cast<uint16_t>(view.get_r2(runtime))
+            view.get_r2(runtime)
         )
     );
 }
@@ -170,7 +256,7 @@ void instr_MIND(Runtime& runtime, InstructionView view)
         view.r1(),
         std::min(
             runtime.registries.read(view.r1()),
-            static_cast<uint16_t>(view.get_data(runtime))
+            view.get_data(runtime)
         )
     );
 }
@@ -181,7 +267,7 @@ void instr_MAXR(Runtime& runtime, InstructionView view)
         view.r1(),
         std::max(
             runtime.registries.read(view.r1()),
-            static_cast<uint16_t>(view.get_r2(runtime))
+            view.get_r2(runtime)
         )
     );
 }
@@ -192,7 +278,7 @@ void instr_MAXD(Runtime& runtime, InstructionView view)
         view.r1(),
         std::max(
             runtime.registries.read(view.r1()),
-            static_cast<uint16_t>(view.get_data(runtime))
+            view.get_data(runtime)
         )
     );
 }
@@ -222,18 +308,21 @@ void instr_JMP(Runtime &runtime, InstructionView view)
     runtime.instruction_pointer = view.get_data(runtime);
 }
 
-void compute_CMP(Runtime &runtime, uint16_t first_value, uint16_t second_value)
+void compute_CMP(Runtime &runtime, uint32_t first_value, uint32_t second_value)
 {
     runtime.comparison_flag.equal = first_value == second_value;
     runtime.comparison_flag.greater = first_value > second_value;
     runtime.comparison_flag.lower = first_value < second_value;
+
+    runtime.comparison_flag.signed_greater = static_cast<int32_t>(first_value) > static_cast<int32_t>(second_value);
+    runtime.comparison_flag.signed_lower = static_cast<int32_t>(first_value) < static_cast<int32_t>(second_value);
 }
 
 void instr_CMPR(Runtime &runtime, InstructionView view)
 {
     compute_CMP(
         runtime,
-        runtime.registries.read(view.r1()),
+        view.get_r1(runtime),
         view.get_r2(runtime)
     );
 }
@@ -265,9 +354,21 @@ void instr_JA(Runtime& runtime, InstructionView view)
         runtime.instruction_pointer = view.get_data(runtime);
 }
 
+void instr_JSA(Runtime& runtime, InstructionView view)
+{
+    if (runtime.comparison_flag.signed_greater)
+        runtime.instruction_pointer = view.get_data(runtime);
+}
+
 void instr_JB(Runtime& runtime, InstructionView view)
 {
     if (runtime.comparison_flag.lower)
+        runtime.instruction_pointer = view.get_data(runtime);
+}
+
+void instr_JSB(Runtime& runtime, InstructionView view)
+{
+    if (runtime.comparison_flag.signed_lower)
         runtime.instruction_pointer = view.get_data(runtime);
 }
 

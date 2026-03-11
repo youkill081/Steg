@@ -13,13 +13,13 @@ class Registries
 private:
     static void check_registry_valid(uint16_t registry_number);
 
-    std::array<uint16_t, number_of_registries> registries{};
+    std::array<uint32_t, number_of_registries> registries{};
 public:
-    void write(RegNames registry_name, uint16_t value);
-    void write(uint16_t registry_number, uint16_t value);
+    void write(uint16_t registry_number, uint32_t value);
+    void write(RegNames registry_name, uint32_t value);
 
-    [[nodiscard]] uint16_t read(RegNames registry_name) const;
-    [[nodiscard]] uint16_t read(uint16_t registry_number) const;
+    [[nodiscard]] uint32_t read(RegNames registry_name) const;
+    [[nodiscard]] uint32_t read(uint16_t registry_number) const;
 
     void display() const;
 };

@@ -30,10 +30,20 @@ Chaqu'une d'entre elles pourras possédé plusieurs mot en mémoire ce terminant
 -> uint32 nombre de variables (appelé X)  
 -> X fois struct variable
 
-struct variable :   
--> uint16 adresse de la variable  
+struct variable :
+-> uint8 variable_flag
+-> uint32 adresse de la variable  
 -> uint16 nombre de mots dans la variable (appelé M)  
--> M fois uint16 ; valeurs initiales de chaque mot dans la variable
+-> M fois <taille_variable> ; valeurs initiales de chaque mot dans la variable
+
+Avec variable_flag :
+````c++
+enum VariableFlag {
+    DATA_UINT8 = 0b01000000, // DB
+    DATA_UINT16 = 0b10000000, // DW
+    DATA_UINT32 = 0b11000000 // DD
+};
+````
 
 #### Les fichiers
 

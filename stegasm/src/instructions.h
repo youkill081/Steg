@@ -37,7 +37,8 @@ enum RegTypes
 {
     REG_NO,
     REG,
-    REG_ADDRESS
+    REG_ADDRESS,
+    REG_BOTH
 };
 
 enum DataCount
@@ -57,28 +58,36 @@ struct InstructionView
 
     [[nodiscard]] bool is_r1_addr() const { return (header() >> 21) & 0x1; }
     [[nodiscard]] RegNames r1() const { return static_cast<RegNames>((header() >> 16) & 0x1F); }
-    [[nodiscard]] uint32_t get_r1(const Runtime& rt) const;
+    [[nodiscard]] uint32_t get_r1(const Runtime& rt, uint8_t size = 4) const;
 
     [[nodiscard]] bool is_r2_addr() const { return (header() >> 15) & 0x1; }
     [[nodiscard]] RegNames r2() const { return static_cast<RegNames>((header() >> 10) & 0x1F); }
-    [[nodiscard]] uint32_t get_r2(const Runtime& rt) const;
+    [[nodiscard]] uint32_t get_r2(const Runtime& rt, uint8_t size = 4) const;
 
     [[nodiscard]] bool is_r3_addr() const { return (header() >> 9) & 0x1; }
     [[nodiscard]] RegNames r3() const { return static_cast<RegNames>((header() >> 4) & 0x1F); }
-    [[nodiscard]] uint32_t get_r3(const Runtime& rt) const;
+    [[nodiscard]] uint32_t get_r3(const Runtime& rt, uint8_t size = 4) const;
 
     [[nodiscard]] uint8_t data_type() const { return static_cast<uint8_t>(header() & 0x3); }
     [[nodiscard]] uint32_t get_raw_data() const { return static_cast<uint32_t>(raw_data & 0xFFFFFFFF); }
-    [[nodiscard]] uint32_t get_data(const Runtime& rt) const;
+    [[nodiscard]] uint32_t get_data(const Runtime& rt, uint8_t size = 4) const;
 };
 
 using InstructionFct = void(*)(Runtime &, InstructionView raw_data);
 
 void instr_EOF(Runtime &runtime, InstructionView view);
-void instr_LOADD(Runtime &runtime, InstructionView view);
-void instr_LOADR(Runtime &runtime, InstructionView view);
-void instr_STORED(Runtime &runtime, InstructionView view);
-void instr_STORER(Runtime &runtime, InstructionView view);
+void instr_LOADD_32(Runtime &runtime, InstructionView view);
+void instr_LOADR_32(Runtime &runtime, InstructionView view);
+void instr_LOADD_16(Runtime &runtime, InstructionView view);
+void instr_LOADR_16(Runtime &runtime, InstructionView view);
+void instr_LOADD_8(Runtime &runtime, InstructionView view);
+void instr_LOADR_8(Runtime &runtime, InstructionView view);
+void instr_STORED_32(Runtime &runtime, InstructionView view);
+void instr_STORER_32(Runtime &runtime, InstructionView view);
+void instr_STORED_16(Runtime &runtime, InstructionView view);
+void instr_STORER_16(Runtime &runtime, InstructionView view);
+void instr_STORED_8(Runtime &runtime, InstructionView view);
+void instr_STORER_8(Runtime &runtime, InstructionView view);
 void instr_ADDR(Runtime &runtime, InstructionView view);
 void instr_ADDD(Runtime &runtime, InstructionView view);
 void instr_SUBR(Runtime &runtime, InstructionView view);
@@ -99,7 +108,9 @@ void instr_CMPD(Runtime &runtime, InstructionView view);
 void instr_JE(Runtime &runtime, InstructionView view);
 void instr_JNE(Runtime &runtime, InstructionView view);
 void instr_JA(Runtime &runtime, InstructionView view);
+void instr_JSA(Runtime &runtime, InstructionView view);
 void instr_JB(Runtime &runtime, InstructionView view);
+void instr_JSB(Runtime &runtime, InstructionView view);
 void instr_DISPLAY_N(Runtime &runtime, InstructionView view);
 void instr_DISPLAY_C(Runtime &runtime, InstructionView view);
 void instr_DISPLAY_B(Runtime &runtime, InstructionView view);
@@ -208,58 +219,61 @@ struct InstructionDesc
 constexpr std::array rawInstructionSet =
 {
     RawInstruction{"EOF", false, InstructionHandler(&instr_EOF)},
-    RawInstruction{"LOAD", true,
-        InstructionHandler(&instr_LOADD, REG, ONE_DATA),
-        InstructionHandler(&instr_LOADR, REG, REG_ADDRESS),
-        InstructionHandler(&instr_LOADR, REG, REG)},
-    RawInstruction{"STOREA", true, InstructionHandler(&instr_STORED, REG, ONE_DATA)},
-    RawInstruction{"STORER", true, InstructionHandler(&instr_STORER, REG, REG)},
+    RawInstruction{"LOAD_32", true,
+        InstructionHandler(&instr_LOADD_32, REG, ONE_DATA),
+        InstructionHandler(&instr_LOADR_32, REG, REG_BOTH)},
+    RawInstruction{"LOAD_16", true,
+        InstructionHandler(&instr_LOADD_16, REG, ONE_DATA),
+        InstructionHandler(&instr_LOADR_16, REG, REG_BOTH)},
+    RawInstruction{"LOAD_8", true,
+        InstructionHandler(&instr_LOADD_8, REG, ONE_DATA),
+        InstructionHandler(&instr_LOADR_8, REG, REG_BOTH)},
+    RawInstruction{"STORE_32", true,
+        InstructionHandler(&instr_STORED_32, REG_BOTH, ONE_DATA),
+        InstructionHandler(&instr_STORER_32, REG_BOTH, REG)},
+    RawInstruction{"STORE_16", true,
+        InstructionHandler(&instr_STORED_16, REG_BOTH, ONE_DATA),
+        InstructionHandler(&instr_STORER_16, REG_BOTH, REG)},
+    RawInstruction{"STORE_8", true,
+        InstructionHandler(&instr_STORED_8, REG_BOTH, ONE_DATA),
+        InstructionHandler(&instr_STORER_8, REG_BOTH, REG)},
     RawInstruction{"ADD", true,
         InstructionHandler(&instr_ADDD, REG, ONE_DATA),
-        InstructionHandler(&instr_ADDR, REG, REG),
-        InstructionHandler(&instr_ADDR, REG, REG_ADDRESS)},
+        InstructionHandler(&instr_ADDR, REG, REG_BOTH)},
     RawInstruction{"SUB", true,
-        InstructionHandler(&instr_SUBR, REG, REG),
-        InstructionHandler(&instr_SUBR, REG, REG_ADDRESS),
+        InstructionHandler(&instr_SUBR, REG, REG_BOTH),
         InstructionHandler(&instr_SUBD, REG, ONE_DATA)},
     RawInstruction{"MUL", true,
-        InstructionHandler(&instr_MULR, REG, REG),
-        InstructionHandler(&instr_MULR, REG, REG_ADDRESS),
+        InstructionHandler(&instr_MULR, REG, REG_BOTH),
         InstructionHandler(&instr_MULD, REG, ONE_DATA)},
     RawInstruction{"DIV", true,
-        InstructionHandler(&instr_DIVR, REG, REG),
-        InstructionHandler(&instr_DIVR, REG, REG_ADDRESS),
+        InstructionHandler(&instr_DIVR, REG, REG_BOTH),
         InstructionHandler(&instr_DIVD, REG, ONE_DATA)},
     RawInstruction{"MIN", true,
-        InstructionHandler(&instr_MINR, REG, REG),
-        InstructionHandler(&instr_MINR, REG, REG_ADDRESS),
+        InstructionHandler(&instr_MINR, REG, REG_BOTH),
         InstructionHandler(&instr_MIND, REG, ONE_DATA)},
     RawInstruction{"MAX", true,
-        InstructionHandler(&instr_MAXR, REG, REG),
-        InstructionHandler(&instr_MAXR, REG, REG_ADDRESS),
+        InstructionHandler(&instr_MAXR, REG, REG_BOTH),
         InstructionHandler(&instr_MAXD, REG, ONE_DATA)},
     RawInstruction{"MOD", true,
-        InstructionHandler(&instr_MODR, REG, REG),
-        InstructionHandler(&instr_MODR, REG, REG_ADDRESS),
+        InstructionHandler(&instr_MODR, REG, REG_BOTH),
         InstructionHandler(&instr_MODD, REG, ONE_DATA)},
     RawInstruction{"JMP", true, InstructionHandler(&instr_JMP, ONE_DATA)},
     RawInstruction{"CMP", true,
-        InstructionHandler(&instr_CMPR, REG, REG),
-        InstructionHandler(&instr_CMPR, REG, REG_ADDRESS),
+        InstructionHandler(&instr_CMPR, REG_BOTH, REG_BOTH),
         InstructionHandler(&instr_CMPD, REG, ONE_DATA)},
     RawInstruction{"JE", true, InstructionHandler(&instr_JE, ONE_DATA)},
     RawInstruction{"JNE", true, InstructionHandler(&instr_JNE, ONE_DATA)},
     RawInstruction{"JA", true, InstructionHandler(&instr_JA, ONE_DATA)},
+    RawInstruction{"JSA", true, InstructionHandler(&instr_JSA, ONE_DATA)},
     RawInstruction{"JB", true, InstructionHandler(&instr_JB, ONE_DATA)},
+    RawInstruction{"JSB", true, InstructionHandler(&instr_JSB, ONE_DATA)},
     RawInstruction{"DISPLAY_N", true,
-        InstructionHandler(&instr_DISPLAY_N, REG),
-        InstructionHandler(&instr_DISPLAY_B, REG_ADDRESS)},
+        InstructionHandler(&instr_DISPLAY_N, REG_BOTH)},
     RawInstruction{"DISPLAY_C", true,
-        InstructionHandler(&instr_DISPLAY_C, REG),
-        InstructionHandler(&instr_DISPLAY_B, REG_ADDRESS)},
+        InstructionHandler(&instr_DISPLAY_C, REG_BOTH)},
     RawInstruction{"DISPLAY_B", true,
-        InstructionHandler(&instr_DISPLAY_B, REG),
-        InstructionHandler(&instr_DISPLAY_B, REG_ADDRESS)},
+        InstructionHandler(&instr_DISPLAY_B, REG_BOTH)},
     RawInstruction{"HALT", true, InstructionHandler(&instr_HALT)},
     RawInstruction{"ALOCA", true, InstructionHandler(&instr_ALOCA, REG, ONE_DATA)},
     RawInstruction{"ALOCR", true, InstructionHandler(&instr_ALOCR, REG, REG)},
