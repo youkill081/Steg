@@ -1,18 +1,18 @@
 section .data
-    path "./created_file.txt"
-    string_to_write "Hello, je suis la string qui seras écrite dans le fichier !"
+    path DB "./created_file.txt"
+    string_to_write DB "Hello, je suis la string qui seras écrite dans le fichier !"
 
 section .text
     FILE_CREATE R0 path ; R0 = file descriptor
-    LOADA R1 string_to_write ; R1 = current_char_ptr
+    LOAD_32 R1 string_to_write ; R1 = current_char_ptr
 loop:
-    LOADR R2 R1 ; Load current char in R2
-    CMPA R2 0
+    LOAD_8 R2 [R1] ; Load current char in R2
+    CMP R2 0
     JE save_and_halt_program ; If current char is \0 jump to halt_program
 
     FILE_APPEND_BYTE R2 R0 ; Write current char in file
 
-    ADDA R1 1 ; Increment current char ptr
+    ADD R1 1 ; Increment current char ptr
 
     JMP loop
 
@@ -23,5 +23,5 @@ loop:
 save_and_halt_program:
     FILE_SAVE R0
     FILE_CLOSE R0
-    LOADA R0 0
+    LOAD_32 R0 0
     HALT
