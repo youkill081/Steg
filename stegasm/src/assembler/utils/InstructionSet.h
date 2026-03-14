@@ -60,8 +60,6 @@ namespace assembler
         static Instruction parsed_line_to_instruction(const ParsedLine &line, const SymbolSet &symbols);
         static Instruction get_eof_instruction();
     public:
-        void display() const;
-
         static InstructionSet from_parsed_lines(const std::vector<ParsedLine> &lines, const SymbolSet &symbols, Linter &);
         static uint64_t count_text_lines(const std::vector<ParsedLine> &lines);
 

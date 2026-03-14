@@ -78,7 +78,6 @@ Variable VariableSet::parsed_line_to_variable(const ParsedLine &line)
         Linter::error("Number of token missmatch for variable declaration");
 
     VariableTypeFlag variable_type_flag = get_variable_type(line);
-    std::cout << variable_type_flag << std::endl;
 
     std::vector<VariableType> data;
     const std::string variable_name = line.tokens[0];
