@@ -55,7 +55,7 @@ namespace assembler
         return ec == std::errc();
     }
 
-    uint16_t token_to_uint32(const std::string& token)
+    uint32_t token_to_uint32(const std::string& token)
     {
         if (token_is_uint32_value(token))
         {

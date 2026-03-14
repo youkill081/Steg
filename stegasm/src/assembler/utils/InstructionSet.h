@@ -27,7 +27,7 @@ namespace assembler
     struct DataValueParsingResult
     {
         DataCount data_count = NO_DATA;
-        uint16_t value = 0;
+        uint32_t value = 0;
         bool is_address = false;
     };
 
@@ -56,7 +56,7 @@ namespace assembler
         static bool token_is_in_brackets(const std::string &token);
         static InstructionParameters parse_data_and_registries_from_line(const ParsedLine& line, const SymbolSet& symbols);
         static HandlerNumber get_handler_number(const InstructionDesc& desc, const InstructionParameters& data_registries);
-        static uint16_t parse_data_value(std::string token, const SymbolSet &symbols);
+        static uint32_t parse_data_value(std::string token, const SymbolSet &symbols);
         static Instruction parsed_line_to_instruction(const ParsedLine &line, const SymbolSet &symbols);
         static Instruction get_eof_instruction();
     public:

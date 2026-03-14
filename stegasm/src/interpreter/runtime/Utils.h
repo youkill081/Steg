@@ -16,5 +16,5 @@ private:
 public:
     explicit Utils(Runtime &runtime) : _runtime(runtime) {}
 
-    std::string get_string_from_address(uint16_t address) const;
+    std::string get_string_from_address(uint32_t address) const;
 };

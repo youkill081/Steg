@@ -40,7 +40,7 @@ bool InstructionSet::token_is_in_brackets(const std::string &token)
     return token[0] == '[' && token[token.size() - 1] == ']';
 }
 
-uint16_t InstructionSet::parse_data_value(std::string token, const SymbolSet &symbols)
+uint32_t InstructionSet::parse_data_value(std::string token, const SymbolSet &symbols)
 {
     if (token_is_uint32_value(token))
         return token_to_uint32(token);
