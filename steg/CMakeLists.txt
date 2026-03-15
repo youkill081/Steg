@@ -20,6 +20,10 @@ set(STEG_LIB_SOURCES
         src/ast/ASTExpressionNode.h
         src/ast/ASTProgramNode.cpp
         src/ast/ASTProgramNode.h
+        src/parser/Parser.cpp
+        src/parser/Parser.h
+        src/parser/monadic/monadic.hpp
+        src/parser/monadic/string_parser.h
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})

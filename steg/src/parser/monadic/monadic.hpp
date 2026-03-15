@@ -1,0 +1,202 @@
+//
+// Created by Roumite on 15/03/2026.
+//
+
+#pragma once
+
+#include <span>
+#include <optional>
+#include <functional>
+#include <tuple>
+#include <vector>
+#include <type_traits>
+
+namespace compilator
+{
+    template <typename T, typename Stream>
+    struct Result
+    {
+        T value;
+        Stream remaining;
+
+        using value_type = T;
+        using stream_type = Stream;
+    };
+
+    template <typename T, typename Stream>
+    using Parser = std::function<std::optional<Result<T, Stream>>(Stream)>;
+
+    /* Utility Methods */
+
+    /*
+     * Transform ParserA result with given function
+     */
+    template <typename ParserA, typename Func>
+    auto map(ParserA parser, Func function)
+    {
+        return [=](auto input) {
+            using Stream = decltype(input);
+            auto res = parser(input);
+
+            if (!res.has_value()) return std::optional<Result<std::invoke_result_t<Func, decltype(std::move(*res).value)>, Stream>>{};
+
+            using B = std::invoke_result_t<Func, decltype(std::move(*res).value)>;
+            return std::optional<Result<B, Stream>>{
+                Result<B, Stream>{ function(std::move(*res).value), res->remaining }
+            };
+        };
+    }
+
+    /*
+     * Exec two parsers and insert the result in a tuple
+     */
+    template <typename ParserA, typename ParserB>
+    auto seq(ParserA parser_a, ParserB parser_b)
+    {
+        return [=](auto input) {
+            using Stream = decltype(input);
+
+            auto res_a = parser_a(input);
+            if (!res_a.has_value()) return std::optional<Result<std::tuple<
+                typename decltype(res_a)::value_type::value_type,
+                typename decltype(parser_b(input))::value_type::value_type>, Stream>>{};
+
+            auto res_b = parser_b(res_a->remaining);
+            if (!res_b.has_value()) return std::optional<Result<std::tuple<
+                typename decltype(res_a)::value_type::value_type,
+                typename decltype(parser_b(input))::value_type::value_type>, Stream>>{};
+
+            using ValAType = decltype(res_a)::value_type::value_type;
+            using ValBType = decltype(res_b)::value_type::value_type;
+
+            return std::optional<Result<std::tuple<ValAType, ValBType>, Stream>>{
+                Result<std::tuple<ValAType, ValBType>, Stream>{
+                    std::make_tuple(std::move(*res_a).value, std::move(*res_b).value),
+                    res_b->remaining
+                }
+            };
+        };
+    }
+
+    /*
+     * Apply 0 to X times the parser. Return the vector of all parsed values
+     */
+    template <typename Parser>
+    auto many(Parser parser)
+    {
+        return [=](auto input) {
+            using Stream = decltype(input);
+            using OptRes = decltype(parser(input));
+            using T = OptRes::value_type::value_type;
+
+            std::vector<T> values;
+            auto current_input = input;
+
+            while (true)
+            {
+                auto res = parser(current_input);
+                if (!res) break;
+
+                values.push_back(std::move(*res).value);
+                current_input = res->remaining;
+            }
+
+            return std::optional<Result<std::vector<T>, Stream>>{
+                Result<std::vector<T>, Stream>{ std::move(values), current_input }
+            };
+        };
+    }
+
+    /*
+     * Apply 1 to X times the parser.
+     */
+    template <typename Parser>
+    auto many1(Parser parser)
+    {
+        return [=](auto input) {
+            using Stream = decltype(input);
+            using OptRes = decltype(parser(input));
+            using T = OptRes::value_type::value_type;
+
+            auto first_result = parser(input);
+            if (!first_result) return std::optional<Result<std::vector<T>, Stream>>{};
+
+            std::vector<T> values;
+            values.push_back(std::move(*first_result).value);
+
+            auto current_input = first_result->remaining;
+
+            while (true)
+            {
+                auto res = parser(current_input);
+                if (!res) break;
+
+                values.push_back(std::move(*res).value);
+                current_input = res->remaining;
+            }
+
+            return std::optional<Result<std::vector<T>, Stream>>{
+                Result<std::vector<T>, Stream>{ std::move(values), current_input }
+            };
+        };
+    }
+
+    /* operators */
+
+    /*
+     * Try a parser, if didn't work try the second one (<|> equivalent in haskell)
+     */
+    template <typename ParserA, typename ParserB> // Correction de la coquille 'PaserB'
+    auto operator|(ParserA parser_a, ParserB parser_b)
+    {
+        return [=](auto input) -> decltype(parser_a(input))
+        {
+            auto parser_a_result = parser_a(input);
+            if (parser_a_result) return parser_a_result;
+            return parser_b(input);
+        };
+    }
+
+    /*
+     * Applicative right
+     * Exec the first parser, if success, exec the second
+     * Keep the result of the second one
+     */
+    template <typename ParserA, typename ParserB>
+    auto operator>>(ParserA parser_a, ParserB parser_b)
+    {
+        return [=](auto input) -> decltype(parser_b(input))
+        {
+            auto parser_a_result = parser_a(input);
+            if (!parser_a_result) return std::nullopt;
+            return parser_b(parser_a_result->remaining);
+        };
+    }
+
+    /*
+     * Applicative left
+     * Exec the first parser, if success, exec the second
+     * Keep the result of the first one (but token stream of the second)
+     */
+    template <typename ParserA, typename ParserB>
+    auto operator<<(ParserA parser_a, ParserB parser_b)
+    {
+        return [=](auto input) -> decltype(parser_a(input))
+        {
+            auto parser_a_result = parser_a(input);
+            if (!parser_a_result) return std::nullopt;
+
+            auto parser_b_result = parser_b(parser_a_result->remaining);
+            if (!parser_b_result) return std::nullopt;
+
+            using ResType = decltype(parser_a(input))::value_type;
+
+            return std::optional<ResType>{
+                ResType{
+                    std::move(*parser_a_result).value,
+                    parser_b_result->remaining
+                }
+            };
+        };
+    }
+}
