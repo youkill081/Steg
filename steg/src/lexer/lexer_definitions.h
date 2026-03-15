@@ -79,10 +79,10 @@ namespace compilator
         TokenEntry{"while", TOKEN_KEYWORD_WHILE},
         TokenEntry{"return", TOKEN_KEYWORD_RETURN},
         TokenEntry{"for", TOKEN_KEYWORD_FOR},
-        TokenEntry{"export", TOKEN_KEYWORD_FOR},
+        TokenEntry{"export", TOKEN_KEYWORD_EXPORT},
 
         // Types
-        TokenEntry{"uint8", TOKEN_TYPE_INT8},
+        TokenEntry{"uint8", TOKEN_TYPE_UINT8},
         TokenEntry{"int8", TOKEN_TYPE_INT8},
         TokenEntry{"uint16", TOKEN_TYPE_UINT16},
         TokenEntry{"int16", TOKEN_TYPE_INT16},
