@@ -16,7 +16,7 @@ namespace compiler
             << parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>
         );
 
-    /* Lliteral */
+    /* Literal */
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLiteral =
         as_expression(map(parseToken<TOKEN_INTEGER>, [](LexerToken token) {
             return std::make_unique<ASTLiteralExpressionNode>(
@@ -33,7 +33,7 @@ namespace compiler
             );
         }));
 
-    // 4. Point d'entrée des atomes
+    // Primary entry point
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parsePrimary =
         parseParenthesizedExpr | parseLiteral | parseIdentifier;
 }
