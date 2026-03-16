@@ -5,9 +5,15 @@
 #pragma once
 
 #include "parse_expressions_utils.h"
+#include "ast/ASTProgramNode.h"
+
+#include <vector>
+#include <memory>
 
 namespace compiler
 {
+    extern Parser<std::vector<std::unique_ptr<ASTParameterProgramNode>>, TokenSpan> parseFunctionParameters;
+
     /* Parenthesis */
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseParenthesizedExpr =
         as_expression(
@@ -22,6 +28,39 @@ namespace compiler
             return std::make_unique<ASTLiteralExpressionNode>(
                 token.value,
                 std::make_unique<ASTTypeNode>(ASTTypeNode::INT32)
+            );
+        }));
+
+    /* Function call */
+
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseFirstFunctionCallParameter
+        = compiler::ref(parseLayer0);
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseFunctionCallParameter
+        = parseToken<TOKEN_PUNCTUATION_COMMA> >> compiler::ref(parseLayer0);
+
+    inline Parser<std::vector<std::unique_ptr<ASTExpressionNode>>, TokenSpan> parseFunctionCallParameters =
+        map(parseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >>
+            seq(optional(parseFirstFunctionCallParameter), many(parseFunctionCallParameter) <<
+                parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>),
+    [](auto data)
+        {
+            auto [first, rest] = std::move(data);
+            std::vector<std::unique_ptr<ASTExpressionNode>> end{};
+
+            if (first.has_value())
+                end.push_back(std::move(*first));
+            for (auto &param : rest)
+                end.push_back(std::move(param));
+            return end;
+        });
+
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseFunctionCall =
+        as_expression(map(seq(parseToken<TOKEN_IDENTIFIER>, parseFunctionCallParameters), [](auto data) {
+            std::unique_ptr<ASTIdentifierExpressionNode> identifier =
+                std::make_unique<ASTIdentifierExpressionNode>(std::move(std::get<0>(data).value));
+            return std::make_unique<ASTCallExpressionNode>(
+                std::move(identifier),
+                std::move(std::get<1>(data))
             );
         }));
 

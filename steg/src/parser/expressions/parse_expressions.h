@@ -11,7 +11,7 @@
 namespace compiler
 {
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parsePrimary =
-        parseParenthesizedExpr | parseLiteral | parseIdentifier;
+        parseParenthesizedExpr | parseLiteral | parseFunctionCall | parseIdentifier;
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer3 = map(
         seq(compiler::ref(parsePrimary), many(parseMultiplicationPart | parseDivisionPart | parseModuloPart)),
