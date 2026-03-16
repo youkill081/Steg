@@ -57,7 +57,7 @@ namespace compiler
 
     /* Functions */
 
-    inline Parser<LexerToken, TokenSpan> parseFunctionDeclaration = parseToken<TOKEN_KEYWORD_FUNCTION> >> parseToken<TOKEN_IDENTIFIER>;
+    inline Parser<LexerToken, TokenSpan> parseFunctionDeclaration = parseToken<TOKEN_KEYWORD_FUNCTION> >> lint<"missing function identifier">(parseToken<TOKEN_IDENTIFIER>);
     inline Parser<std::unique_ptr<ASTTypeNode>, TokenSpan> parseFunctionReturnType = parseToken<TOKEN_PUNCTUATION_ARROW> >> parseType;
 
     inline Parser<std::unique_ptr<ASTFunctionProgramNode>, TokenSpan> parseFunction =
@@ -80,9 +80,17 @@ namespace compiler
 
     /* Main Program Node*/
 
+    using function_recovery = RecoverySet<
+        TOKEN_PUNCTUATION_RIGHT_BRACKET,
+        TOKEN_KEYWORD_FUNCTION,
+        TOKEN_KEYWORD_EXPORT
+    >;
+
     inline Parser<std::unique_ptr<ASTMainProgramNode>, TokenSpan> parseMainProgram =
     map(many(
+    lint_checkpoint<function_recovery>(
         map(parseFunction, [](auto f) -> std::unique_ptr<ASTNode> { return std::move(f); })
+        )
         |
             map(parseVariableDeclarationWithSemicolon, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
     ), [](std::vector<std::unique_ptr<ASTNode>> nodes)

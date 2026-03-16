@@ -14,6 +14,8 @@
 #include <string>
 #include <iostream>
 
+#include "ast/ASTNode.h"
+#include "lexer/lexer_definitions.h"
 
 
 namespace compiler
@@ -37,6 +39,9 @@ namespace compiler
         [[nodiscard]] constexpr std::string_view view() const { return { string, N - 1 }; }
         [[nodiscard]] static constexpr size_t size() { return N - 1; }
     };
+
+    template <LexerTokensTypes... Ts>
+    struct RecoverySet {};
 
     template <typename T, typename Stream>
     struct Result
@@ -216,8 +221,48 @@ namespace compiler
                     std::string token_value = std::string(input[0].value);
                     error_message_string.replace(pos, 2, "\"" + token_value + "\"");
                 }
-
                 std::cout << "Erreur -> " << error_message_string << std::endl;
+            }
+            return res;
+        };
+    }
+
+    template <typename TSet, typename Parser> // RecoverySet version
+    auto lint_checkpoint(Parser parser) {
+        return _lint_checkpoint_impl(parser, TSet{});
+    }
+
+    template <typename Parser, LexerTokensTypes... recovery_tokens>
+    auto _lint_checkpoint_impl(Parser parser, RecoverySet<recovery_tokens...>)
+    {
+        return [=](auto input) -> std::invoke_result_t<Parser, decltype(input)>
+        {
+            using FullResultType = typename std::invoke_result_t<Parser, decltype(input)>::value_type;
+
+            auto res = parser(input);
+            if (!res)
+            {
+                if (input.empty()) return std::nullopt;
+
+                auto current_input = input;
+
+                current_input = current_input.subspan(1);
+
+                while (current_input.size() > 0)
+                {
+                    if (((current_input[0].type == recovery_tokens) || ...))
+                    {
+                        break;
+                    }
+                    current_input = current_input.subspan(1);
+                }
+
+                return std::optional<FullResultType>{
+                    FullResultType{
+                        std::make_unique<ASTErrorNode>(),
+                        current_input
+                    }
+                };
             }
             return res;
         };

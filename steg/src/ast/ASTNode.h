@@ -27,4 +27,14 @@ namespace compiler
 
         virtual void display(std::size_t left_padding = 0) = 0;
     };
+
+    class ASTErrorNode final : public ASTNode
+    {
+    public:
+        void display(std::size_t left_padding) override
+        {
+            display_indent(left_padding);
+            std::cout << "Error" << std::endl;
+        };
+    };
 }
