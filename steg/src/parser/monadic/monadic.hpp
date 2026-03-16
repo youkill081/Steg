@@ -10,9 +10,19 @@
 #include <tuple>
 #include <vector>
 #include <type_traits>
+#include <string_view>
+#include <string>
+#include <iostream>
+
+
 
 namespace compilator
 {
+    using CharSpan = std::span<const char>;
+
+    struct LexerToken;
+    using TokenSpan = std::span<const LexerToken>;
+
     /* Used to insert string into template */
     template <size_t N>
         struct FixedString
@@ -67,7 +77,7 @@ namespace compilator
     using _parser_val_t = std::invoke_result_t<P, S>::value_type::value_type;
 
     /*
-     * Exec two parsers and insert the result in a tuple
+     * Exec x parsers and insert the result in a tuple
      */
     template <typename... Parsers>
     auto seq(Parsers... parsers)
@@ -197,7 +207,8 @@ namespace compilator
             auto res = parser(input);
             if (!res)
             {
-                std::string error_message_string = std::string(error_message.view());
+                std::string error_message_string;
+                error_message_string = error_message.view();
                 size_t pos = error_message_string.find("%v");
 
                 if (input.size() != 0 && pos != std::string::npos)
@@ -228,12 +239,16 @@ namespace compilator
         };
     }
 
+    template <typename T>
+    concept IsParser =  requires(T p, TokenSpan ts) { { p(ts) }; } ||
+                    requires(T p, CharSpan cs)  { { p(cs) }; };
+
     /*
      * Applicative right
      * Exec the first parser, if success, exec the second
      * Keep the result of the second one
      */
-    template <typename ParserA, typename ParserB>
+    template <IsParser ParserA, IsParser ParserB>
     auto operator>>(ParserA parser_a, ParserB parser_b)
     {
         return [=](auto input) -> decltype(parser_b(input))
@@ -249,7 +264,7 @@ namespace compilator
      * Exec the first parser, if success, exec the second
      * Keep the result of the first one (but token stream of the second)
      */
-    template <typename ParserA, typename ParserB>
+    template <IsParser ParserA, IsParser ParserB>
     auto operator<<(ParserA parser_a, ParserB parser_b)
     {
         return [=](auto input) -> decltype(parser_a(input))

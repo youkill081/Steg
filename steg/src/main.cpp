@@ -25,13 +25,12 @@ int main()
 
         auto tokens = lexer.tokens();
 
-        auto result = parseFunctionParameters(tokens);
+        auto result = parseFunction(tokens);
 
         if (!result)
-            std::cout << "Il n'y a pas de parametre";
+            std::cout << "Il n'y a pas de prametre";
         else
-            for (const auto &parameter : result->value)
-                parameter->display(0);
+            result->value->display(0);
     }
     catch (const std::exception& e)
     {

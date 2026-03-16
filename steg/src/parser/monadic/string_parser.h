@@ -10,17 +10,15 @@
 
 namespace compilator
 {
-    using CharStream = std::span<const char>;
-
     template <FixedString S>
-    constexpr auto parseString = [](const CharStream input) -> std::optional<Result<std::string_view, CharStream>>
+    constexpr auto parseString = [](const CharSpan input) -> std::optional<Result<std::string_view, CharSpan>>
     {
         constexpr auto expected = S.view();
 
         if (input.size() >= expected.size() &&
             std::string_view(input.data(), expected.size()) == expected)
         {
-            return Result<std::string_view, CharStream>{
+            return Result<std::string_view, CharSpan>{
                 expected,
                 input.subspan(expected.size())
             };
@@ -29,7 +27,7 @@ namespace compilator
     };
 
     template <char C>
-    constexpr auto parseChar = [](const CharStream input) -> std::optional<Result<char, CharStream>>
+    constexpr auto parseChar = [](const CharSpan input) -> std::optional<Result<char, CharSpan>>
     {
         if (!input.empty() && input.front() == C)
             return Result{ C, input.subspan(1) };

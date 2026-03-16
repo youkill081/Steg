@@ -12,14 +12,11 @@
 
 namespace compilator
 {
-    struct LexerToken;
-    using TokenSpan = std::span<const LexerToken>;
-
     template <LexerTokensTypes token_type>
-    constexpr auto parseToken = [](const TokenSpan tokens) -> std::optional<Result<LexerToken, TokenSpan>>
+    constexpr auto parseToken = [](TokenSpan tokens) -> std::optional<Result<LexerToken, TokenSpan>>
     {
         if (tokens.empty()) return std::nullopt;
         if (tokens.front().type != token_type) return std::nullopt;
-        return Result{ tokens.front(), tokens.subspan(1) };
+        return std::optional{ Result{ tokens.front(), tokens.subspan(1) } };
     };
 }
