@@ -32,8 +32,4 @@ namespace compiler
                 new ASTIdentifierExpressionNode(token.value)
             );
         }));
-
-    // Primary entry point
-    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parsePrimary =
-        parseParenthesizedExpr | parseLiteral | parseIdentifier;
 }
