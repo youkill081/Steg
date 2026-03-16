@@ -12,20 +12,6 @@ namespace compilator
 {
     using CharStream = std::span<const char>;
 
-    template <size_t N>
-    struct FixedString
-    {
-        char string[N]{};
-
-        constexpr FixedString(const char (&str)[N]) noexcept
-        {
-            std::copy_n(str, N, string);
-        }
-
-        [[nodiscard]] constexpr std::string_view view() const { return { string, N - 1 }; }
-        [[nodiscard]] static constexpr size_t size() { return N - 1; }
-    };
-
     template <FixedString S>
     constexpr auto parseString = [](const CharStream input) -> std::optional<Result<std::string_view, CharStream>>
     {

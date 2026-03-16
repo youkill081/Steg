@@ -13,6 +13,21 @@
 
 namespace compilator
 {
+    /* Used to insert string into template */
+    template <size_t N>
+        struct FixedString
+    {
+        char string[N]{};
+
+        constexpr FixedString(const char (&str)[N]) noexcept
+        {
+            std::copy_n(str, N, string);
+        }
+
+        [[nodiscard]] constexpr std::string_view view() const { return { string, N - 1 }; }
+        [[nodiscard]] static constexpr size_t size() { return N - 1; }
+    };
+
     template <typename T, typename Stream>
     struct Result
     {
@@ -47,34 +62,44 @@ namespace compilator
         };
     }
 
+
+    template <typename P, typename S>
+    using _parser_val_t = std::invoke_result_t<P, S>::value_type::value_type;
+
     /*
      * Exec two parsers and insert the result in a tuple
      */
-    template <typename ParserA, typename ParserB>
-    auto seq(ParserA parser_a, ParserB parser_b)
+    template <typename... Parsers>
+    auto seq(Parsers... parsers)
     {
         return [=](auto input) {
             using Stream = decltype(input);
+            using TupleType = std::tuple<_parser_val_t<Parsers, Stream>...>;
 
-            auto res_a = parser_a(input);
-            if (!res_a.has_value()) return std::optional<Result<std::tuple<
-                typename decltype(res_a)::value_type::value_type,
-                typename decltype(parser_b(input))::value_type::value_type>, Stream>>{};
+            auto parser_tuple = std::make_tuple(parsers...);
 
-            auto res_b = parser_b(res_a->remaining);
-            if (!res_b.has_value()) return std::optional<Result<std::tuple<
-                typename decltype(res_a)::value_type::value_type,
-                typename decltype(parser_b(input))::value_type::value_type>, Stream>>{};
+            return [&]<size_t... Is>(std::index_sequence<Is...>) -> std::optional<Result<TupleType, Stream>>
+            {
+                Stream current = input;
+                bool failed  = false;
 
-            using ValAType = decltype(res_a)::value_type::value_type;
-            using ValBType = decltype(res_b)::value_type::value_type;
+                std::tuple<std::optional<_parser_val_t<Parsers, Stream>>...> optionals;
 
-            return std::optional<Result<std::tuple<ValAType, ValBType>, Stream>>{
-                Result<std::tuple<ValAType, ValBType>, Stream>{
-                    std::make_tuple(std::move(*res_a).value, std::move(*res_b).value),
-                    res_b->remaining
-                }
-            };
+                (([&] {
+                    if (failed) return;
+                    auto res = std::get<Is>(parser_tuple)(current);
+                    if (!res) { failed = true; return; }
+                    std::get<Is>(optionals) = std::move(*res).value;
+                    current = res->remaining;
+                }()), ...);
+
+                if (failed) return std::nullopt;
+
+                return { Result<TupleType, Stream>{
+                    TupleType{ std::move(*std::get<Is>(optionals))... },
+                    current
+                }};
+            } (std::index_sequence_for<Parsers...>{});
         };
     }
 
@@ -137,6 +162,30 @@ namespace compilator
 
             return std::optional<Result<std::vector<T>, Stream>>{
                 Result<std::vector<T>, Stream>{ std::move(values), current_input }
+            };
+        };
+    }
+
+    template <typename Parser>
+    auto optional(Parser parser)
+    {
+        return [=](auto input) {
+            using Stream = decltype(input);
+            using T = _parser_val_t<Parser, Stream>;
+
+            auto res = parser(input);
+
+            if (res) {
+                return std::optional<Result<std::optional<T>, Stream>>{
+                    Result<std::optional<T>, Stream>{
+                        std::optional<T>{ std::move(res->value) },
+                        res->remaining
+                    }
+                };
+            }
+
+            return std::optional<Result<std::optional<T>, Stream>>{
+                Result<std::optional<T>, Stream>{ std::nullopt, input }
             };
         };
     }
