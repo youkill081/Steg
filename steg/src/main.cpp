@@ -7,9 +7,9 @@
 #include "ast/ASTProgramNode.h"
 #include "lexer/Lexer.h"
 #include "lexer/TextParser.h"
+#include "linter/Linter.h"
 #include "parser/parser_program.h"
 #include "parser/monadic/monadic.hpp"
-#include "parser/monadic/string_parser.h"
 
 using namespace compiler;
 
@@ -18,19 +18,20 @@ int main()
     try
     {
         TextParser parser = TextParser::from_file("C:/Users/Roumite/CLionProjects/stegnocode/steg/examples/test.steg");
+
         Lexer lexer(parser);
-
         lexer.compute();
-        // lexer.display();
-
         auto tokens = lexer.tokens();
 
         auto result = parseMainProgram(tokens);
 
-        if (!result)
-            std::cout << "Il n'y a pas de prametre";
-        else
+        if (Linter::instance().has_errors())
+        {
+            Linter::instance().display_diagnostics();
+        } else
+        {
             result->value->display(0);
+        }
     } catch (std::exception &e)
     {
         std::cout << e.what() << std::endl;

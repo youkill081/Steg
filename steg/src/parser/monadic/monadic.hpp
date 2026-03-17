@@ -17,6 +17,7 @@
 #include "ast/ASTNode.h"
 #include "lexer/lexer_definitions.h"
 #include "lexer/Lexer.h"
+#include "linter/Linter.h"
 
 namespace compiler
 {
@@ -206,7 +207,14 @@ namespace compiler
 
     inline void report_error(const std::string &error_message, const LexerToken &token)
     {
-        std::cout << "Erreur -> " << error_message << " (" << token.line_number << ":" << token.column_number << ")" << std::endl;
+        Linter::instance().report(
+            error_message,
+            token.path,
+            token.line_number,
+            token.column_number,
+            token.value.size(),
+            LintError::Severity::ERR
+        );
     }
 
     template <FixedString error_message, typename Parser>

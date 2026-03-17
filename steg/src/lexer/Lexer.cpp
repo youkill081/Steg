@@ -83,6 +83,7 @@ LexerToken Lexer::_parse_identifier_keyword(const std::size_t line, const std::s
     if (is_known_type.has_value()) {
         return {
             .type = is_known_type.value(),
+            .path = _parser.get_path(),
             .value = value,
             .line_number = line,
             .column_number = column
@@ -91,6 +92,7 @@ LexerToken Lexer::_parse_identifier_keyword(const std::size_t line, const std::s
 
     return {
         .type = TOKEN_IDENTIFIER,
+        .path = _parser.get_path(),
         .value = value,
         .line_number = line,
         .column_number = column
@@ -133,6 +135,7 @@ LexerToken Lexer::_parse_string(std::size_t line, std::size_t column) const
         throw LexerException("Unterminated string");
     return {
         .type = TOKEN_STRING,
+        .path = _parser.get_path(),
         .value = value,
         .line_number = line,
         .column_number = column
@@ -149,6 +152,7 @@ LexerToken Lexer::_parse_number(std::size_t line, std::size_t column) const
     }
     return {
         .type = TOKEN_INTEGER,
+        .path = _parser.get_path(),
         .value = value,
         .line_number = line,
         .column_number = column
@@ -173,6 +177,7 @@ LexerToken Lexer::_parse_symbol(std::size_t line, std::size_t column) const
     if (known_type.has_value()) {
         return {
             .type = known_type.value(),
+            .path = _parser.get_path(),
             .value = value,
             .line_number = line,
             .column_number = column
@@ -191,6 +196,7 @@ LexerToken Lexer::_compute_next_token() const
     {
         return {
             .type = TOKEN_EOF,
+            .path = _parser.get_path(),
             .value = "",
             .line_number = _parser.get_line_number(),
             .column_number = _parser.get_column_number()
@@ -233,7 +239,8 @@ void Lexer::compute()
 
 std::span<const LexerToken> Lexer::tokens() const
 {
-    return _tokens; // Convert vector to span
+    const std::span span = _tokens;
+    return span.subspan(1); // Convert vector to span
 }
 
 void Lexer::display() const

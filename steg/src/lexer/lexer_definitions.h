@@ -75,6 +75,7 @@ namespace compiler
         TOKEN_INTEGER,
         TOKEN_IDENTIFIER, // Variable identifier, for example
         TOKEN_STRING,
+        TOKEN_BOF, // Automatically added by lexer at the beginning of the file
         TOKEN_EOF // Automatically added by lexer at the end of the file
     };
 
@@ -209,6 +210,7 @@ namespace compiler
         {TOKEN_INTEGER, "TOKEN_INTEGER"},
         {TOKEN_IDENTIFIER, "TOKEN_IDENTIFIER"},
         {TOKEN_STRING, "TOKEN_STRING"},
+        {TOKEN_BOF, "TOKEN_BOF"},
         {TOKEN_EOF, "TOKEN_EOF"}
     };
 }

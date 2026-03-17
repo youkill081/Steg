@@ -12,13 +12,16 @@ namespace compiler
     {
     private:
         std::string _content;
+        std::filesystem::path _path;
 
         std::size_t _index = 0;
 
         std::size_t _line_number = 1;
         std::size_t _column_number = 1;
+
+        explicit TextParser(const std::string &content, const std::filesystem::path &path)
+            : _content(content), _path(path) {}
     public:
-        explicit TextParser(const std::string &content) : _content(content) {}
         static TextParser from_file(const std::string &content);
 
         char get_next();
@@ -28,5 +31,6 @@ namespace compiler
 
         [[nodiscard]] std::size_t get_line_number() const;
         [[nodiscard]] std::size_t get_column_number() const;
+        [[nodiscard]] std::filesystem::path get_path() const;
     };
 }

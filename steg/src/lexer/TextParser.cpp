@@ -11,19 +11,21 @@
 
 using namespace compiler;
 
-TextParser TextParser::from_file(const std::string &filepath)
+TextParser TextParser::from_file(const std::string &path)
 {
+    const std::filesystem::path filepath(path);
     const std::ifstream file(filepath);
     if (!file.is_open())
     {
-        throw LexerException("Can't open file \"" + filepath + "\"");
+        throw LexerException("Can't open file \"" + filepath.string() + "\"");
     }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
 
-    return TextParser(buffer.str());
+    return TextParser(buffer.str(), filepath);
 }
+
 
 char TextParser::get_next()
 {
@@ -63,4 +65,9 @@ std::size_t TextParser::get_line_number() const
 std::size_t TextParser::get_column_number() const
 {
     return _column_number;
+}
+
+std::filesystem::path TextParser::get_path() const
+{
+    return _path;
 }

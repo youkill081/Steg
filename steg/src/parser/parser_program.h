@@ -113,7 +113,7 @@ parseFunctionParameters =
                 parseToken<TOKEN_KEYWORD_IMPORT> >> lintedParseToken<TOKEN_PUNCTUATION_LEFT_BRACKET> >> many(
                     optional(parseToken<TOKEN_PUNCTUATION_COMMA>) >> parseToken<TOKEN_IDENTIFIER>),
                 lintedParseToken<TOKEN_PUNCTUATION_RIGHT_BRACKET> >> lintedParseToken<TOKEN_KEYWORD_FROM> >>
-                lintedParseToken<TOKEN_STRING>
+                lintedParseToken<TOKEN_STRING> << optional(parseToken<TOKEN_PUNCTUATION_SEMICOLON>)
             ), [](auto data)
             {
                 auto [function_variables, aze] = std::move(data);
@@ -151,59 +151,62 @@ parseFunctionParameters =
     >::type;
 
     inline Parser<std::unique_ptr<ASTMainProgramNode>, TokenSpan> parseMainProgram =
-    map(many(
-        lint_checkpoint<globals_stop, main_sync, ASTErrorNode>(
-            map(parseVariableDeclarationWithSemicolon, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
-        )
-        |
-        lint_checkpoint<function_stop, main_sync, ASTErrorNode>(
-        map(parseFunction, [](auto f) -> std::unique_ptr<ASTNode> { return std::move(f); })
-        )
-        |
-            lint_checkpoint<import_stop, main_sync, ASTErrorNode>(
-                map(parseImport, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
-            )
-        |
-            lint_checkpoint<files_stop, main_sync, ASTErrorNode>(
-                map(parseFiles, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
-            )
-    ), [](std::vector<std::unique_ptr<ASTNode>> nodes)
-    {
-        std::vector<std::unique_ptr<ASTFunctionProgramNode>> functions;
-        std::vector<std::unique_ptr<ASTVariableStatement>> global_variables;
-        std::vector<std::unique_ptr<ASTImportProgramNode>> imports;
-        std::vector<std::unique_ptr<ASTFileProgramNode>> files;
+        map(many(
+                lint_checkpoint<globals_stop, main_sync, ASTErrorNode>(
+                    map(parseVariableDeclarationWithSemicolon, [](auto v) -> std::unique_ptr<ASTNode>
+                    {
+                        return std::move(v);
+                    })
+                )
+                |
+                lint_checkpoint<function_stop, main_sync, ASTErrorNode>(
+                    map(parseFunction, [](auto f) -> std::unique_ptr<ASTNode> { return std::move(f); })
+                )
+                |
+                lint_checkpoint<import_stop, main_sync, ASTErrorNode>(
+                    map(parseImport, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
+                )
+                |
+                lint_checkpoint<files_stop, main_sync, ASTErrorNode>(
+                    map(parseFiles, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
+                )
+            ), [](std::vector<std::unique_ptr<ASTNode>> nodes)
+            {
+                std::vector<std::unique_ptr<ASTFunctionProgramNode>> functions;
+                std::vector<std::unique_ptr<ASTVariableStatement>> global_variables;
+                std::vector<std::unique_ptr<ASTImportProgramNode>> imports;
+                std::vector<std::unique_ptr<ASTFileProgramNode>> files;
 
-        for (auto &node : nodes)
-        {
-            if (auto *f = dynamic_cast<ASTFunctionProgramNode*>(node.get()))
-            {
-                node.release();
-                functions.push_back(std::unique_ptr<ASTFunctionProgramNode>(f));
-            }
-            else if (auto* v = dynamic_cast<ASTVariableStatement*>(node.get()))
-            {
-                node.release();
-                global_variables.push_back(std::unique_ptr<ASTVariableStatement>(v));
-            }
-            else if (auto* l = dynamic_cast<ASTImportProgramNode*>(node.get()))
-            {
-                node.release();
-                imports.push_back(std::unique_ptr<ASTImportProgramNode>(l));
-            } else if (auto* f = dynamic_cast<ASTFilesProgramNode*>(node.get()))
-            {
-                node.release();
-                for (auto& file : f->files)
-                    files.push_back(std::move(file));
-                delete f;
-            }
-        }
+                for (auto &node : nodes)
+                {
+                    if (auto *f = dynamic_cast<ASTFunctionProgramNode*>(node.get()))
+                    {
+                        node.release();
+                        functions.push_back(std::unique_ptr<ASTFunctionProgramNode>(f));
+                    }
+                    else if (auto* v = dynamic_cast<ASTVariableStatement*>(node.get()))
+                    {
+                        node.release();
+                        global_variables.push_back(std::unique_ptr<ASTVariableStatement>(v));
+                    }
+                    else if (auto* l = dynamic_cast<ASTImportProgramNode*>(node.get()))
+                    {
+                        node.release();
+                        imports.push_back(std::unique_ptr<ASTImportProgramNode>(l));
+                    } else if (auto* f = dynamic_cast<ASTFilesProgramNode*>(node.get()))
+                    {
+                        node.release();
+                        for (auto& file : f->files)
+                            files.push_back(std::move(file));
+                        delete f;
+                    }
+                }
 
-        return std::make_unique<ASTMainProgramNode>(
-            std::move(functions),
-            std::move(global_variables),
-            std::move(imports),
-            std::move(files)
-        );
-    });
+                return std::make_unique<ASTMainProgramNode>(
+                    std::move(functions),
+                    std::move(global_variables),
+                    std::move(imports),
+                    std::move(files)
+                );
+            });
 }

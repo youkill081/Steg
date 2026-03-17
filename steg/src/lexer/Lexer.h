@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <filesystem>
+
 #include "./lexer_definitions.h"
 #include "TextParser.h"
 
@@ -15,6 +17,7 @@ namespace compiler
     struct LexerToken
     {
         LexerTokensTypes type;
+        std::filesystem::path path;
         std::string value;
         std::size_t line_number;
         std::size_t column_number;
@@ -38,7 +41,11 @@ namespace compiler
         [[nodiscard]] LexerToken _compute_next_token() const;
         void _skip_space_and_comment() const;
     public:
-        explicit Lexer(TextParser &parser) : _parser(parser) {}
+        explicit Lexer(TextParser &parser) : _parser(parser)
+        {
+            _tokens.push_back({TOKEN_BOF, _parser.get_path(), "", 1, 1});
+        }
+
         void compute();
 
         [[nodiscard]] std::span<const LexerToken> tokens() const;
