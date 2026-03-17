@@ -19,7 +19,7 @@ namespace compiler
         as_expression(
             parseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS>
             >> compiler::ref(parseExpression)
-            << parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>
+            << lintedParseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>
         );
 
     /* Literal */

@@ -17,7 +17,7 @@ namespace compiler
     };
 
     inline Parser<AssignPart, TokenSpan> parseAssignPart = map(
-        seq(parseToken<TOKEN_ASSIGNMENT>, compiler::ref(parseLayer1)),
+        seq(parseToken<TOKEN_ASSIGNMENT>, lint<"Expected expression after '='">(compiler::ref(parseLayer1))),
         [](auto data) {
             return AssignPart{
                 ASTAssignExpressionStatement::ASSIGN,
@@ -27,7 +27,7 @@ namespace compiler
     );
 
     inline Parser<AssignPart, TokenSpan> parseAssignAddPart = map(
-        seq(parseToken<TOKEN_ADD_ASSIGNMENT>, compiler::ref(parseLayer1)),
+        seq(parseToken<TOKEN_ADD_ASSIGNMENT>, lint<"Expected expression after '+='">(compiler::ref(parseLayer1))),
         [](auto data) {
             return AssignPart{
                 ASTAssignExpressionStatement::ADD_ASSIGN,
@@ -37,7 +37,7 @@ namespace compiler
     );
 
     inline Parser<AssignPart, TokenSpan> parseAssignSubPart = map(
-        seq(parseToken<TOKEN_SUB_ASSIGNMENT>, compiler::ref(parseLayer1)),
+        seq(parseToken<TOKEN_SUB_ASSIGNMENT>, lint<"Expected expression after '-='">(compiler::ref(parseLayer1))),
         [](auto data) {
             return AssignPart{
                 ASTAssignExpressionStatement::SUB_ASSIGN,
@@ -47,7 +47,7 @@ namespace compiler
     );
 
     inline Parser<AssignPart, TokenSpan> parseAssignMulPart = map(
-        seq(parseToken<TOKEN_MUL_ASSIGNMENT>, compiler::ref(parseLayer1)),
+        seq(parseToken<TOKEN_MUL_ASSIGNMENT>, lint<"Expected expression after '*='">(compiler::ref(parseLayer1))),
         [](auto data) {
             return AssignPart{
                 ASTAssignExpressionStatement::MUL_ASSIGN,
@@ -57,7 +57,7 @@ namespace compiler
     );
 
     inline Parser<AssignPart, TokenSpan> parseAssignDivPart = map(
-        seq(parseToken<TOKEN_DIV_ASSIGNMENT>, compiler::ref(parseLayer1)),
+        seq(parseToken<TOKEN_DIV_ASSIGNMENT>, lint<"Expected expression after '/='">(compiler::ref(parseLayer1))),
         [](auto data) {
             return AssignPart{
                 ASTAssignExpressionStatement::DIV_ASSIGN,
