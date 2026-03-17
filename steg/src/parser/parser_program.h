@@ -17,8 +17,8 @@ namespace compiler
     parseParameter =
          map(
             seq(
-                parseTypeNoVoid,
-                parseToken<TOKEN_IDENTIFIER>
+                lint<"Invalid type %v">(parseTypeNoVoid),
+                lintedParseToken<TOKEN_IDENTIFIER>
             ),
             [](auto data)
             {
@@ -33,32 +33,38 @@ namespace compiler
     parseParamWithComma = parseToken<TOKEN_PUNCTUATION_COMMA> >> parseParameter;
 
     inline Parser<std::vector<std::unique_ptr<ASTParameterProgramNode>>, TokenSpan>
-        parseFunctionParameters = parseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >> map(seq(
-            optional(parseParameter), many(parseParamWithComma)
-        ), [](auto data)
-        {
-            auto params_vec = std::move(std::get<1>(data));
-            auto first_param = std::move(std::get<0>(data));
+parseFunctionParameters =
+    lintedParseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >>
+    (
+        map( // No parameters
+            parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>,
+            [](auto) { return std::vector<std::unique_ptr<ASTParameterProgramNode>>{}; }
+        )
+        |
+        map( // With parameters
+            seq(
+                parseParameter,
+                many(parseParamWithComma),
+                lintedParseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>
+            ),
+            [](auto data) {
+                auto first_param = std::move(std::get<0>(data));
+                auto params_vec  = std::move(std::get<1>(data));
 
-            std::vector<std::unique_ptr<ASTParameterProgramNode>> parameters;
+                std::vector<std::unique_ptr<ASTParameterProgramNode>> parameters;
+                parameters.push_back(std::move(first_param));
+                for (auto &p : params_vec)
+                    parameters.push_back(std::move(p));
 
-            for (auto &parameter : params_vec)
-            {
-                parameters.push_back(std::move(parameter));
+                return parameters;
             }
-            if (first_param.has_value())
-            {
-                parameters.insert(parameters.begin(), std::move(*first_param)); // It's the first parameter
-            }
-
-            return parameters;
-        }
-    ) << parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>;
+        )
+    );
 
     /* Functions */
 
     inline Parser<LexerToken, TokenSpan> parseFunctionDeclaration = parseToken<TOKEN_KEYWORD_FUNCTION> >> lint<"missing function identifier">(parseToken<TOKEN_IDENTIFIER>);
-    inline Parser<std::unique_ptr<ASTTypeNode>, TokenSpan> parseFunctionReturnType = parseToken<TOKEN_PUNCTUATION_ARROW> >> parseType;
+    inline Parser<std::unique_ptr<ASTTypeNode>, TokenSpan> parseFunctionReturnType = lint<"Missing function return type">(parseToken<TOKEN_PUNCTUATION_ARROW>) >> lint<"Invalid or missing function type (got %v)">(parseType);
 
     inline Parser<std::unique_ptr<ASTFunctionProgramNode>, TokenSpan> parseFunction =
         map(seq(
@@ -80,15 +86,12 @@ namespace compiler
 
     /* Main Program Node*/
 
-    using function_recovery = RecoverySet<
-        TOKEN_PUNCTUATION_RIGHT_BRACKET,
-        TOKEN_KEYWORD_FUNCTION,
-        TOKEN_KEYWORD_EXPORT
-    >;
+    using function_stop = StopSet<>;
+    using function_sync = SyncSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT>;
 
     inline Parser<std::unique_ptr<ASTMainProgramNode>, TokenSpan> parseMainProgram =
     map(many(
-    lint_checkpoint<function_recovery>(
+    lint_checkpoint<function_stop, function_sync, ASTErrorNode>(
         map(parseFunction, [](auto f) -> std::unique_ptr<ASTNode> { return std::move(f); })
         )
         |

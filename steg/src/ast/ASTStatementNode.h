@@ -15,6 +15,17 @@ namespace compiler
     class ASTStatementNode : public ASTNode
         {};
 
+    class ASTStatementError : public ASTStatementNode
+    {
+    public:
+        ASTStatementError() = default;
+        void display(std::size_t left_padding) override
+        {
+            display_indent(left_padding);
+            std::cout << "Error" << std::endl;
+        };
+    };
+
     class ASTBlockStatementNode final : public ASTStatementNode
     {
     public:

@@ -16,13 +16,12 @@
 
 #include "ast/ASTNode.h"
 #include "lexer/lexer_definitions.h"
-
+#include "lexer/Lexer.h"
 
 namespace compiler
 {
     using CharSpan = std::span<const char>;
 
-    struct LexerToken;
     using TokenSpan = std::span<const LexerToken>;
 
     /* Used to insert string into template */
@@ -205,6 +204,11 @@ namespace compiler
         };
     }
 
+    inline void report_error(const std::string &error_message, const LexerToken &token)
+    {
+        std::cout << "Erreur -> " << error_message << " (" << token.line_number << ":" << token.column_number << ")" << std::endl;
+    }
+
     template <FixedString error_message, typename Parser>
     auto lint(Parser parser)
     {
@@ -221,50 +225,60 @@ namespace compiler
                     std::string token_value = std::string(input[0].value);
                     error_message_string.replace(pos, 2, "\"" + token_value + "\"");
                 }
-                std::cout << "Erreur -> " << error_message_string << std::endl;
+                report_error(error_message_string, input[0]);
             }
             return res;
         };
     }
 
-    template <typename TSet, typename Parser> // RecoverySet version
+    template <LexerTokensTypes... tokens>
+    struct StopSet {};
+
+    template <LexerTokensTypes... tokens>
+    struct SyncSet {};
+
+    template <typename TStopSet, typename TSyncSet, typename TErrorNode, typename Parser>
     auto lint_checkpoint(Parser parser) {
-        return _lint_checkpoint_impl(parser, TSet{});
+        return _lint_checkpoint_impl<TErrorNode>(parser, TStopSet{}, TSyncSet{});
     }
 
-    template <typename Parser, LexerTokensTypes... recovery_tokens>
-    auto _lint_checkpoint_impl(Parser parser, RecoverySet<recovery_tokens...>)
+    template <typename TErrorNode, typename Parser,
+              LexerTokensTypes... stop_tokens,
+              LexerTokensTypes... sync_tokens>
+    auto _lint_checkpoint_impl(Parser parser,
+                               StopSet<stop_tokens...>,
+                               SyncSet<sync_tokens...>)
     {
         return [=](auto input) -> std::invoke_result_t<Parser, decltype(input)>
         {
             using FullResultType = typename std::invoke_result_t<Parser, decltype(input)>::value_type;
 
+            if (input.empty()) return std::nullopt;
+
             auto res = parser(input);
-            if (!res)
+            if (res) return res;
+
+            // Token "stop pur" (ex: '}') → on laisse le parseur parent le gérer
+            if (((input[0].type == stop_tokens) || ...))
+                return std::nullopt;
+
+            // On avance d'au moins un token (le début était cassé)
+            auto current_input = input.subspan(1);
+
+            while (!current_input.empty())
             {
-                if (input.empty()) return std::nullopt;
-
-                auto current_input = input;
-
+                // Stop pur → on s'arrête AVANT
+                if (((current_input[0].type == stop_tokens) || ...))
+                    break;
+                // Sync → on s'arrête ICI pour réessayer
+                if (((current_input[0].type == sync_tokens) || ...))
+                    break;
                 current_input = current_input.subspan(1);
-
-                while (current_input.size() > 0)
-                {
-                    if (((current_input[0].type == recovery_tokens) || ...))
-                    {
-                        break;
-                    }
-                    current_input = current_input.subspan(1);
-                }
-
-                return std::optional<FullResultType>{
-                    FullResultType{
-                        std::make_unique<ASTErrorNode>(),
-                        current_input
-                    }
-                };
             }
-            return res;
+
+            return std::optional<FullResultType>{
+                FullResultType{std::make_unique<TErrorNode>(), current_input}
+            };
         };
     }
 
@@ -282,7 +296,7 @@ namespace compiler
     /*
      * Try a parser, if didn't work try the second one (<|> equivalent in haskell)
      */
-    template <typename ParserA, typename ParserB> // Correction de la coquille 'PaserB'
+    template <typename ParserA, typename ParserB>
     auto operator|(ParserA parser_a, ParserB parser_b)
     {
         return [=](auto input) -> decltype(parser_a(input))

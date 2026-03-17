@@ -12,7 +12,7 @@ namespace compiler
 {
     inline Parser<std::unique_ptr<ASTVariableStatement>, TokenSpan> parseVariableDeclaration =
         map (seq(
-            parseType, (parseToken<TOKEN_IDENTIFIER> << parseToken<TOKEN_ASSIGNMENT>), (parseExpression)),
+            parseType, (lintedParseToken<TOKEN_IDENTIFIER> << lintedParseToken<TOKEN_ASSIGNMENT>), (parseExpression)),
             [](auto data)
             {
                 return std::make_unique<ASTVariableStatement>(

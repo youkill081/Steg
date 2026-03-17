@@ -13,7 +13,7 @@ namespace compiler
     extern Parser<std::unique_ptr<ASTBlockStatementNode>, TokenSpan> parseBlock;
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseCondition =
-        parseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >> parseExpression << parseToken<
+        lintedParseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >> parseExpression << lintedParseToken<
             TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>;
 
     inline Parser<std::unique_ptr<ASTIfStatementNode>, TokenSpan> parseIfStatement =

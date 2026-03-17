@@ -12,7 +12,7 @@
 namespace compiler
 {
     extern Parser<std::unique_ptr<ASTBlockStatementNode>, TokenSpan> parseBlock;
-    extern  Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseCondition; // declared in parseIf
+    extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseCondition; // declared in parseIf
 
     inline Parser<std::unique_ptr<ASTWhileStatementNode>, TokenSpan> parseWhileStatement =
         map ( seq (parseToken<TOKEN_KEYWORD_WHILE> >> compiler::ref(parseCondition), compiler::ref(parseBlock) ),

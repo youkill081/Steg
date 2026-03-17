@@ -23,18 +23,41 @@ namespace compiler
         });
     }
 
-    inline auto varStatement = as_statement(parseVariableDeclaration << parseToken<TOKEN_PUNCTUATION_SEMICOLON>);
+    inline auto varStatement = as_statement(parseVariableDeclaration << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
     inline auto ifStatement = as_statement(parseIfStatement);
     inline auto whileStatement = as_statement(parseWhileStatement);
     inline auto forStatement = as_statement(parseForStatement);
-    inline auto returnStatement = as_statement(parseReturn << parseToken<TOKEN_PUNCTUATION_SEMICOLON>);
-    inline auto breakStatement = as_statement(parseBreak << parseToken<TOKEN_PUNCTUATION_SEMICOLON>);
-    inline auto continueStatement = as_statement(parseContinue << parseToken<TOKEN_PUNCTUATION_SEMICOLON>);
-    inline auto expressionStatement = as_statement(parseExpressionStatement << parseToken<TOKEN_PUNCTUATION_SEMICOLON>);
+    inline auto returnStatement = as_statement(parseReturn << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
+    inline auto breakStatement = as_statement(parseBreak << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
+    inline auto continueStatement = as_statement(parseContinue << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
+    inline auto expressionStatement = as_statement(parseExpressionStatement << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
 
     inline Parser<std::unique_ptr<ASTStatementNode>, TokenSpan> parseStatement =
         varStatement | ifStatement | whileStatement | forStatement | returnStatement | breakStatement | continueStatement | expressionStatement;
 
+    using block_recovery = RecoverySet<
+        TOKEN_PUNCTUATION_RIGHT_BRACKET,
+        TOKEN_KEYWORD_IF,
+        TOKEN_KEYWORD_WHILE,
+        TOKEN_KEYWORD_RETURN,
+        TOKEN_TYPE_BOOL,
+        TOKEN_TYPE_INT8,
+        TOKEN_TYPE_UINT8,
+        TOKEN_TYPE_INT16,
+        TOKEN_TYPE_UINT16,
+        TOKEN_TYPE_INT32,
+        TOKEN_TYPE_UINT32
+    >;
+
+    using block_stop = StopSet<TOKEN_PUNCTUATION_RIGHT_BRACKET>;
+    using block_sync = SyncSet<
+        TOKEN_KEYWORD_IF, TOKEN_KEYWORD_WHILE, TOKEN_KEYWORD_RETURN,
+        TOKEN_KEYWORD_BREAK, TOKEN_KEYWORD_CONTINUE, TOKEN_KEYWORD_RETURN,
+        TOKEN_TYPE_BOOL, TOKEN_TYPE_INT8, TOKEN_TYPE_UINT8,
+        TOKEN_TYPE_INT16, TOKEN_TYPE_UINT16, TOKEN_TYPE_INT32, TOKEN_TYPE_UINT32
+    >;
+
+
     inline Parser<std::vector<std::unique_ptr<ASTStatementNode>>, TokenSpan> parseStatements =
-        many(parseStatement);
+        many(lint_checkpoint<block_stop, block_sync, ASTStatementError>(compiler::ref(parseStatement)));
 }
