@@ -11,17 +11,17 @@ namespace compiler
     /* Layer 3 */
 
     inline Parser<InfixPart, TokenSpan> parseMultiplicationPart = map(
-        seq(parseToken<TOKEN_OPERATOR_MULTIPLY>, lint<"Expected expression after '*'">(compiler::ref(parsePrimary))),
+        seq(parseToken<TOKEN_OPERATOR_MULTIPLY>, lint<"Expected expression after '*'">(compiler::ref(parseUnary))),
         [](auto data) { return InfixPart{ASTBinaryExpressionNode::MULTIPLICATION, std::move(std::get<1>(data))}; }
     );
 
     inline Parser<InfixPart, TokenSpan> parseDivisionPart = map(
-        seq(parseToken<TOKEN_OPERATOR_DIVIDE>, lint<"Expected expression after '/'">(compiler::ref(parsePrimary))),
+        seq(parseToken<TOKEN_OPERATOR_DIVIDE>, lint<"Expected expression after '/'">(compiler::ref(parseUnary))),
         [](auto data) { return InfixPart{ASTBinaryExpressionNode::DIVISION, std::move(std::get<1>(data))}; }
     );
 
     inline Parser<InfixPart, TokenSpan> parseModuloPart = map(
-        seq(parseToken<TOKEN_OPERATOR_MODULUS>, lint<"Expected expression after '%'">(compiler::ref(parsePrimary))),
+        seq(parseToken<TOKEN_OPERATOR_MODULUS>, lint<"Expected expression after '%'">(compiler::ref(parseUnary))),
         [](auto data) { return InfixPart{ASTBinaryExpressionNode::MODULO, std::move(std::get<1>(data))}; }
     );
 

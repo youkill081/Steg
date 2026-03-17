@@ -119,7 +119,7 @@ namespace compiler
         TokenEntry{"/", TOKEN_OPERATOR_DIVIDE},
         TokenEntry{"%", TOKEN_OPERATOR_MODULUS},
         TokenEntry{"!", TOKEN_OPERATOR_NOT},
-        TokenEntry{"&", TOKEN_OPERATOR_REFERENCE},
+        TokenEntry{"@", TOKEN_OPERATOR_REFERENCE},
         TokenEntry{"#", TOKEN_OPERATOR_DEREFERENCE},
 
         // Comparison

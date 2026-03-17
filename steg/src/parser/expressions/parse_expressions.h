@@ -8,14 +8,18 @@
 #include "parse_expressions_utils.h"
 #include "parse_primary.h"
 #include "parse_binary.h"
+#include "parse_unary.h"
 
 namespace compiler
 {
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parsePrimary =
         parseParenthesizedExpr | parseLiteral | parseFunctionCall  | parseIndexExpression | parseIdentifier;
 
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseUnary =
+        parseNegationUnary | parseAddressOfUnary  | parseDereferenceUnary | parsePrimary;
+
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer4 = map(
-        seq(compiler::ref(parsePrimary), many(parseMultiplicationPart | parseDivisionPart | parseModuloPart)),
+        seq(compiler::ref(parseUnary), many(parseMultiplicationPart | parseDivisionPart | parseModuloPart)),
         foldInfix
     );
 
