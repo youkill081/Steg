@@ -21,6 +21,8 @@ namespace compiler
         TOKEN_KEYWORD_EXPORT,
         TOKEN_KEYWORD_BREAK,
         TOKEN_KEYWORD_CONTINUE,
+        TOKEN_KEYWORD_IMPORT,
+        TOKEN_KEYWORD_FROM,
 
         TOKEN_TYPE_UINT8,
         TOKEN_TYPE_INT8,
@@ -90,6 +92,8 @@ namespace compiler
         TokenEntry{"export", TOKEN_KEYWORD_EXPORT},
         TokenEntry{"break", TOKEN_KEYWORD_BREAK},
         TokenEntry{"continue", TOKEN_KEYWORD_CONTINUE},
+        TokenEntry{"import", TOKEN_KEYWORD_IMPORT},
+        TokenEntry{"from", TOKEN_KEYWORD_FROM},
 
         // Types
         TokenEntry{"uint8", TOKEN_TYPE_UINT8},
@@ -154,6 +158,8 @@ namespace compiler
         {TOKEN_KEYWORD_EXPORT, "TOKEN_KEYWORD_EXPORT"},
         {TOKEN_KEYWORD_BREAK, "TOKEN_KEYWORD_BREAK"},
         {TOKEN_KEYWORD_CONTINUE, "TOKEN_KEYWORD_CONTINUE"},
+        {TOKEN_KEYWORD_IMPORT, "TOKEN_KEYWORD_IMPORT"},
+        {TOKEN_KEYWORD_FROM, "TOKEN_KEYWORD_FROM"},
         {TOKEN_TYPE_UINT8, "TOKEN_TYPE_UINT8"},
         {TOKEN_TYPE_INT8, "TOKEN_TYPE_INT8"},
         {TOKEN_TYPE_UINT16, "TOKEN_TYPE_UINT16"},

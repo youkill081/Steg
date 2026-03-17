@@ -17,6 +17,18 @@ namespace compiler
     class ASTProgramNode : public ASTNode
         {};
 
+    class ASTImportProgramNode final : public ASTProgramNode
+    {
+    public:
+        ASTImportProgramNode(std::vector<std::string> functions, const std::string& path)
+            : functions_variables(std::move(functions)), path(path) {}
+
+        void display(std::size_t left_padding) override;
+
+        std::vector<std::string> functions_variables;
+        std::string path;
+    };
+
     class ASTParameterProgramNode final : public ASTProgramNode
     {
     public:
@@ -58,11 +70,13 @@ namespace compiler
     public:
         ASTMainProgramNode(
             std::vector<std::unique_ptr<ASTFunctionProgramNode>> functions,
-            std::vector<std::unique_ptr<ASTVariableStatement>> global_variables
-        ) : functions(std::move(functions)), global_variables(std::move(global_variables)) {}
+            std::vector<std::unique_ptr<ASTVariableStatement>> global_variables,
+            std::vector<std::unique_ptr<ASTImportProgramNode>> imports
+        ) : functions(std::move(functions)), global_variables(std::move(global_variables)), imports(std::move(imports)) {}
 
         std::vector<std::unique_ptr<ASTFunctionProgramNode>> functions;
         std::vector<std::unique_ptr<ASTVariableStatement>> global_variables;
+        std::vector<std::unique_ptr<ASTImportProgramNode>> imports;
 
         void display(std::size_t left_padding) override;
     };

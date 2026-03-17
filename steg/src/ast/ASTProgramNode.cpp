@@ -7,6 +7,21 @@
 
 using namespace compiler;
 
+void ASTImportProgramNode::display(std::size_t left_padding)
+{
+    display_name("Import", left_padding);
+
+    display_indent(left_padding);
+    std::cout << "From \"" << path << "\"" << std::endl;
+    display_indent(left_padding);
+    std::cout << "Importing: " ;
+    for (const auto &imported_name : functions_variables)
+    {
+        std::cout << imported_name << " ";
+    }
+    std::cout << std::endl;
+}
+
 void ASTParameterProgramNode::display(std::size_t left_padding)
 {
     display_name("Parameter", left_padding);
@@ -57,5 +72,13 @@ void ASTMainProgramNode::display(std::size_t left_padding)
     for (const auto &global : global_variables)
     {
         global->display(left_padding + 1);
+    }
+
+    display_indent(left_padding);
+    std::cout << "Imports : " << std::endl;
+    std::cout << imports.size() << std::endl;
+    for (const auto &import : imports)
+    {
+        import->display(left_padding + 1);
     }
 }
