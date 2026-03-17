@@ -133,18 +133,18 @@ parseFunctionParameters =
     // Stop sets
     using AllTypes = StopSet<
         TOKEN_TYPE_UINT8, TOKEN_TYPE_INT8, TOKEN_TYPE_UINT16,
-        TOKEN_TYPE_INT16, TOKEN_TYPE_UINT32, TOKEN_TYPE_INT32, TOKEN_TYPE_BOOL>;
+        TOKEN_TYPE_INT16, TOKEN_TYPE_UINT32, TOKEN_TYPE_INT32, TOKEN_TYPE_BOOL
+    >;
 
-    using function_stop = ConcatStopSet<StopSet<TOKEN_KEYWORD_FILES, TOKEN_KEYWORD_IMPORT>, AllTypes>::type;
-    using import_stop = ConcatStopSet<StopSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT, TOKEN_KEYWORD_FILES>, AllTypes>::type;
-    using files_stop = ConcatStopSet<StopSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT, TOKEN_KEYWORD_IMPORT>, AllTypes>::type;
-    using globals_stop = StopSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT, TOKEN_KEYWORD_IMPORT, TOKEN_KEYWORD_FILES>;
+    using function_stop = ConcatStopSet<StopSet<TOKEN_KEYWORD_FILES, TOKEN_KEYWORD_IMPORT, TOKEN_EOF>, AllTypes>::type;
+    using import_stop = ConcatStopSet<StopSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT, TOKEN_KEYWORD_FILES, TOKEN_EOF>, AllTypes>::type;
+    using files_stop = ConcatStopSet<StopSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT, TOKEN_KEYWORD_IMPORT, TOKEN_EOF>, AllTypes>::type;
+    using globals_stop = StopSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT, TOKEN_KEYWORD_IMPORT, TOKEN_KEYWORD_FILES, TOKEN_EOF>;
 
     // Resync sets
     using AllTypesSyncSet = SyncSet<
         TOKEN_TYPE_UINT8, TOKEN_TYPE_INT8, TOKEN_TYPE_UINT16,
         TOKEN_TYPE_INT16, TOKEN_TYPE_UINT32, TOKEN_TYPE_INT32, TOKEN_TYPE_BOOL>;
-
     using main_sync = ConcatSyncSet<
         SyncSet<TOKEN_KEYWORD_FUNCTION, TOKEN_KEYWORD_EXPORT, TOKEN_KEYWORD_IMPORT, TOKEN_KEYWORD_FILES>,
         AllTypesSyncSet
