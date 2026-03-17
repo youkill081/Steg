@@ -12,7 +12,14 @@
 
 using namespace compiler;
 
-std::optional<LexerTokensTypes> lookup_keyword_or_symbol(const std::string_view &text) {
+LexerTokenCategory get_token_category(const LexerTokenType token_type)
+{
+    if (!token_type_to_category.contains(token_type))
+        return TOKEN_CATH_NO_CATH;
+    return token_type_to_category.at(token_type);
+}
+
+std::optional<LexerTokenType> lookup_keyword_or_symbol(const std::string_view &text) {
     for (const auto &entry : KEYWORDS) {
         if (entry.name == text) {
             return entry.type;
@@ -83,6 +90,7 @@ LexerToken Lexer::_parse_identifier_keyword(const std::size_t line, const std::s
     if (is_known_type.has_value()) {
         return {
             .type = is_known_type.value(),
+            .category = get_token_category(is_known_type.value()),
             .path = _parser.get_path(),
             .value = value,
             .line_number = line,
@@ -92,6 +100,7 @@ LexerToken Lexer::_parse_identifier_keyword(const std::size_t line, const std::s
 
     return {
         .type = TOKEN_IDENTIFIER,
+        .category = get_token_category(TOKEN_IDENTIFIER),
         .path = _parser.get_path(),
         .value = value,
         .line_number = line,
@@ -135,6 +144,7 @@ LexerToken Lexer::_parse_string(std::size_t line, std::size_t column) const
         throw LexerException("Unterminated string");
     return {
         .type = TOKEN_STRING,
+        .category = get_token_category(TOKEN_STRING),
         .path = _parser.get_path(),
         .value = value,
         .line_number = line,
@@ -152,6 +162,7 @@ LexerToken Lexer::_parse_number(std::size_t line, std::size_t column) const
     }
     return {
         .type = TOKEN_INTEGER,
+        .category = get_token_category(TOKEN_INTEGER),
         .path = _parser.get_path(),
         .value = value,
         .line_number = line,
@@ -177,6 +188,7 @@ LexerToken Lexer::_parse_symbol(std::size_t line, std::size_t column) const
     if (known_type.has_value()) {
         return {
             .type = known_type.value(),
+            .category = get_token_category(known_type.value()),
             .path = _parser.get_path(),
             .value = value,
             .line_number = line,
@@ -196,6 +208,7 @@ LexerToken Lexer::_compute_next_token() const
     {
         return {
             .type = TOKEN_EOF,
+            .category = get_token_category(TOKEN_EOF),
             .path = _parser.get_path(),
             .value = "",
             .line_number = _parser.get_line_number(),

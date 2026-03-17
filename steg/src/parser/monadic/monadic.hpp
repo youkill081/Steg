@@ -40,7 +40,7 @@ namespace compiler
         [[nodiscard]] static constexpr size_t size() { return N - 1; }
     };
 
-    template <LexerTokensTypes... Ts>
+    template <LexerTokenType... Ts>
     struct RecoverySet {};
 
     template <typename T, typename Stream>
@@ -239,24 +239,24 @@ namespace compiler
         };
     }
 
-    template <LexerTokensTypes... tokens>
+    template <LexerTokenType... tokens>
     struct StopSet {};
 
     template <typename S1, typename S2>
     struct ConcatStopSet;
 
-    template <LexerTokensTypes... A, LexerTokensTypes... B>
+    template <LexerTokenType... A, LexerTokenType... B>
     struct ConcatStopSet<StopSet<A...>, StopSet<B...>> {
         using type = StopSet<A..., B...>;
     };
 
-    template <LexerTokensTypes... tokens>
+    template <LexerTokenType... tokens>
     struct SyncSet {};
 
     template <typename S1, typename S2>
     struct ConcatSyncSet;
 
-    template <LexerTokensTypes... A, LexerTokensTypes... B>
+    template <LexerTokenType... A, LexerTokenType... B>
     struct ConcatSyncSet<SyncSet<A...>, SyncSet<B...>> {
         using type = SyncSet<A..., B...>;
     };
@@ -267,8 +267,8 @@ namespace compiler
     }
 
     template <typename TErrorNode, typename Parser,
-              LexerTokensTypes... stop_tokens,
-              LexerTokensTypes... sync_tokens>
+              LexerTokenType... stop_tokens,
+              LexerTokenType... sync_tokens>
     auto _lint_checkpoint_impl(Parser parser,
                                StopSet<stop_tokens...>,
                                SyncSet<sync_tokens...>)

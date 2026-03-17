@@ -12,7 +12,7 @@
 
 namespace compiler
 {
-    template <LexerTokensTypes token_type>
+    template <LexerTokenType token_type>
     constexpr auto parseToken = [](TokenSpan tokens) -> std::optional<Result<LexerToken, TokenSpan>>
     {
         if (tokens.empty()) return std::nullopt;
@@ -20,7 +20,7 @@ namespace compiler
         return std::optional{Result{tokens.front(), tokens.subspan(1)}};
     };
 
-    template <LexerTokensTypes token_type>
+    template <LexerTokenType token_type>
     constexpr auto lintedParseToken = [](TokenSpan tokens) -> std::optional<Result<LexerToken, TokenSpan>>
     {
         if (tokens.empty())

@@ -16,7 +16,8 @@ namespace compiler
 {
     struct LexerToken
     {
-        LexerTokensTypes type;
+        LexerTokenType type;
+        LexerTokenCategory category;
         std::filesystem::path path;
         std::string value;
         std::size_t line_number;
@@ -43,7 +44,7 @@ namespace compiler
     public:
         explicit Lexer(TextParser &parser) : _parser(parser)
         {
-            _tokens.push_back({TOKEN_BOF, _parser.get_path(), "", 1, 1});
+            _tokens.push_back({TOKEN_BOF, TOKEN_CATH_NO_CATH, _parser.get_path(), "", 1, 1});
         }
 
         void compute();
