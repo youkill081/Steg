@@ -26,6 +26,11 @@ TextParser TextParser::from_file(const std::string &path)
     return TextParser(buffer.str(), filepath);
 }
 
+TextParser TextParser::from_string(const std::string& content, const std::filesystem::path& path)
+{
+    return TextParser(content, path);
+}
+
 
 char TextParser::get_next()
 {

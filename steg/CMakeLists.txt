@@ -48,7 +48,6 @@ add_library(steg_lib STATIC ${STEG_LIB_SOURCES})
 
 target_include_directories(steg_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(steg_lib PUBLIC stegcommon)
-target_link_libraries(steg_lib PUBLIC raylib)
 
 add_executable(steg src/main.cpp)
 

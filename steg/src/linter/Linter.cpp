@@ -143,13 +143,13 @@ void print_code_line_with_caret(const LintError& err, const std::vector<std::str
 
 void Linter::display_diagnostics() const
 {
-    if (errors.empty())
+    if (_errors.empty())
     {
         std::cout << "[Linter] No errors found\n";
         return;
     }
 
-    for (const auto& err : errors)
+    for (const auto& err : _errors)
     {
         auto [label, color] = severity_label_and_color(err.severity);
         std::filesystem::path relativePath = make_relative_path(err.file);

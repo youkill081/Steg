@@ -24,6 +24,7 @@ namespace compiler
             : _content(content), _path(path) {}
     public:
         static TextParser from_file(const std::string &content);
+        static TextParser from_string(const std::string& content, const std::filesystem::path& path = "");
 
         char get_next();
         char peek_x(std::uint32_t x = 1) const;

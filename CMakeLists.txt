@@ -6,13 +6,14 @@ set(APP_NAME stegnocode)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_subdirectory(libs/lsp-framework)
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
 add_subdirectory(libs/stegcommon)
+add_subdirectory(libs/json)
 add_subdirectory(libs/raylib)
 
 add_subdirectory(steg)
-add_subdirectory(stegasm)
-add_subdirectory(stegasmLsp)
+add_subdirectory(steg/lsp)
 
 add_subdirectory(test)
 

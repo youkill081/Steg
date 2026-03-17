@@ -23,7 +23,7 @@ namespace compiler
     class Linter
     {
     private:
-        std::vector<LintError> errors;
+        std::vector<LintError> _errors;
     public:
         static Linter& instance() // One linter for all compiler process
         {
@@ -39,12 +39,14 @@ namespace compiler
             uint32_t length = 1,
             LintError::Severity severity = LintError::Severity::ERR
         ) {
-            errors.push_back({ message, file, line, column, length, severity });
+            _errors.push_back({ message, file, line, column, length, severity });
         }
 
-        const std::vector<LintError>& get_errors() const { return errors; }
-        bool has_errors() const { return !errors.empty(); }
+        const std::vector<LintError>& get_errors() const { return _errors; }
+        bool has_errors() const { return !_errors.empty(); }
 
         void display_diagnostics() const;
+
+        void clear() { _errors.clear(); };
     };
 }
