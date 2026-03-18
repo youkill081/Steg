@@ -4,39 +4,28 @@
 
 #include <iostream>
 
+#include "compiler.h"
 #include "ast/ASTProgramNode.h"
 #include "lexer/Lexer.h"
 #include "lexer/TextParser.h"
 #include "linter/Linter.h"
 #include "parser/parser_program.h"
 #include "parser/monadic/monadic.hpp"
+#include "semantic_analysis/step1/SymbolCollector.h"
 
-using namespace compiler;
 
 int main()
 {
-    try
+    compiler::TextParser parser = compiler::TextParser::from_file("C:/Users/Roumite/CLionProjects/stegnocode/steg/examples/test.steg");
+
+    auto result = compiler::analyze(parser);
+    if (!compiler::Linter::instance().has_errors())
     {
-        TextParser parser = TextParser::from_file("C:/Users/Roumite/CLionProjects/stegnocode/steg/examples/test.steg");
-
-        Lexer lexer(parser);
-        lexer.compute();
-        auto tokens = lexer.tokens();
-
-        auto result = parseMainProgram(tokens);
-
-        if (Linter::instance().has_errors())
-        {
-            Linter::instance().display_diagnostics();
-        } else
-        {
-            result->value->display(0);
-        }
-    } catch (std::exception &e)
+        result->ast->display(0);
+    } else
     {
-        std::cout << e.what() << std::endl;
+        compiler::Linter::instance().display_diagnostics();
     }
-
 
     return 0;
 }

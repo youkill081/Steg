@@ -14,7 +14,7 @@ namespace handlers
             return;
         }
 
-        const auto uri      = params["textDocument"]["uri"].get<std::string>();
+        const auto uri = params["textDocument"]["uri"].get<std::string>();
         const auto filePath = lsp::uriToPath(uri);
 
         std::cerr << "[lsp] tokenizing: " << filePath << '\n';

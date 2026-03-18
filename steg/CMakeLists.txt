@@ -43,6 +43,12 @@ set(STEG_LIB_SOURCES
         src/linter/Linter.h
         src/linter/Linter.cpp
         src/ast/ASTVisitor.h
+        src/semantic_analysis/SymbolTable.h
+        src/semantic_analysis/step1/SymbolCollector.h
+        src/compiler.h
+        src/lexer/TokenMap.cpp
+        src/lexer/TokenMap.h
+        src/semantic_analysis/step2/SemanticTokensVisitor.h
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})

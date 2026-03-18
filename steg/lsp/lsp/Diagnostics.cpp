@@ -1,14 +1,10 @@
 #include "Diagnostics.h"
 #include "DocumentStore.h"
-#include "Tokens.h"                       // uriToPath
+#include "Tokens.h"
 #include "../core/Transport.h"
+#include "compiler.h"
 
 #include <iostream>
-
-#include "lexer/Lexer.h"
-#include "lexer/TextParser.h"
-#include "linter/Linter.h"
-#include "parser/parser_program.h"
 
 namespace lsp
 {
@@ -36,11 +32,7 @@ void publishDiagnostics(const std::string& uri, const std::string& filePath, std
             ? compiler::TextParser::from_string(*stored, filePath)
             : compiler::TextParser::from_file(filePath);
 
-        compiler::Lexer lexer(parser);
-        lexer.compute();
-        auto tokens = lexer.tokens();
-
-        compiler::parseMainProgram(tokens);
+        compiler::analyze(parser);
     }
     catch(const std::exception& e)
     {

@@ -14,6 +14,8 @@
 
 namespace compiler
 {
+    class TokenMap;
+
     struct LexerToken
     {
         LexerTokenType type;
@@ -64,6 +66,7 @@ namespace compiler
         void compute();
 
         [[nodiscard]] std::span<const LexerToken> tokens() const;
+        [[nodiscard]] TokenMap get_token_map() const;
 
         void display() const;
     };

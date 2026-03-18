@@ -22,7 +22,7 @@ namespace handlers
                             {
                                 "legend", {
                                     {"tokenTypes", lsp::buildTokenTypesLegend()},
-                                    {"tokenModifiers", nlohmann::json::array()},
+                                    {"tokenModifiers", lsp::buildTokenModifiersLegend()},
                                 }
                             },
                             {"full", true},

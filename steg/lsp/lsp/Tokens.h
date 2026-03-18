@@ -6,6 +6,7 @@
 namespace lsp
 {
     nlohmann::json buildTokenTypesLegend();
+    nlohmann::json buildTokenModifiersLegend();
     std::string uriToPath(const std::string& uri);
     nlohmann::json encodeTokens(const std::string& uri, const std::string& filePath);
 } // namespace lsp

@@ -19,6 +19,11 @@ namespace compiler
         TOKEN_CATH_STRING,
         TOKEN_CATH_CONSTANT,
         TOKEN_CATH_NO_CATH, // Then no coloration
+
+        TOKEN_CATH_FUNCTION,
+        TOKEN_CATH_FUNCTION_CALL,
+        TOKEN_CATH_VARIABLE,
+        TOKEN_CATH_PARAMETER
     };
 
     enum LexerTokenType

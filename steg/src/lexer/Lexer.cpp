@@ -9,6 +9,7 @@
 #include <ostream>
 
 #include "exceptions.h"
+#include "TokenMap.h"
 
 using namespace compiler;
 
@@ -254,6 +255,14 @@ std::span<const LexerToken> Lexer::tokens() const
 {
     const std::span span = _tokens;
     return span.subspan(1); // Convert vector to span
+}
+
+TokenMap Lexer::get_token_map() const
+{
+    TokenMap map;
+    for (const auto &token : _tokens)
+        map.add_token(token);
+    return map;
 }
 
 void Lexer::display() const

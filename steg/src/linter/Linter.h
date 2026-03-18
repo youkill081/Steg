@@ -6,8 +6,12 @@
 
 #include <filesystem>
 
+#include "lexer/Lexer.h"
+
 namespace compiler
 {
+    struct LexerToken;
+
     struct LintError
     {
         enum class Severity { ERR, WARN, HINT };
@@ -40,6 +44,14 @@ namespace compiler
             LintError::Severity severity = LintError::Severity::ERR
         ) {
             _errors.push_back({ message, file, line, column, length, severity });
+        }
+
+        void report(
+            const std::string &message,
+            const LexerToken &token,
+            const LintError::Severity severity = LintError::Severity::ERR
+        ) {
+            report(message, token.path, token.line_number, token.column_number, token.value.size(), severity);
         }
 
         const std::vector<LintError>& get_errors() const { return _errors; }
