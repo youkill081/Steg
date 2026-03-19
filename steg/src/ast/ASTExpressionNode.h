@@ -35,10 +35,16 @@ namespace compiler
             CLOCK
         };
 
-        ASTTypeNode(const Types type, const LexerToken &token) : type(type) { this->token = token; }
+        ASTTypeNode(
+            const Types type,
+            const uint8_t pointer_depth,
+            const LexerToken &token
+        ) : type(type), pointer_depth(pointer_depth) { this->token = token; }
         void display(std::size_t left_padding) override;
         void accept(ASTVisitor* visitor) override;
+
         Types type;
+        uint8_t pointer_depth = 0;
     };
 
     class ASTExpressionNode : public ASTNode

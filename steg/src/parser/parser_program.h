@@ -17,7 +17,7 @@ namespace compiler
     parseParameter =
          map(
             seq(
-                lint<"Invalid type %v">(parseTypeNoVoid),
+                lint<"Invalid type %v">(parseType),
                 lintedParseToken<TOKEN_IDENTIFIER>
             ),
             [](auto data)

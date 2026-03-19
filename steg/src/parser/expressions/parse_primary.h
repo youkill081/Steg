@@ -27,7 +27,7 @@ namespace compiler
         as_expression(map(parseToken<TOKEN_INTEGER>, [](LexerToken token) {
             return std::make_unique<ASTLiteralExpressionNode>(
                 token.value,
-                std::make_unique<ASTTypeNode>(ASTTypeNode::INT32, token),
+                std::make_unique<ASTTypeNode>(ASTTypeNode::INT32, 0, token),
                 token
             );
         }));
@@ -37,13 +37,13 @@ namespace compiler
         as_expression(map(parseToken<TOKEN_BOOL_TRUE>, [](LexerToken token) {
             return std::make_unique<ASTLiteralExpressionNode>(
                 "true",
-                std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, token),
+                std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, 0, token),
                 token
             );
     })) | as_expression(map(parseToken<TOKEN_BOOL_FALSE>, [](LexerToken token) {
         return std::make_unique<ASTLiteralExpressionNode>(
             "false",
-            std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, token),
+            std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, 0, token),
             token
         );
     }));
@@ -53,7 +53,7 @@ namespace compiler
        as_expression(map(parseToken<TOKEN_STRING>, [](LexerToken token) {
            return std::make_unique<ASTLiteralExpressionNode>(
                token.value,
-               std::make_unique<ASTTypeNode>(ASTTypeNode::STRING, token),
+               std::make_unique<ASTTypeNode>(ASTTypeNode::STRING, 0, token),
                token
            );
     }));

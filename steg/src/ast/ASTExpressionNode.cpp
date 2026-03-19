@@ -40,7 +40,7 @@ void compiler::ASTTypeNode::display(std::size_t left_padding)
     display_name("Type", left_padding);
 
     display_indent(left_padding + 1);
-    std::cout << "Type: " << ASTTypeNode_type_to_string[type] << std::endl;
+    std::cout << "Type: " << ASTTypeNode_type_to_string[type] << " pointer depth: " << static_cast<uint32_t>(pointer_depth) << std::endl;
 }
 
 void compiler::ASTTypeNode::accept(ASTVisitor* visitor)
