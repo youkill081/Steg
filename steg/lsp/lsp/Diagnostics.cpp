@@ -9,13 +9,12 @@
 namespace lsp
 {
 
-static int severityToLsp(compiler::LintError::Severity sev)
+static int severityToLsp(compiler::LintData::Severity sev)
 {
     switch(sev)
     {
-        case compiler::LintError::Severity::ERR:  return 1;
-        case compiler::LintError::Severity::WARN: return 2;
-        case compiler::LintError::Severity::HINT: return 3;
+        case compiler::LintData::Severity::ERR:  return 1;
+        case compiler::LintData::Severity::HINT: return 3;
         default: return 1;
     }
 }
@@ -41,19 +40,19 @@ void publishDiagnostics(const std::string& uri, const std::string& filePath, std
 
     auto diagnostics = nlohmann::json::array();
 
-    for(const auto& err : compiler::Linter::instance().get_errors())
+    for(const auto &result : compiler::Linter::instance().get_lint_result())
     {
-        const uint32_t line   = err.line   > 0 ? err.line   - 1 : 0;
-        const uint32_t col    = err.column > 0 ? err.column - 1 : 0;
-        const uint32_t endCol = col + err.length;
+        const uint32_t line   = result.line   > 0 ? result.line   - 1 : 0;
+        const uint32_t col    = result.column > 0 ? result.column - 1 : 0;
+        const uint32_t endCol = col + result.length;
 
         diagnostics.push_back({
             {"range", {
                 {"start", {{"line", line}, {"character", col}}},
                 {"end",   {{"line", line}, {"character", endCol}}},
             }},
-            {"severity", severityToLsp(err.severity)},
-            {"message",  err.message},
+            {"severity", severityToLsp(result.severity)},
+            {"message",  result.message},
             {"source",   "stegnocode"},
         });
     }

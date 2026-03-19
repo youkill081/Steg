@@ -7,9 +7,10 @@
 #include "ast/ASTProgramNode.h"
 #include "lexer/TokenMap.h"
 #include "parser/parser_program.h"
-#include "semantic_analysis/SymbolTable.h"
+#include "semantic_analysis/utils/SymbolTable.h"
 #include "semantic_analysis/step1/SymbolCollector.h"
-#include "semantic_analysis/step2/SemanticTokensVisitor.h"
+#include "semantic_analysis/step2/TypeInferenceVisitor.h"
+#include "semantic_analysis/step4/SemanticTokensVisitor.h"
 
 
 namespace compiler
@@ -38,6 +39,10 @@ namespace compiler
 
         TokenMap token_map = lexer.get_token_map();
         SymbolTable symbols = collector.table;
+
+        // Check all types inferences
+        TypeInferenceVisitor types_inference;
+        result->value->accept(&types_inference);
 
         // Tag all identifiers (function, function call and variable definition)
         SemanticTokensVisitor tokens_visitor(token_map, symbols);

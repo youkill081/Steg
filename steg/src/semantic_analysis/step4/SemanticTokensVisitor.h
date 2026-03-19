@@ -6,7 +6,7 @@
 
 #include "ast/ASTVisitor.h"
 #include "lexer/TokenMap.h"
-#include "semantic_analysis/SymbolTable.h"
+#include "../utils/SymbolTable.h"
 
 namespace compiler
 {

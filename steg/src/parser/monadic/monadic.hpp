@@ -213,7 +213,7 @@ namespace compiler
             token.line_number,
             token.column_number,
             token.value.size(),
-            LintError::Severity::ERR
+            LintData::Severity::ERR
         );
     }
 

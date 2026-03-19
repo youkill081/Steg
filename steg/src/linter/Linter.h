@@ -12,9 +12,9 @@ namespace compiler
 {
     struct LexerToken;
 
-    struct LintError
+    struct LintData
     {
-        enum class Severity { ERR, WARN, HINT };
+        enum class Severity { ERR, HINT };
 
         std::string message;
         std::filesystem::path file;
@@ -27,7 +27,7 @@ namespace compiler
     class Linter
     {
     private:
-        std::vector<LintError> _errors;
+        std::vector<LintData> _lints;
     public:
         static Linter& instance() // One linter for all compiler process
         {
@@ -41,24 +41,30 @@ namespace compiler
             uint32_t line,
             uint32_t column,
             uint32_t length = 1,
-            LintError::Severity severity = LintError::Severity::ERR
+            LintData::Severity severity = LintData::Severity::ERR
         ) {
-            _errors.push_back({ message, file, line, column, length, severity });
+            _lints.push_back({ message, file, line, column, length, severity });
         }
 
         void report(
             const std::string &message,
             const LexerToken &token,
-            const LintError::Severity severity = LintError::Severity::ERR
+            const LintData::Severity severity = LintData::Severity::ERR
         ) {
             report(message, token.path, token.line_number, token.column_number, token.value.size(), severity);
         }
 
-        const std::vector<LintError>& get_errors() const { return _errors; }
-        bool has_errors() const { return !_errors.empty(); }
+        [[nodiscard]] const std::vector<LintData>& get_lint_result() const { return _lints; }
+        [[nodiscard]] bool has_errors() const
+        {
+            for (const auto &lint : _lints)
+                if (lint.severity == LintData::Severity::ERR)
+                    return true;
+            return false;
+        }
 
         void display_diagnostics() const;
 
-        void clear() { _errors.clear(); };
+        void clear() { _lints.clear(); };
     };
 }

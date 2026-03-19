@@ -9,6 +9,8 @@ set(STEG_LIB_SOURCES
         src/lexer/lexer_definitions.h
         src/lexer/Lexer.cpp
         src/lexer/Lexer.h
+        src/lexer/TokenMap.cpp
+        src/lexer/TokenMap.h
         src/lexer/TextParser.cpp
         src/lexer/TextParser.h
         src/exceptions.h
@@ -43,16 +45,18 @@ set(STEG_LIB_SOURCES
         src/linter/Linter.h
         src/linter/Linter.cpp
         src/ast/ASTVisitor.h
-        src/semantic_analysis/SymbolTable.h
+        src/ast/ASTTypeNode.h
+        src/semantic_analysis/utils/SymbolTable.h
         src/semantic_analysis/step1/SymbolCollector.h
-        src/compiler.h
-        src/lexer/TokenMap.cpp
-        src/lexer/TokenMap.h
-        src/semantic_analysis/step2/SemanticTokensVisitor.h
+        src/semantic_analysis/step4/SemanticTokensVisitor.h
         src/semantic_analysis/exports/ExportCollector.h
-        src/semantic_analysis/helpers.h
-        src/semantic_analysis/ModuleManager.h
+        src/semantic_analysis/utils/helpers.h
+        src/semantic_analysis/utils/ModuleManager.h
         src/semantic_analysis/analyzeExports.h
+        src/semantic_analysis/utils/ResolvedType.h
+        src/semantic_analysis/step2/TypeInferenceVisitor.h
+        src/compiler.h
+        src/semantic_analysis/step2/TypeInferenceVisitor.cpp
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})

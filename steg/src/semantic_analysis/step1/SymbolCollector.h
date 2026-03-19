@@ -5,11 +5,11 @@
 #pragma once
 
 #include "ast/ASTVisitor.h"
-#include "semantic_analysis/SymbolTable.h"
+#include "semantic_analysis/utils/SymbolTable.h"
 #include "linter/Linter.h"
 #include "semantic_analysis/analyzeExports.h"
-#include "semantic_analysis/helpers.h"
-#include "semantic_analysis/ModuleManager.h"
+#include "../utils/helpers.h"
+#include "../utils/ModuleManager.h"
 
 namespace compiler
 {
@@ -33,13 +33,13 @@ namespace compiler
             if (table.contains(node->name))
                 Linter::instance().report("Function already declared: " + node->name, node->token);
 
-            std::vector<ASTTypeNode::Types> param_types;
+            std::vector<ResolvedType> param_types;
             for (auto& param : node->parameters)
-                param_types.push_back(param->type->type);
+                param_types.push_back(ResolvedType::from(param->type));
 
             table.declare(node->name, SymbolInfo{
                 .kind = SymbolKind::FUNCTION,
-                .type = node->return_type->type,
+                .type = ResolvedType::from(node->return_type),
                 .param_types = param_types,
                 .is_exported = node->is_exported,
                 .token = node->token
@@ -55,7 +55,7 @@ namespace compiler
         void visit(ASTParameterProgramNode* node) override {
             table.declare(node->name, SymbolInfo{
                 .kind = SymbolKind::VARIABLE,
-                .type = node->type->type,
+                .type = ResolvedType::from(node->type),
                 .token = node->token
             });
         }
@@ -69,7 +69,7 @@ namespace compiler
 
             table.declare(node->name, SymbolInfo{
                 .kind  = SymbolKind::VARIABLE,
-                .type  = node->type->type,
+                .type  = ResolvedType::from(node->type),
                 .token = node->token
             });
         }
@@ -130,7 +130,7 @@ namespace compiler
                     "  Tried: " + relative_to_source.string() + "\n"
                     "  Tried: " + relative_to_exec.string(),
                     node->token,
-                    LintError::Severity::ERR
+                    LintData::Severity::ERR
                 );
             }
 
@@ -139,13 +139,13 @@ namespace compiler
                 Linter::instance().report(
                     "File identifier already declared: " + node->name,
                     node->token,
-                    LintError::Severity::ERR
+                    LintData::Severity::ERR
                 );
             }
 
             table.declare(node->name, SymbolInfo{
                 .kind = SymbolKind::VARIABLE,
-                .type = ASTTypeNode::Types::FILE,
+                .type = ResolvedType::from(ASTTypeNode::Types::FILE, 0),
                 .is_exported = true,
                 .token = node->token
             });

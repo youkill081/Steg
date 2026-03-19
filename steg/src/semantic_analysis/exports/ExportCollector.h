@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 #include "ast/ASTVisitor.h"
-#include "semantic_analysis/SymbolTable.h"
+#include "../utils/SymbolTable.h"
 
 namespace compiler {
     class ExportCollector final : public ASTVisitor {
@@ -22,12 +22,13 @@ namespace compiler {
 
         void visit(ASTFunctionProgramNode* node) override {
             if (node->is_exported) {
-                std::vector<ASTTypeNode::Types> params;
-                for (auto& p : node->parameters) params.push_back(p->type->type);
+                std::vector<ResolvedType> params;
+                for (auto& p : node->parameters)
+                    params.push_back(ResolvedType::from(p->type));
 
                 exported_symbols[node->name] = std::make_shared<SymbolInfo>(SymbolInfo{
                     .kind = SymbolKind::FUNCTION,
-                    .type = node->return_type->type,
+                    .type = ResolvedType::from(node->return_type),
                     .param_types = params,
                     .is_exported = true,
                     .token = node->token
@@ -38,7 +39,7 @@ namespace compiler {
         void visit(ASTFileProgramNode* node) override {
             exported_symbols[node->name] = std::make_shared<SymbolInfo>(SymbolInfo{ // All files are exported
                 .kind = SymbolKind::VARIABLE,
-                .type = ASTTypeNode::Types::FILE,
+                .type = ResolvedType::from(ASTTypeNode::Types::FILE, 0),
                 .is_exported = true,
                 .token = node->token
             });

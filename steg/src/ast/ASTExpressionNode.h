@@ -11,48 +11,20 @@
 #include <string>
 #include <vector>
 
+#include "ASTTypeNode.h"
 #include "lexer/Lexer.h"
+#include "semantic_analysis/utils/ResolvedType.h"
 
 namespace compiler
 {
     struct SymbolInfo;
-
-    class ASTTypeNode final : public ASTNode
-    {
-    public:
-        enum Types
-        {
-            UINT8,
-            INT8,
-            UINT16,
-            INT16,
-            UINT32,
-            INT32,
-            BOOL,
-            STRING,
-            VOID,
-            FILE,
-            CLOCK
-        };
-
-        ASTTypeNode(
-            const Types type,
-            const uint8_t pointer_depth,
-            const LexerToken &token
-        ) : type(type), pointer_depth(pointer_depth) { this->token = token; }
-        void display(std::size_t left_padding) override;
-        void accept(ASTVisitor* visitor) override;
-
-        Types type;
-        uint8_t pointer_depth = 0;
-    };
 
     class ASTExpressionNode : public ASTNode
     {
     public:
         ASTExpressionNode(const LexerToken& token) { this->token = token; }
 
-        ASTTypeNode::Types resolved_type = ASTTypeNode::VOID;
+        ResolvedType resolved_type = ResolvedType::from(ASTTypeNode::VOID);
     };
 
 
@@ -225,20 +197,6 @@ namespace compiler
     };
 
     /* UTILS */
-
-    static inline std::map<ASTTypeNode::Types, std::string_view> ASTTypeNode_type_to_string = {
-        {ASTTypeNode::Types::UINT8, "UINT8"},
-        {ASTTypeNode::Types::INT8, "INT8"},
-        {ASTTypeNode::Types::UINT16, "UINT16"},
-        {ASTTypeNode::Types::INT16, "INT16"},
-        {ASTTypeNode::Types::UINT32, "UINT32"},
-        {ASTTypeNode::Types::INT32, "INT32"},
-        {ASTTypeNode::Types::BOOL, "BOOL"},
-        {ASTTypeNode::Types::STRING, "STRING"},
-        {ASTTypeNode::Types::VOID, "VOID"},
-        {ASTTypeNode::Types::FILE, "FILE"},
-        {ASTTypeNode::Types::CLOCK, "CLOCK"}
-    };
 
     static inline std::map<ASTUnaryExpressionNode::unaryOperationType, std::string_view> ASTUnaryExpressionNode_type_to_string = {
         {ASTUnaryExpressionNode::unaryOperationType::NEGATION, "NEGATION"}

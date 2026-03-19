@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "SymbolTable.h"
+#include "utils/SymbolTable.h"
 #include "exports/ExportCollector.h"
 #include "parser/parser_program.h"
 

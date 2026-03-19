@@ -17,13 +17,12 @@ using namespace compiler;
 
 static std::unordered_map<std::string, std::vector<std::string>> file_cache;
 
-std::pair<std::string, const char*> severity_label_and_color(LintError::Severity s)
+std::pair<std::string, const char*> severity_label_and_color(LintData::Severity s)
 {
     switch (s)
     {
-    case LintError::Severity::ERR: return {"error", AnsiColors::Red};
-    case LintError::Severity::WARN: return {"warning", AnsiColors::Yellow};
-    case LintError::Severity::HINT: return {"hint", AnsiColors::Cyan};
+    case LintData::Severity::ERR: return {"error", AnsiColors::Red};
+    case LintData::Severity::HINT: return {"hint", AnsiColors::Cyan};
     default: return {"note", AnsiColors::Cyan};
     }
 }
@@ -74,7 +73,7 @@ std::string expand_tabs(const std::string &s)
 }
 
 void print_header_and_location(
-    const LintError &err,
+    const LintData &err,
     const std::filesystem::path &relativePath,
     const char *color,
     const std::string &label)
@@ -90,7 +89,7 @@ void print_header_and_location(
     std::cout << "\t|\t\n";
 }
 
-void print_code_line_with_caret(const LintError& err, const std::vector<std::string>& file_lines)
+void print_code_line_with_caret(const LintData& err, const std::vector<std::string>& file_lines)
 {
     const uint32_t requested = err.line;
     std::string line_content;
@@ -143,13 +142,13 @@ void print_code_line_with_caret(const LintError& err, const std::vector<std::str
 
 void Linter::display_diagnostics() const
 {
-    if (_errors.empty())
+    if (_lints.empty())
     {
         std::cout << "[Linter] No errors found\n";
         return;
     }
 
-    for (const auto& err : _errors)
+    for (const auto& err : _lints)
     {
         auto [label, color] = severity_label_and_color(err.severity);
         std::filesystem::path relativePath = make_relative_path(err.file);
