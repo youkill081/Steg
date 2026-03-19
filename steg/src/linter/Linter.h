@@ -29,6 +29,9 @@ namespace compiler
     private:
         std::vector<LintData> _lints;
         bool _disabled = false;
+        bool _compile_mod = false; // If enabled display messages at runtime
+
+        static void print_single_diagnostic(const LintData& err);
     public:
         static Linter& instance() // One linter for all compiler process
         {
@@ -46,7 +49,10 @@ namespace compiler
         ) {
             if (_disabled)
                 return;
-            _lints.push_back({ message, file, line, column, length, severity });
+            const auto diag = LintData{ message, file, line, column, length, severity };
+            if (_compile_mod)
+                print_single_diagnostic(diag);
+            _lints.push_back(diag);
         }
 
         void report(
@@ -74,5 +80,7 @@ namespace compiler
 
         void disable() { _disabled = true; }
         void enable()  { _disabled = false; }
+
+        void set_compile_mode(const bool mode) { _compile_mod = mode; }
     };
 }

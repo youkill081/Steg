@@ -17,6 +17,7 @@ namespace compiler
     {
     public:
         SymbolTable table;
+        std::vector<std::filesystem::path> imported_paths;
 
         void visit(ASTMainProgramNode* node) override {
             for (const auto &import : node->imports)
@@ -159,6 +160,8 @@ namespace compiler
                 Linter::instance().report("Module not found: " + node->path, node->token);
                 return;
             }
+
+            imported_paths.push_back(std::filesystem::absolute(*path));
 
             std::string absolute_path = std::filesystem::absolute(*path).string();
             auto &manager = ModuleManager::instance();

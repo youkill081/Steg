@@ -57,6 +57,8 @@ set(STEG_LIB_SOURCES
         src/semantic_analysis/step2/TypeInferenceVisitor.h
         src/compiler.h
         src/semantic_analysis/step2/TypeInferenceVisitor.cpp
+        src/semantic_analysis/step3/ControlFlowVisitor.cpp
+        src/semantic_analysis/step3/ControlFlowVisitor.h
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})

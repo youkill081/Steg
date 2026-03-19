@@ -140,6 +140,25 @@ void print_code_line_with_caret(const LintData& err, const std::vector<std::stri
 }
 
 
+void Linter::print_single_diagnostic(const LintData& err)
+{
+    auto [label, color] = severity_label_and_color(err.severity);
+    const std::filesystem::path relativePath = make_relative_path(err.file);
+
+    print_header_and_location(err, relativePath, color, label.c_str());
+
+    const auto& lines = load_file_lines(err.file);
+    if (lines.empty())
+    {
+        std::cout << "\t| (unable to open file: " << relativePath.string() << ")\n\n";
+        return;
+    }
+
+    std::cout << color;
+    print_code_line_with_caret(err, lines);
+    std::cout << AnsiColors::Reset;
+}
+
 void Linter::display_diagnostics() const
 {
     if (_lints.empty())
@@ -150,20 +169,6 @@ void Linter::display_diagnostics() const
 
     for (const auto& err : _lints)
     {
-        auto [label, color] = severity_label_and_color(err.severity);
-        std::filesystem::path relativePath = make_relative_path(err.file);
-
-        print_header_and_location(err, relativePath, color, label.c_str());
-
-        const auto& lines = load_file_lines(err.file);
-        if (lines.empty())
-        {
-            std::cout << "\t| (unable to open file: " << relativePath.string() << ")\n\n";
-            continue;
-        }
-
-        std::cout << color;
-        print_code_line_with_caret(err, lines);
-        std::cout << AnsiColors::Reset;
+        print_single_diagnostic(err);
     }
 }

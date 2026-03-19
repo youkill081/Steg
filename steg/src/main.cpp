@@ -16,16 +16,12 @@
 
 int main()
 {
-    compiler::TextParser parser = compiler::TextParser::from_file("C:/Users/Roumite/CLionProjects/stegnocode/steg/examples/test.steg");
-
-    auto result = compiler::analyze(parser);
+    auto result = compiler::compile("C:/Users/Roumite/CLionProjects/stegnocode/steg/examples/test.steg");
     if (!compiler::Linter::instance().has_errors())
     {
-        result->ast->display(0);
-    } else
-    {
-        compiler::Linter::instance().display_diagnostics();
+        std::cout << "Compilation successful" << std::endl;
+        return 0;
     }
-
-    return 0;
+    std::cerr << "Errors during compilation" << std::endl;
+    return 1;
 }
