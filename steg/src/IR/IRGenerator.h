@@ -9,6 +9,8 @@
 
 namespace compiler
 {
+    static uint64_t _label_count = 0;
+
     class IRGenerator final : public ASTVisitor
     {
     public:
@@ -18,7 +20,6 @@ namespace compiler
     private:
         std::shared_ptr<IrBasicBlock> _current_block{};
         uint64_t _temp_count = 0;
-        uint64_t _label_count = 0;
         IrOperand _current_operand = {};
 
         std::vector<std::weak_ptr<IrBasicBlock>> loop_start_blocks_{}; // Need for the 'continue' statement
