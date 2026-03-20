@@ -29,6 +29,8 @@ std::string IRPrinter::format_value_type(const IrValueType t)
 
 std::string IRPrinter::format_operand(const IrOperand& op)
 {
+    if (op.value.empty()) return "_";
+
     const std::string type_suffix = (op.value_type != IrValueType::UNKNOWN)
                                         ? (":" + format_value_type(op.value_type))
                                         : "";
@@ -61,12 +63,15 @@ std::string IRPrinter::format_instruction(const IrInstruction& i)
         break;
     case IrOpCode::MOD: out << res << " = " << a1 << " % " << a2;
         break;
+    case IrOpCode::NEG: out << res << " = -" << a1;
+        break;
+    case IrOpCode::NOT: out << res << " = !" << a1;
+        break;
 
     case IrOpCode::EQ: out << res << " = " << a1 << " == " << a2;
         break;
     case IrOpCode::NEQ: out << res << " = " << a1 << " != " << a2;
         break;
-
     case IrOpCode::LT: out << res << " = " << a1 << " <u " << a2;
         break;
     case IrOpCode::GT: out << res << " = " << a1 << " >u " << a2;
@@ -90,25 +95,35 @@ std::string IRPrinter::format_instruction(const IrInstruction& i)
     case IrOpCode::OR: out << res << " = " << a1 << " || " << a2;
         break;
 
-    case IrOpCode::NEG: out << res << " = -" << a1;
+    case IrOpCode::SEXT: out << res << " = sext " << a1;
         break;
-    case IrOpCode::NOT: out << res << " = ! " << a1;
+    case IrOpCode::ZEXT: out << res << " = zext " << a1;
         break;
 
     case IrOpCode::COPY: out << res << " = " << a1;
         break;
-
-    case IrOpCode::SEXT: out << res << " = sext " << a1;
-        break;
-    case IrOpCode::ZEXT: out << res << " = zext " << a1;
+    case IrOpCode::ADDR_OF: out << res << " = &" << a1;
         break;
 
     case IrOpCode::LOAD_ARR: out << res << " = " << a1 << "[" << a2 << "]";
         break;
     case IrOpCode::STORE_ARR: out << res << "[" << a1 << "] = " << a2;
         break;
-    case IrOpCode::ADDR_OF: out << res << " = &" << a1;
+
+    case IrOpCode::LOAD_8: out << res << " = LOAD.8  " << a1;
         break;
+    case IrOpCode::LOAD_16: out << res << " = LOAD.16 " << a1;
+        break;
+    case IrOpCode::LOAD_32: out << res << " = LOAD.32 " << a1;
+        break;
+
+    case IrOpCode::STORE_8: out << "STORE.8  " << a1 << ", " << a2;
+        break;
+    case IrOpCode::STORE_16: out << "STORE.16 " << a1 << ", " << a2;
+        break;
+    case IrOpCode::STORE_32: out << "STORE.32 " << a1 << ", " << a2;
+        break;
+
     case IrOpCode::DEREF: out << res << " = *" << a1;
         break;
     case IrOpCode::DEREF_STORE: out << "*" << res << " = " << a1;
@@ -116,7 +131,9 @@ std::string IRPrinter::format_instruction(const IrInstruction& i)
 
     case IrOpCode::CALL:
         {
-            out << res << " = call " << a1 << "(";
+            if (!i.result.empty())
+                out << res << " = ";
+            out << "call " << a1 << "(";
             for (std::size_t k = 0; k < i.call_args.size(); ++k)
             {
                 if (k > 0) out << ", ";
@@ -164,12 +181,12 @@ std::string IRPrinter::print() const
     if (!_globals.empty())
     {
         out << "Globals\n";
-        for (const auto& [name, initial_value] : _globals)
+        for (const auto &[name, type, initial_value] : _globals)
         {
             out << "  " << name;
             if (!initial_value.value.empty())
                 out << " = " << format_operand(initial_value);
-            out << "\n";
+            out << "  (" << format_value_type(type) << ")\n";
         }
         out << "\n";
     }

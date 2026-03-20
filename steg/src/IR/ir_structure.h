@@ -12,9 +12,9 @@ namespace compiler
 {
     enum class IrOperandType
     {
-        Temporary, // t0, t1 etc...
+        Temporary,
         Constant,
-        Label // A function label, for example
+        Label,
     };
 
     enum class IrValueType
@@ -30,7 +30,7 @@ namespace compiler
 
     struct IrOperand {
         IrOperandType type;
-        std::string value = "";
+        std::string value;
         IrValueType value_type = IrValueType::UNKNOWN;
 
         [[nodiscard]] int32_t as_int() const { return std::stoi(value); }
@@ -39,6 +39,8 @@ namespace compiler
                 || value_type == IrValueType::INT16
                 || value_type == IrValueType::INT32;
         }
+
+        [[nodiscard]] bool empty() const { return value.empty(); }
     };
 
     enum class IrOpCode {
@@ -53,12 +55,20 @@ namespace compiler
         ZEXT, // Sign packing
 
         AND, OR,
-        COPY,
-        LOAD_ARR,
-        STORE_ARR,
-        ADDR_OF,
-        DEREF,
-        DEREF_STORE,
+
+        COPY, // result = args
+        ADDR_OF, // result = #arg1
+
+        LOAD_ARR, // result = arg1[arg2]
+        STORE_ARR, // result[arg1] = arg2
+
+        LOAD_8,  LOAD_16,  LOAD_32,
+        STORE_8, STORE_16, STORE_32,
+
+        // High levels operator
+        DEREF, // result = *arg1
+        DEREF_STORE, // *result = arg1 (result is a pointer)
+
         CALL,
     };
 
@@ -70,7 +80,12 @@ namespace compiler
 
         std::vector<IrOperand> call_args; // For function call
 
-        static IrInstruction make_irp(const IrOpCode op, const std::string& res, const std::string& a1, const std::string& a2) {
+        static IrInstruction make_3addr(
+            const IrOpCode op,
+            const std::string &res,
+            const std::string &a1,
+            const std::string &a2)
+        {
             return {
                 op,
                 {IrOperandType::Temporary, res},
@@ -82,7 +97,8 @@ namespace compiler
 
     struct IrGlobal {
         std::string name;
-        IrOperand initial_value;
+        IrValueType type = IrValueType::UNKNOWN;
+        IrOperand initial_value = {};
     };
 
     enum class IrBlockTerminator {
@@ -93,16 +109,19 @@ namespace compiler
         RETURN_VOID,
     };
 
-    struct IrBasicBlock {
+    struct IrBasicBlock
+    {
         std::string label;
-        std::vector<IrInstruction> instructions; // données owned ici
+        std::vector<IrInstruction> instructions;
+
+        bool is_function_entry = false;
+        std::string function_name;
 
         IrBlockTerminator terminator = IrBlockTerminator::NONE;
         IrOperand condition_operand = {};
         IrOperand return_operand = {};
 
         std::weak_ptr<IrBasicBlock> successor;
-        std::weak_ptr<IrBasicBlock> false_successor; // For Else statement
+        std::weak_ptr<IrBasicBlock> false_successor;
     };
-
 }

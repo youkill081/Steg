@@ -64,6 +64,10 @@ set(STEG_LIB_SOURCES
         src/IR/IRGenerator.h
         src/IR/IRprinter.cpp
         src/IR/IRprinter.h
+        src/IR/Irlowering.cpp
+        src/IR/Irlowering.h
+        src/asm_gen/Registerallocator.cpp
+        src/asm_gen/Registerallocator.h
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})

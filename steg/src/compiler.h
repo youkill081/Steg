@@ -7,6 +7,7 @@
 #include "ast/ASTProgramNode.h"
 #include "IR/IRGenerator.h"
 #include "IR/IRPrinter.h"
+#include "IR/IRLowering.h"
 #include "IR/ir_structure.h"
 #include "lexer/TokenMap.h"
 #include "parser/parser_program.h"
@@ -15,6 +16,14 @@
 #include "semantic_analysis/step2/TypeInferenceVisitor.h"
 #include "semantic_analysis/step3/ControlFlowVisitor.h"
 #include "semantic_analysis/step4/SemanticTokensVisitor.h"
+
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <set>
+#include <unordered_set>
+
+#include "asm_gen/Registerallocator.h"
 
 
 namespace compiler
@@ -40,7 +49,6 @@ namespace compiler
         if (!result.has_value())
             return std::nullopt;
 
-        // get all symbols
         SymbolCollector collector;
         result->value->accept(&collector);
 
@@ -80,8 +88,10 @@ namespace compiler
     struct CompilationResult {
         std::vector<std::shared_ptr<IrBasicBlock>> ir_blocks;
         std::vector<IrGlobal> globals;
+        RegisterAllocation registers;
     };
 
+    /* Compile single file IR */
     inline std::optional<CompilationUnit> compile_single(const std::filesystem::path& path)
     {
         TextParser parser = TextParser::from_file(path.string());
@@ -103,17 +113,23 @@ namespace compiler
         ControlFlowVisitor flow;
         result->value->accept(&flow);
 
+        /* Hight Level IR  */
         IRGenerator ir_gen;
         result->value->accept(&ir_gen);
 
-        return CompilationUnit {
+        /* Lowering it */
+        IRLowering lowering(ir_gen.all_blocks, ir_gen.globals);
+        lowering.lower();
+
+        return CompilationUnit{
             .path = path,
-            .ir_blocks = std::move(ir_gen.all_blocks),
-            .globals = std::move(ir_gen.globals),
+            .ir_blocks = std::move(lowering.lowered_blocks),
+            .globals = std::move(lowering.lowered_globals),
             .imported_paths = std::move(collector.imported_paths)
         };
     }
 
+    /* Compile a program */
     inline std::optional<CompilationResult> compile(const std::filesystem::path& path)
     {
         Linter::instance().set_compile_mode(true);
@@ -161,10 +177,25 @@ namespace compiler
         if (Linter::instance().has_errors())
             return std::nullopt;
 
-        if (!out.ir_blocks.empty()) {
-            const IRPrinter printer{out.ir_blocks, out.globals};
-            std::cout << printer.print() << std::endl;
+        /* Register Allocation */
+        std::unordered_set<std::string> global_name_set;
+        for (const auto &g : out.globals)
+            global_name_set.insert(g.name);
+
+        RegisterAllocator allocator(out.ir_blocks, global_name_set);
+        out.registers = allocator.allocate();
+
+        for (auto& spill : out.registers.spill_globals)
+        {
+            if (!seen_globals.contains(spill.name))
+            {
+                seen_globals.insert(spill.name);
+                out.globals.push_back(spill);
+            }
         }
+
+        IRPrinter printer(out.ir_blocks, out.globals);
+        std::cout << printer.print() << std::endl;
 
         return out;
     }
