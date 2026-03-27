@@ -14,7 +14,7 @@ IRLowering::IRLowering(
     const std::vector<IrGlobal>& src_globals
 ) : _src_blocks(src_blocks), _src_globals(src_globals)
 {
-    for (const auto &global : src_globals)
+    for (const auto& global : src_globals)
     {
         _global_names.insert(global.name);
         _global_types[global.name] = global.type;
@@ -34,6 +34,7 @@ void IRLowering::lower()
         dst->label = src->label;
         dst->is_function_entry = src->is_function_entry;
         dst->function_name = src->function_name;
+        dst->parameters = src->parameters;
 
         remap[src.get()] = dst;
         lowered_blocks.push_back(dst);

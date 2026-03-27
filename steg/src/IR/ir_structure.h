@@ -116,6 +116,7 @@ namespace compiler
 
         bool is_function_entry = false;
         std::string function_name;
+        std::vector<std::string> parameters;
 
         IrBlockTerminator terminator = IrBlockTerminator::NONE;
         IrOperand condition_operand = {};

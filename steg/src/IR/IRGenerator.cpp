@@ -39,11 +39,11 @@ void IRGenerator::terminate_jump(const std::shared_ptr<IrBasicBlock>& target) co
 {
     if (is_terminated()) return;
     _current_block->terminator = IrBlockTerminator::JUMP;
-    _current_block->successor  = target;
+    _current_block->successor = target;
 }
 
 void IRGenerator::terminate_branch(IrOperand cond, const std::shared_ptr<IrBasicBlock>& true_block,
-    const std::shared_ptr<IrBasicBlock>& false_block) const
+                                   const std::shared_ptr<IrBasicBlock>& false_block) const
 {
     if (is_terminated())
         return;
@@ -57,9 +57,12 @@ void IRGenerator::terminate_return(IrOperand val) const
 {
     if (is_terminated())
         return;
-    if (val.value.empty()) {
+    if (val.value.empty())
+    {
         _current_block->terminator = IrBlockTerminator::RETURN_VOID;
-    } else {
+    }
+    else
+    {
         _current_block->terminator = IrBlockTerminator::RETURN;
         _current_block->return_operand = std::move(val);
     }
@@ -189,12 +192,12 @@ static bool is_value_type_signed(IrValueType t)
 
 void IRGenerator::visit(ASTBinaryExpressionNode* node)
 {
-    auto left  = eval(node->left.get());
+    auto left = eval(node->left.get());
     auto right = eval(node->right.get());
 
-    const IrValueType result_type   = resolved_to_ir_type(node->resolved_type);
-    const IrValueType left_type     = left.value_type;
-    const IrValueType right_type    = right.value_type;
+    const IrValueType result_type = resolved_to_ir_type(node->resolved_type);
+    const IrValueType left_type = left.value_type;
+    const IrValueType right_type = right.value_type;
 
     const bool is_comparison = [&]
     {
@@ -212,10 +215,11 @@ void IRGenerator::visit(ASTBinaryExpressionNode* node)
     }();
 
     const IrValueType operand_target = is_comparison
-        ? wider_type(left_type, right_type)
-        : result_type;
+                                           ? wider_type(left_type, right_type)
+                                           : result_type;
 
-    auto sext_if_needed = [&](IrOperand& op, IrValueType target) {
+    auto sext_if_needed = [&](IrOperand& op, IrValueType target)
+    {
         if (op.value_type == target || op.value_type == IrValueType::UNKNOWN)
             return;
         IrOperand dest = temp_op(new_temp());
@@ -265,7 +269,7 @@ void IRGenerator::visit(ASTCallExpressionNode* node)
             ? gen_function_label(node->resolved_symbol->source_file, node->callee->name)
             : node->callee->name;
 
-    instruction.arg1      = label_op(call_label);
+    instruction.arg1 = label_op(call_label);
     instruction.call_args = std::move(args);
 
     const bool is_void = node->resolved_type.base == ASTTypeNode::Types::VOID
@@ -290,22 +294,28 @@ void IRGenerator::visit(ASTAssignExpressionStatement* node)
 {
     auto val = eval(node->value.get());
 
-    if (node->op != ASTAssignExpressionStatement::ASSIGN) {
+    if (node->op != ASTAssignExpressionStatement::ASSIGN)
+    {
         auto to = eval(node->target.get());
         IrOperand dest = temp_op(new_temp());
         add_instruction({composed_opcode(node->op), dest, to, val});
         val = dest;
     }
 
-    if (const auto *idx = dynamic_cast<ASTIndexExpressionNode*>(node->target.get())) {
+    if (const auto* idx = dynamic_cast<ASTIndexExpressionNode*>(node->target.get()))
+    {
         // Place data at the right index
         const auto index = eval(idx->index.get());
         add_instruction({IrOpCode::STORE_ARR, temp_op(idx->array->name), index, val});
-    } else if (const auto *deref = dynamic_cast<ASTDereferenceExpressionNode*>(node->target.get())) {
+    }
+    else if (const auto* deref = dynamic_cast<ASTDereferenceExpressionNode*>(node->target.get()))
+    {
         // Place data at the pointer position
         const auto ptr = eval(deref->expression.get());
         add_instruction({IrOpCode::DEREF_STORE, ptr, val});
-    } else {
+    }
+    else
+    {
         // Place data directly
         const auto target = eval(node->target.get());
         add_instruction({IrOpCode::COPY, target, val});
@@ -360,7 +370,7 @@ void IRGenerator::visit(ASTVariableStatement* node)
 
 void IRGenerator::visit(ASTBlockStatementNode* node)
 {
-    for (const auto &statement : node->statements)
+    for (const auto& statement : node->statements)
         statement->accept(this);
 }
 
@@ -479,6 +489,9 @@ void IRGenerator::visit(ASTFunctionProgramNode* node)
 
     _current_block->is_function_entry = true;
     _current_block->function_name = label;
+
+    for (const auto& param : node->parameters)
+        _current_block->parameters.push_back(param->name);
 
     node->statement->accept(this);
     terminate_return();

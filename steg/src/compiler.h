@@ -23,6 +23,7 @@
 #include <set>
 #include <unordered_set>
 
+#include "asm_gen/AsmGenerator.h"
 #include "asm_gen/Registerallocator.h"
 
 
@@ -196,6 +197,12 @@ namespace compiler
 
         IRPrinter printer(out.ir_blocks, out.globals);
         std::cout << printer.print() << std::endl;
+
+        /* ASM Generation */
+        AsmGenerator asm_gen(out.ir_blocks, out.globals, out.registers);
+        const std::string asm_output = asm_gen.generate();
+
+        std::cout << asm_output << std::endl;
 
         return out;
     }
