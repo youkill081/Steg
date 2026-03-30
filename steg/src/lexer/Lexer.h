@@ -52,6 +52,7 @@ namespace compiler
 
         [[nodiscard]] LexerToken _parse_identifier_keyword(std::size_t line, std::size_t column) const;
         [[nodiscard]] LexerToken _parse_string(std::size_t line, std::size_t column) const;
+        [[nodiscard]] LexerToken _parse_char(std::size_t line, std::size_t column) const;
         [[nodiscard]] LexerToken _parse_number(std::size_t line, std::size_t column) const;
         [[nodiscard]] LexerToken _parse_symbol(std::size_t line, std::size_t column) const;
 

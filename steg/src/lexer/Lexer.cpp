@@ -109,6 +109,28 @@ LexerToken Lexer::_parse_identifier_keyword(const std::size_t line, const std::s
     };
 }
 
+LexerToken Lexer::_parse_char(std::size_t line, std::size_t column) const
+{
+    _parser.get_next(); // Skip the first "'"
+
+    if (!_parser.has_next())
+        throw LexerException("Unterminated char");
+    char value = _parser.get_next();
+    if (!_parser.has_next() || _parser.peek_x() != '\'')
+        throw LexerException("Unterminated char");
+
+    _parser.get_next(); // Skip the last "'"
+
+    return {
+        .type = TOKEN_INTEGER,
+        .category = get_token_category(TOKEN_INTEGER),
+        .path = _parser.get_path(),
+        .value = std::to_string(value),
+        .line_number = line,
+        .column_number = column
+    };
+}
+
 LexerToken Lexer::_parse_string(std::size_t line, std::size_t column) const
 {
     _parser.get_next(); // Skip the first '"'
@@ -233,6 +255,9 @@ LexerToken Lexer::_compute_next_token() const
     // It's a string
     if (current_char == '"')
         { return _parse_string(start_line, start_column); }
+
+    if (current_char == '\'')
+        { return _parse_char(start_line, start_column); }
 
     return _parse_symbol(start_line, start_column);
 }
