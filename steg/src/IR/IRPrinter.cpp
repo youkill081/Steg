@@ -126,6 +126,11 @@ std::string IRPrinter::format_instruction(const IrInstruction& i)
     case IrOpCode::STORE_32: out << "STORE.32 " << a1 << ", " << a2;
         break;
 
+    case IrOpCode::SPILL_SAVE: out << "SPILL_SAVE " << a1;
+        break;
+    case IrOpCode::SPILL_RESTORE: out << "SPILL_RESTORE " << a1;
+        break;
+
     case IrOpCode::DEREF: out << res << " = *" << a1;
         break;
     case IrOpCode::DEREF_STORE: out << "*" << res << " = " << a1;
@@ -146,6 +151,8 @@ std::string IRPrinter::format_instruction(const IrInstruction& i)
             break;
         }
     }
+
+    out << " [instr -> " << i.instr_nbr << "]";
 
     return out.str();
 }
@@ -186,7 +193,7 @@ std::string IRPrinter::print() const
         out << "Globals\n";
         for (const auto &[name, type, ast_type, initial_value] : _globals)
         {
-            out << "  " << name;
+        out << "  " << name;
             if (!initial_value.value.empty())
                 out << " = " << format_operand(initial_value);
             out << "  (" << format_value_type(type) << ")\n";

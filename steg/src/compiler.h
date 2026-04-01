@@ -25,6 +25,7 @@
 
 #include "asm_gen/AsmGenerator.h"
 #include "asm_gen/Registerallocator.h"
+#include "IR/IRRenumbering.h"
 
 
 namespace compiler
@@ -179,6 +180,9 @@ namespace compiler
         if (Linter::instance().has_errors())
             return std::nullopt;
 
+        IRRenumbering renumbering(out.ir_blocks, out.globals);
+        renumbering.renumber();
+
         /* Register Allocation */
         std::unordered_set<std::string> global_name_set;
         for (const auto &g : out.globals)
@@ -196,16 +200,6 @@ namespace compiler
                 std::cout << "  " << key << " -> " << reg << "\n";
             }
         }
-
-        std::cout << "\n--- Spilled Globals (" << out.registers.spill_globals.size() << ") ---\n";
-        if (out.registers.spill_globals.empty()) {
-            std::cout << "  (None)\n";
-        } else {
-            for (const auto& spill : out.registers.spill_globals) {
-                std::cout << "  " << spill.name << "\n";
-            }
-        }
-        std::cout << "===========================================\n\n";
 
         IRPrinter printer(out.ir_blocks, out.globals);
         std::cout << printer.print() << std::endl;

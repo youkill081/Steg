@@ -69,6 +69,7 @@ set(STEG_LIB_SOURCES
         src/asm_gen/Registerallocator.h
         src/asm_gen/AsmGenerator.h
         src/asm_gen/AsmGenerator.cpp
+        src/IR/IRRenumbering.h
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})

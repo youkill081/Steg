@@ -483,6 +483,11 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
     case IrOpCode::STORE_32: emit_store_ir(instr, 32);
         break;
 
+    case IrOpCode::SPILL_SAVE: c("    PUSH " + resolve_dst(instr.arg1));
+        break;
+    case IrOpCode::SPILL_RESTORE: c("    POP " + resolve_dst(instr.arg1));
+        break;
+
     case IrOpCode::LOAD_ARR:
         {
             const uint8_t bits = bits_for(instr.result.value_type);

@@ -301,8 +301,10 @@ void IRGenerator::visit(ASTCallExpressionNode* node)
     if (!is_void)
     {
         const auto t = new_temp();
-        instruction.result = temp_op(t);
-        _current_operand = temp_op(t);
+        IrOperand res = temp_op(t);
+        res.value_type = resolved_to_ir_type(node->resolved_type);
+        instruction.result = res;
+        _current_operand = res;
     }
     else
     {

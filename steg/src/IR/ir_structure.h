@@ -72,6 +72,8 @@ namespace compiler
         LOAD_8,  LOAD_16,  LOAD_32,
         STORE_8, STORE_16, STORE_32,
 
+        SPILL_SAVE, SPILL_RESTORE,
+
         // High levels operator
         DEREF, // result = *arg1
         DEREF_STORE, // *result = arg1 (result is a pointer)
@@ -80,11 +82,13 @@ namespace compiler
         BUILTIN_CALL,
     };
 
+    inline uint64_t current_instr_nbr = 0;
     struct IrInstruction {
         IrOpCode op;
         IrOperand result;
         IrOperand arg1;
         IrOperand arg2;
+        uint64_t instr_nbr = current_instr_nbr++;
 
         std::vector<IrOperand> call_args; // For function call
 
