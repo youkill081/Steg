@@ -34,6 +34,7 @@ int main()
             std::cout << result->asm_output << std::endl;
         } else
         {
+            std::cout << "size -> " << static_cast<float>(buffer.size())/1000 << "ko" << std::endl;
             try
             {
                 return Vm::run(buffer);

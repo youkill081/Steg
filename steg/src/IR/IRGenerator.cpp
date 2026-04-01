@@ -107,6 +107,8 @@ IrOpCode IRGenerator::unary_opcode(const ASTUnaryExpressionNode::unaryOperationT
     {
     case ASTUnaryExpressionNode::unaryOperationType::NEGATION:
         return IrOpCode::NEG;
+    case ASTUnaryExpressionNode::unaryOperationType::NOT:
+        return IrOpCode::NOT;
     }
     return IrOpCode::NEG;
 }

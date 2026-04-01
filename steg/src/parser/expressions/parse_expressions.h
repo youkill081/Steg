@@ -16,7 +16,7 @@ namespace compiler
         parseParenthesizedExpr | parseLiteral | parseBool | parseStringLiteral | parseFunctionCall  | parseIndexExpression | parseIdentifier;
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseUnary =
-        parseNegationUnary | parseAddressOfUnary  | parseDereferenceUnary | parsePrimary;
+        parseNegationUnary | parseNotUnary | parseAddressOfUnary  | parseDereferenceUnary | parsePrimary;
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer4 = map(
         seq(compiler::ref(parseUnary), many(parseMultiplicationPart | parseDivisionPart | parseModuloPart)),

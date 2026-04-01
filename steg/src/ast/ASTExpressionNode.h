@@ -69,7 +69,8 @@ namespace compiler
     public:
         enum unaryOperationType
         {
-            NEGATION
+            NEGATION,
+            NOT
         };
 
         ASTUnaryExpressionNode(

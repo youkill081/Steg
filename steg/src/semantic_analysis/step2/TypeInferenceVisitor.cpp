@@ -341,6 +341,21 @@ void TypeInferenceVisitor::visit(ASTUnaryExpressionNode* node)
         } else {
             node->resolved_type = t;
         }
+    } else if (node->op_type == Op::NOT)
+    {
+        const ResolvedType t = node->expression->resolved_type;
+
+        if (is_opaque(t)) {
+            type_error("Negation not allowed on opaque type: " + t.to_string(), node->token);
+            node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            return;
+        }
+        if (!t.is_bool() || t.is_numeric()) {
+            type_error("Negation applied to non-numeric/bool type: " + t.to_string(), node->token);
+            node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            return;
+        }
+        node->resolved_type = ResolvedType::from(ASTTypeNode::BOOL);
     }
 }
 

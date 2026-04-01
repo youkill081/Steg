@@ -22,6 +22,18 @@ namespace compiler
             }
         );
 
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseNotUnary =
+        map(
+            seq(parseToken<TOKEN_OPERATOR_NOT>, compiler::ref(parseUnary)),
+            [](auto pair) -> std::unique_ptr<ASTExpressionNode> {
+                return std::make_unique<ASTUnaryExpressionNode>(
+                    std::move(std::get<1>(pair)),
+                    ASTUnaryExpressionNode::NOT,
+                    std::get<0>(pair)
+                );
+            }
+        );
+
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseAddressOfUnary =
         map(
             seq(parseToken<TOKEN_OPERATOR_REFERENCE>, compiler::ref(parseUnary)),

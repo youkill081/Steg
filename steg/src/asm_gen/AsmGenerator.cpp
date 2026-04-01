@@ -224,11 +224,12 @@ void AsmGenerator::emit_unop(const char* mnemonic, const IrInstruction& instr)
     bool imm;
     const std::string src = resolve_src(instr.arg1, k_ssrc1, imm);
     const std::string dst = resolve_dst(instr.result);
+    const uint8_t bits = bits_for(instr.result.value_type);
 
     const std::string rs = [&]() -> std::string
     {
         if (!imm) return src;
-        c("    LOAD_32 " + std::string(k_ssrc1) + ", " + src);
+        c("    LOAD_" + std::to_string(bits) + " " + std::string(k_ssrc1) + ", " + src);
         return k_ssrc1;
     }();
 
@@ -360,45 +361,23 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
             bool imm;
             const std::string src = resolve_src(instr.arg1, k_ssrc1, imm);
             const std::string dst = resolve_dst(instr.result);
+            const uint8_t bits = bits_for(instr.result.value_type);
 
             const std::string rs = [&]() -> std::string
             {
                 if (!imm) return src;
-                c("    LOAD_32 " + std::string(k_ssrc1) + ", " + src);
+                c("    LOAD_" + std::to_string(bits) + " " + std::string(k_ssrc1) + ", " + src);
                 return k_ssrc1;
             }();
 
-            c("    LOAD_32 " + std::string(k_ssrc2) + ", 0");
+            c("    LOAD_" + std::to_string(bits) + " " + std::string(k_ssrc2) + ", 0");
             c("    SUB " + dst + ", " + std::string(k_ssrc2) + ", " + rs);
             finalize_dst(instr.result, dst);
             break;
         }
 
-    case IrOpCode::NOT:
-        {
-            bool imm;
-            const std::string src = resolve_src(instr.arg1, k_ssrc1, imm);
-            const std::string dst = resolve_dst(instr.result);
-
-            const std::string rs = [&]() -> std::string
-            {
-                if (!imm) return src;
-                c("    LOAD_32 " + std::string(k_ssrc1) + ", " + src);
-                return k_ssrc1;
-            }();
-
-            const std::string lbl_one = fresh_label();
-            const std::string lbl_end = fresh_label();
-            c("    CMP " + rs + ", 0");
-            c("    JE " + lbl_one);
-            c("    LOAD_32 " + dst + ", 0");
-            c("    JMP " + lbl_end);
-            c(lbl_one + ":");
-            c("    LOAD_32 " + dst + ", 1");
-            c(lbl_end + ":");
-            finalize_dst(instr.result, dst);
-            break;
-        }
+    case IrOpCode::NOT: emit_unop("NOT", instr);
+        break;
 
     // Unsigned comparison
     case IrOpCode::EQ: emit_cmp_bool(instr, "JE");
@@ -586,8 +565,12 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
                 bool imm;
                 const std::string arg = resolve_src(instr.call_args[i], k_ssrc1, imm);
                 const std::string param = "R" + std::to_string(static_cast<int>(i) + 1);
+
                 if (arg != param)
-                    c("    LOAD_32 " + param + ", " + arg);
+                {
+                    uint8_t bits = bits_for(instr.call_args[i].value_type);
+                    c("    LOAD_" + std::to_string(bits) + " " + param + ", " + arg);
+                }
             }
 
             c("    CALL " + instr.arg1.value);
@@ -596,11 +579,15 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
             {
                 const std::string dst = resolve_dst(instr.result);
                 if (dst != "R0")
-                    c("    LOAD_32 " + dst + ", R0");
+                {
+                    uint8_t bits = bits_for(instr.result.value_type);
+                    c("    LOAD_" + std::to_string(bits) + " " + dst + ", R0");
+                }
                 finalize_dst(instr.result, dst);
             }
             break;
         }
+
     case IrOpCode::BUILTIN_CALL:
         {
             std::vector<std::string> used_params;
@@ -608,25 +595,40 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
             for (std::size_t i = 0; i < instr.call_args.size() && i < 6; ++i)
             {
                 bool imm;
-                const std::string arg   = resolve_src(instr.call_args[i], k_ssrc1, imm);
+                const std::string arg = resolve_src(instr.call_args[i], k_ssrc1, imm);
                 const std::string param = "R" + std::to_string(static_cast<int>(i) + 1);
 
                 if (arg != param)
-                    c("    LOAD_32 " + param + ", " + arg);
+                {
+                    uint8_t bits = bits_for(instr.call_args[i].value_type);
+                    c("    LOAD_" + std::to_string(bits) + " " + param + ", " + arg);
+                }
 
                 used_params.push_back(param);
             }
 
             std::string line = "    " + instr.arg1.value;
-            for (const auto& p : used_params)
-                line += " " + p;
+            bool has_return = !instr.result.empty();
+            if (has_return)
+            {
+                line += " R0";
+            }
+
+            for (std::size_t i = 0; i < used_params.size(); ++i)
+            {
+                line += " " + used_params[i];
+            }
+
             c(line);
 
-            if (!instr.result.empty())
+            if (has_return)
             {
                 const std::string dst = resolve_dst(instr.result);
                 if (dst != "R0")
-                    c("    LOAD_32 " + dst + ", R0");
+                {
+                    uint8_t bits = bits_for(instr.result.value_type);
+                    c("    LOAD_" + std::to_string(bits) + " " + dst + ", R0");
+                }
                 finalize_dst(instr.result, dst);
             }
             break;

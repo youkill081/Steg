@@ -93,23 +93,23 @@ namespace compiler
             builtin("print_n", v(T::VOID), {v(T::UINT32, 0)}, "DISPLAY_N");
             builtin("print_c", v(T::VOID), {v(T::UINT8, 0)}, "DISPLAY_C");
 
-            builtin("window_create", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::UINT8, 1)});
+            builtin("window_create", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::UINT8, 1)}, "WINDOW_CREATE");
             builtin("window_close", v(T::VOID), {}, "WINDOW_CLOSE");
             builtin("window_set_viewport_size", v(T::VOID), {v(T::UINT32), v(T::UINT32)}, "WINDOW_SET_VIEWPORT_SIZE");
             builtin("window_disable_viewport", v(T::VOID), {}, "WINDOW_DISABLE_VIEWPORT");
             builtin("window_pool", v(T::VOID), {}, "WINDOW_POOL");
             builtin("window_should_close", v(T::BOOL), {}, "WINDOW_SHOULD_CLOSE");
             builtin("window_clear", v(T::VOID), {v(T::UINT8), v(T::UINT8), v(T::UINT8)}, "WINDOW_CLEAR");
-            builtin("window_present", v(T::BOOL), {}, "WINDOW_PRESENT");
+            builtin("window_present", v(T::VOID), {}, "WINDOW_PRESENT");
 
-            builtin("window_key_pressed", v(T::BOOL), {v(T::UINT16)});
-            builtin("window_key_down", v(T::BOOL), {v(T::UINT32)});
-            builtin("window_set_target_fps", v(T::VOID), {v(T::UINT32)});
-            builtin("window_set_text_size", v(T::VOID), {v(T::UINT32)});
+            builtin("window_key_pressed", v(T::BOOL), {v(T::UINT16)}, "WINDOW_KEY_PRESSED");
+            builtin("window_key_down", v(T::BOOL), {v(T::UINT32)}, "WINDOW_KEY_DOWN");
+            builtin("window_set_target_fps", v(T::VOID), {v(T::UINT32)}, "WINDOW_SET_TARGET_FPS");
+            builtin("window_set_text_size", v(T::VOID), {v(T::UINT32)}, "WINDOW_SET_TEXT_SIZE");
             builtin("window_set_text_color", v(T::VOID), {v(T::UINT8), v(T::UINT8), v(T::UINT8)},
                     "WINDOW_SET_TEXT_COLOR");
             builtin("window_set_font", v(T::VOID), {v(T::FILE)});
-            builtin("window_draw_text", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::UINT8, 1)});
+            builtin("window_draw_text", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::UINT8, 1)}, "WINDOW_DRAW_TEXT");
             builtin("window_draw_texture", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::FILE)});
             builtin("window_set_texture_color_mask", v(T::VOID), {v(T::UINT8), v(T::UINT8), v(T::UINT8)},
                     "WINDOW_SET_TEXTURE_COLOR_MASK");
