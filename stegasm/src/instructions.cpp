@@ -260,6 +260,14 @@ void instr_DIVD(Runtime& runtime, InstructionView view)
     );
 }
 
+void instr_NOT(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        !view.get_r2(runtime)
+    );
+}
+
 void instr_MINR(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(

@@ -124,6 +124,7 @@ void instr_MULR(Runtime &runtime, InstructionView view);
 void instr_MULD(Runtime &runtime, InstructionView view);
 void instr_DIVR(Runtime &runtime, InstructionView view);
 void instr_DIVD(Runtime &runtime, InstructionView view);
+void instr_NOT(Runtime &runtime, InstructionView view);
 void instr_MINR(Runtime &runtime, InstructionView view);
 void instr_MIND(Runtime &runtime, InstructionView view);
 void instr_MAXR(Runtime &runtime, InstructionView view);
@@ -317,6 +318,7 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_DIVR3, REG, REG_BOTH, REG_BOTH),
         InstructionHandler(&instr_DIVD3, REG, REG_BOTH, ONE_DATA)
     },
+    RawInstruction{"NOT", true, InstructionHandler(&instr_NOT, REG, REG_BOTH)},
     RawInstruction{"MIN", true,
         InstructionHandler(&instr_MINR, REG, REG_BOTH),
         InstructionHandler(&instr_MIND, REG, ONE_DATA),
