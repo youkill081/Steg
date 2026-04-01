@@ -139,11 +139,15 @@ void RegisterAllocator::extend_lifetimes_for_back_jumps(uint64_t start_offset)
 void RegisterAllocator::assign_parameters(const IrBasicBlock& entry)
 {
     _parameter_names.clear();
+
+    const uint64_t first_instr = entry.instructions.empty() ? 0 : entry.instructions.front().instr_nbr;
+
     for (std::size_t i = 0; i < entry.parameters.size() && i < 6; ++i)
     {
         const std::string& param = entry.parameters[i];
         _parameter_names.insert(param);
         _result.reg_map[make_key(param)] = reg_name(k_reg_param_first + static_cast<int>(i));
+        _registry_life_duration[param] = { first_instr, first_instr };
     }
 }
 
