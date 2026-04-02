@@ -158,6 +158,7 @@ void instr_DISPLAY_N(Runtime &runtime, InstructionView view);
 void instr_DISPLAY_C(Runtime &runtime, InstructionView view);
 void instr_DISPLAY_B(Runtime &runtime, InstructionView view);
 void instr_HALT(Runtime &runtime, InstructionView view);
+void instr_HALT1(Runtime &runtime, InstructionView view);
 void instr_ALOCA(Runtime &runtime, InstructionView view);
 void instr_ALOCR(Runtime &runtime, InstructionView view);
 void instr_FREE(Runtime &runtime, InstructionView view);
@@ -352,7 +353,9 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_DISPLAY_C, REG_BOTH)},
     RawInstruction{"DISPLAY_B", true,
         InstructionHandler(&instr_DISPLAY_B, REG_BOTH)},
-    RawInstruction{"HALT", true, InstructionHandler(&instr_HALT)},
+    RawInstruction{"HALT", true,
+        InstructionHandler(&instr_HALT),
+        InstructionHandler(&instr_HALT1, REG_BOTH)},
     RawInstruction{"ALOCA", true, InstructionHandler(&instr_ALOCA, REG, ONE_DATA)},
     RawInstruction{"ALOCR", true, InstructionHandler(&instr_ALOCR, REG, REG)},
     RawInstruction{"FREE", true, InstructionHandler(&instr_FREE, REG)},
@@ -378,7 +381,7 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_WINDOW_KEY_PRESSED2, REG, REG_BOTH)},
     RawInstruction{"WINDOW_KEY_DOWN", true,
         InstructionHandler(&instr_WINDOW_KEY_DOWN, REG, ONE_DATA),
-        InstructionHandler(&instr_WINDOW_KEY_DOWN, REG, REG_BOTH)},
+        InstructionHandler(&instr_WINDOW_KEY_DOWN2, REG, REG_BOTH)},
     RawInstruction{"WINDOW_SET_TARGET_FPS", true,
         InstructionHandler(&instr_WINDOW_SET_TARGET_FPS, ONE_DATA),
         InstructionHandler(&instr_WINDOW_SET_TARGET_FPS1, REG_BOTH)},

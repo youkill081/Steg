@@ -83,6 +83,7 @@ namespace compiler
         std::filesystem::path path;
         std::vector<std::shared_ptr<IrBasicBlock>> ir_blocks;
         std::vector<IrGlobal> globals;
+        std::vector<IrFile> files;
         std::vector<std::filesystem::path> imported_paths;
     };
 
@@ -90,6 +91,7 @@ namespace compiler
     struct CompilationResult {
         std::vector<std::shared_ptr<IrBasicBlock>> ir_blocks;
         std::vector<IrGlobal> globals;
+        std::vector<IrFile> files;
         RegisterAllocation registers;
         std::string asm_output;
     };
@@ -128,6 +130,7 @@ namespace compiler
             .path = path,
             .ir_blocks = std::move(lowering.lowered_blocks),
             .globals = std::move(lowering.lowered_globals),
+            .files = std::move(ir_gen.files),
             .imported_paths = std::move(collector.imported_paths)
         };
     }
@@ -142,6 +145,7 @@ namespace compiler
 
         std::set<std::filesystem::path> visited; // Follow the already compiled file
         std::set<std::string> seen_globals; // Follow already defined global variables
+        std::set<std::string> seen_files; // Follow the already defined files
 
         std::function<bool(const std::filesystem::path&)> compile_recursive =
             [&](const std::filesystem::path& file) -> bool
@@ -162,12 +166,17 @@ namespace compiler
                 for (auto& block : unit->ir_blocks)
                     out.ir_blocks.push_back(std::move(block));
 
-                for (auto& global : unit->globals)
-                {
-                    if (!seen_globals.contains(global.name))
-                    {
+                for (auto& global : unit->globals) {
+                    if (!seen_globals.contains(global.name)) {
                         seen_globals.insert(global.name);
                         out.globals.push_back(std::move(global));
+                    }
+                }
+                for (auto &file_unit : unit->files)
+                {
+                    if (!seen_files.contains(file_unit.name)) {
+                        seen_files.insert(file_unit.name);
+                        out.files.push_back(std::move(file_unit));
                     }
                 }
 
@@ -201,11 +210,11 @@ namespace compiler
             }
         }
 
-        IRPrinter printer(out.ir_blocks, out.globals);
+        IRPrinter printer(out.ir_blocks, out.globals, out.files);
         std::cout << printer.print() << std::endl;
 
         /* ASM Generation */
-        AsmGenerator asm_gen(out.ir_blocks, out.globals, out.registers);
+        AsmGenerator asm_gen(out.ir_blocks, out.globals, out.files, out.registers);
         out.asm_output = asm_gen.generate();
 
         return out;

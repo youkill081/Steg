@@ -201,6 +201,14 @@ std::string IRPrinter::print() const
         out << "\n";
     }
 
+    if (!_files.empty())
+    {
+        out << "Files\n";
+        for (const auto& file : _files)
+            out << "  " << file.name << " -> " << file.path << "\n";
+        out << "\n";
+    }
+
     for (const auto& block : _blocks)
     {
         out << block->label << ":\n";

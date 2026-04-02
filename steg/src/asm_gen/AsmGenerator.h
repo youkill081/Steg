@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 namespace compiler
 {
@@ -21,6 +22,7 @@ namespace compiler
         AsmGenerator(
             const std::vector<std::shared_ptr<IrBasicBlock>>& blocks,
             const std::vector<IrGlobal>& globals,
+            const std::vector<IrFile>& files,
             const RegisterAllocation& alloc);
 
         [[nodiscard]] std::string generate();
@@ -35,15 +37,20 @@ namespace compiler
 
         const std::vector<std::shared_ptr<IrBasicBlock>>& _blocks;
         const std::vector<IrGlobal>& _globals;
+        const std::vector<IrFile>& _files;
         const RegisterAllocation& _alloc;
         std::string _main_function_name;
 
         std::unordered_map<std::string, IrValueType> _global_types;
+        std::set<std::string> _file_names;
 
         std::ostringstream _data;
         std::ostringstream _code;
         std::string _current_function;
         int _label_idx = 0;
+
+        // .files section
+        void emit_files_section();
 
         // .data section
         void emit_data_section();

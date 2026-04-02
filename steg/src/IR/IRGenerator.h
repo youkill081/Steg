@@ -16,6 +16,7 @@ namespace compiler
     public:
         std::vector<std::shared_ptr<IrBasicBlock>> all_blocks;
         std::vector<IrGlobal> globals;
+        std::vector<IrFile> files;
 
     private:
         std::shared_ptr<IrBasicBlock> _current_block{};
@@ -105,6 +106,8 @@ namespace compiler
                 var->accept(this);
             for (const auto& fn : node->functions)
                 fn->accept(this);
+            for (const auto& file : node->files)
+                file->accept(this);
         }
 
         void visit(ASTTypeNode *) override {}
@@ -113,6 +116,6 @@ namespace compiler
         void visit(ASTParameterProgramNode *) override {}
         void visit(ASTImportProgramNode *) override {}
         void visit(ASTFilesProgramNode *) override {}
-        void visit(ASTFileProgramNode *) override {}
+        void visit(ASTFileProgramNode *);
     };
 }

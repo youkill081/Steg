@@ -9,15 +9,19 @@ using namespace compiler;
 AsmGenerator::AsmGenerator(
     const std::vector<std::shared_ptr<IrBasicBlock>>& blocks,
     const std::vector<IrGlobal>& globals,
+    const std::vector<IrFile>& files,
     const RegisterAllocation& alloc)
-    : _blocks(blocks), _globals(globals), _alloc(alloc)
+    : _blocks(blocks), _globals(globals), _files(files), _alloc(alloc)
 {
-    for (const auto& g : _globals)
+    for (const auto &g : _globals)
         _global_types[g.name] = g.type;
+    for (const auto &[name, path] : _files)
+        _file_names.insert(name);
 }
 
 std::string AsmGenerator::generate()
 {
+    emit_files_section();
     emit_data_section();
     emit_text_section();
 
@@ -51,6 +55,13 @@ std::string AsmGenerator::format_init(const IrGlobal& g)
     if (!v.empty() && v.front() == '"')
         return v + ", 0";
     return v;
+}
+
+void AsmGenerator::emit_files_section()
+{
+    d("section .files");
+    for (const auto& f : _files)
+        d("    " + f.name + " \"" + f.path + '"');
 }
 
 void AsmGenerator::emit_data_section()
@@ -176,7 +187,12 @@ std::string AsmGenerator::resolve_src(
 
     case IrOperandType::Temporary:
         if (is_mem(op))
-            return emit_mem_load(op.value, op.value_type, scratch); // Load from memory
+            return emit_mem_load(op.value, op.value_type, scratch);
+
+        if (_file_names.contains(op.value)) {
+            c("    LOAD_32 " + std::string(scratch) + ", " + op.value);
+            return scratch;
+        }
 
         {
             const std::string r = phys_reg(op);

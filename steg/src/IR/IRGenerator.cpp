@@ -549,3 +549,11 @@ void IRGenerator::visit(ASTFunctionProgramNode* node)
     node->statement->accept(this);
     terminate_return();
 }
+
+void IRGenerator::visit(ASTFileProgramNode *file)
+{
+    this->files.push_back({
+        .name = file->name,
+        .path = file->path
+    });
+}

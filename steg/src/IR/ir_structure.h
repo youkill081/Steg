@@ -107,6 +107,11 @@ namespace compiler
         }
     };
 
+    struct IrFile {
+        std::string name;
+        std::string path;
+    };
+
     struct IrGlobal {
         std::string name;
         IrValueType type = IrValueType::UNKNOWN;

@@ -544,6 +544,12 @@ void instr_HALT(Runtime &runtime, InstructionView view)
     runtime.is_running = false;
 }
 
+void instr_HALT1(Runtime& runtime, InstructionView view)
+{
+    runtime.return_value = view.get_r1(runtime);
+    runtime.is_running = false;
+}
+
 void instr_ALOCA(Runtime &runtime, InstructionView view)
 {
     runtime.registries.write(

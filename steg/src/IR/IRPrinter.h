@@ -17,17 +17,19 @@ namespace compiler
     {
         const std::vector<std::shared_ptr<IrBasicBlock>>& _blocks;
         const std::vector<IrGlobal>& _globals;
+        const std::vector<IrFile>& _files;
 
     public:
         explicit IRPrinter(
             const std::vector<std::shared_ptr<IrBasicBlock>>& blocks,
-            const std::vector<IrGlobal>& globals
-        ) : _blocks(blocks), _globals(globals)
+            const std::vector<IrGlobal>& globals,
+            const std::vector<IrFile>& files
+        ) : _blocks(blocks), _globals(globals), _files(files)
         {
         }
 
         explicit IRPrinter(const IRGenerator& gen)
-            : _blocks(gen.all_blocks), _globals(gen.globals)
+            : _blocks(gen.all_blocks), _globals(gen.globals), _files(gen.files)
         {
         }
 
