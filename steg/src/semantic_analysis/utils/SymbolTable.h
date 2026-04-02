@@ -117,8 +117,8 @@ namespace compiler
             builtin("window_reset_texture_color_mask", v(T::VOID), {}, "WINDOW_RESET_TEXTURE_COLOR_MASK");
             builtin("window_set_icon", v(T::VOID), {v(T::FILE)}, "WINDOW_SET_ICON");
 
-            builtin("file_open", v(T::FILE), {v(T::UINT8, 1)});
-            builtin("file_create", v(T::FILE), {v(T::UINT8, 1)});
+            builtin("file_open", v(T::FILE), {v(T::UINT8, 1)}, "FILE_OPEN");
+            builtin("file_create", v(T::FILE), {v(T::UINT8, 1)}, "FILE_CREATE");
             builtin("file_save", v(T::VOID), {v(T::FILE)}, "FILE_SAVE");
             builtin("file_delete", v(T::VOID), {v(T::FILE)}, "FILE_DELETE");
             builtin("file_close", v(T::VOID), {v(T::FILE)}, "FILE_CLOSE");
@@ -126,8 +126,8 @@ namespace compiler
             builtin("file_clear_data", v(T::VOID), {v(T::FILE)}, "FILE_CLEAR_DATA");
             builtin("file_read_byte", v(T::UINT8), {v(T::FILE)}, "FILE_READ_BYTE");
             builtin("file_read_word", v(T::UINT16), {v(T::FILE)}, "FILE_READ_WORD");
-            builtin("file_append_byte", v(T::VOID), {v(T::FILE), v(T::UINT8)}, "FILE_APPEND_BYTE");
-            builtin("file_append_word", v(T::VOID), {v(T::FILE), v(T::UINT16)}, "FILE_APPEND_WORD");
+            builtin("file_append_byte", v(T::VOID), {v(T::UINT8), v(T::FILE)}, "FILE_APPEND_BYTE");
+            builtin("file_append_word", v(T::VOID), {v(T::UINT16), v(T::FILE)}, "FILE_APPEND_WORD");
             builtin("file_is_byte_remaining", v(T::BOOL), {v(T::FILE)}, "FILE_IS_BYTE_REMAINING");
             builtin("file_is_word_remaining", v(T::BOOL), {v(T::FILE)}, "FILE_IS_WORD_REMAINING");
 

@@ -198,7 +198,9 @@ void instr_WINDOW_RESET_TEXTURE_COLOR_MASK(Runtime &runtime, InstructionView vie
 void instr_WINDOW_SET_ICON(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_ICON1(Runtime &runtime, InstructionView view);
 void instr_FILE_OPEN(Runtime &runtime, InstructionView view);
+void instr_FILE_OPEN2(Runtime &runtime, InstructionView view);
 void instr_FILE_CREATE(Runtime &runtime, InstructionView view);
+void instr_FILE_CREATE2(Runtime &runtime, InstructionView view);
 void instr_FILE_SAVE(Runtime &runtime, InstructionView view);
 void instr_FILE_DELETE(Runtime &runtime, InstructionView view);
 void instr_FILE_CLOSE(Runtime &runtime, InstructionView view);
@@ -403,8 +405,12 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"WINDOW_SET_ICON", true,
         InstructionHandler(&instr_WINDOW_SET_ICON, ONE_DATA),
         InstructionHandler(&instr_WINDOW_SET_ICON1, REG_BOTH)},
-    RawInstruction{"FILE_OPEN", true, InstructionHandler(&instr_FILE_OPEN, REG, ONE_DATA)},
-    RawInstruction{"FILE_CREATE", true, InstructionHandler(&instr_FILE_CREATE, REG, ONE_DATA)},
+    RawInstruction{"FILE_OPEN", true,
+        InstructionHandler(&instr_FILE_OPEN, REG, ONE_DATA),
+        InstructionHandler(&instr_FILE_OPEN2, REG, REG_BOTH)},
+    RawInstruction{"FILE_CREATE", true,
+        InstructionHandler(&instr_FILE_CREATE, REG, ONE_DATA),
+        InstructionHandler(&instr_FILE_CREATE2, REG, REG_BOTH)},
     RawInstruction{"FILE_SAVE", true, InstructionHandler(&instr_FILE_SAVE, REG)},
     RawInstruction{"FILE_DELETE", true, InstructionHandler(&instr_FILE_DELETE, REG)},
     RawInstruction{"FILE_CLOSE", true, InstructionHandler(&instr_FILE_CLOSE, REG)},

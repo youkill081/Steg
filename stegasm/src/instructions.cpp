@@ -846,11 +846,28 @@ void instr_FILE_OPEN(Runtime& runtime, InstructionView view)
     );
 }
 
+
+void instr_FILE_OPEN2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.open_file(runtime.utils.get_string_from_address(view.get_r2(runtime)))
+    );
+}
+
 void instr_FILE_CREATE(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(
         view.r1(),
         runtime.files.create_file(runtime.utils.get_string_from_address(view.get_data(runtime)))
+    );
+}
+
+void instr_FILE_CREATE2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.create_file(runtime.utils.get_string_from_address(view.get_r2(runtime)))
     );
 }
 
