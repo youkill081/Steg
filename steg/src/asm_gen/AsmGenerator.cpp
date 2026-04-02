@@ -155,6 +155,11 @@ uint8_t AsmGenerator::bits_for(IrValueType t)
     case IrValueType::INT8: return 8;
     case IrValueType::UINT16:
     case IrValueType::INT16: return 16;
+    case IrValueType::PTR8:
+    case IrValueType::PTR16:
+    case IrValueType::PTR32:
+    case IrValueType::UINT32:
+    case IrValueType::INT32:
     default: return 32;
     }
 }

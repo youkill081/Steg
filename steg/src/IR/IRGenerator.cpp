@@ -134,12 +134,12 @@ IrValueType IRGenerator::type_to_ptr_type(const ResolvedType& t)
     case ASTTypeNode::INT8: return IrValueType::PTR8;
 
     case ASTTypeNode::UINT16:
-    case ASTTypeNode::INT16: return IrValueType::INT16;
+    case ASTTypeNode::INT16: return IrValueType::PTR16;
 
     case ASTTypeNode::FILE:
     case ASTTypeNode::CLOCK:
     case ASTTypeNode::UINT32:
-    case ASTTypeNode::INT32: return IrValueType::INT32;
+    case ASTTypeNode::INT32: return IrValueType::PTR32;
     default: return IrValueType::UNKNOWN;
     }
 }
@@ -194,6 +194,13 @@ void IRGenerator::visit(ASTIdentifierExpressionNode* node)
     _current_operand = op;
 }
 
+static bool is_value_type_signed(IrValueType t)
+{
+    return t == IrValueType::INT8
+        || t == IrValueType::INT16
+        || t == IrValueType::INT32;
+}
+
 // Pick the larger value of two IR value types
 static IrValueType wider_type(IrValueType a, IrValueType b)
 {
@@ -211,14 +218,28 @@ static IrValueType wider_type(IrValueType a, IrValueType b)
         default: return 0;
         }
     };
-    return rank(a) >= rank(b) ? a : b;
-}
 
-static bool is_value_type_signed(IrValueType t)
-{
-    return t == IrValueType::INT8
-        || t == IrValueType::INT16
-        || t == IrValueType::INT32;
+    const int ra = rank(a), rb = rank(b);
+
+    if (ra == rb)
+        return is_value_type_signed(a) ? a : b;
+
+    const IrValueType wider = ra >= rb ? a : b;
+    const bool any_signed = is_value_type_signed(a) || is_value_type_signed(b);
+
+    if (!any_signed)
+        return wider;
+
+    switch (wider)
+    {
+    case IrValueType::UINT8:
+        return IrValueType::INT8;
+    case IrValueType::UINT16:
+        return IrValueType::INT16;
+    case IrValueType::UINT32:
+        return IrValueType::INT32;
+    default: return wider;
+    }
 }
 
 void IRGenerator::visit(ASTBinaryExpressionNode* node)
@@ -245,9 +266,23 @@ void IRGenerator::visit(ASTBinaryExpressionNode* node)
         }
     }();
 
+    const bool is_arithmetic = [&]
+    {
+        switch (node->op_type)
+        {
+        case ASTBinaryExpressionNode::binaryOperationType::ADDITION:
+        case ASTBinaryExpressionNode::binaryOperationType::SUBTRACTION:
+        case ASTBinaryExpressionNode::binaryOperationType::MULTIPLICATION:
+        case ASTBinaryExpressionNode::binaryOperationType::DIVISION:
+
+        case ASTBinaryExpressionNode::binaryOperationType::MODULO: return true;
+        default: return false;
+        }
+    }();
+
     const IrValueType operand_target = is_comparison
-                                           ? wider_type(left_type, right_type)
-                                           : result_type;
+        ? wider_type(left_type, right_type)
+        : result_type;
 
     auto sext_if_needed = [&](IrOperand& op, IrValueType target)
     {
@@ -265,7 +300,9 @@ void IRGenerator::visit(ASTBinaryExpressionNode* node)
     IrOperand dest = temp_op(new_temp());
     dest.value_type = result_type;
 
-    const bool signed_op = is_value_type_signed(left_type) || is_value_type_signed(right_type);
+    const bool signed_op = is_arithmetic
+        ? (is_value_type_signed(left_type) && is_value_type_signed(right_type))
+        : (is_value_type_signed(left_type) || is_value_type_signed(right_type));
     add_instruction({binary_opcode(node->op_type, signed_op), dest, left, right});
     _current_operand = dest;
 }

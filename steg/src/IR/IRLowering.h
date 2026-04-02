@@ -34,9 +34,16 @@ namespace compiler
         std::unordered_set<std::string> _global_names;
         std::unordered_map<std::string, IrValueType> _global_types;
         std::unordered_map<std::string, std::string> _string_constants;
+        std::unordered_map<std::string, std::string> _address_taken; // "fn_label::var_name" -> "mangled_global_name"
 
         std::string _current_function_name;
         uint64_t _temp_count = 0;
+
+        /* move local variable given as address in globals, mangle the name */
+        void collect_address_taken(const IrBasicBlock& entry, size_t start_index);
+        std::string mangle_local(const std::string& fn, const std::string& var);
+        [[nodiscard]] bool is_address_taken(const std::string& var) const;
+        [[nodiscard]] std::string remap_name(const std::string& var) const;
 
         std::string new_temp();
         static IrOpCode load_opcode(IrValueType t);

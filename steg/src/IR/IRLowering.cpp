@@ -41,10 +41,21 @@ void IRLowering::lower()
         lowered_blocks.push_back(dst);
     }
 
+    for (size_t i = 0; i < _src_blocks.size(); ++i)
+    {
+        if (!_src_blocks[i]->is_function_entry)
+            continue;
+        _current_function_name = _src_blocks[i]->function_name;
+        collect_address_taken(*_src_blocks[i], i);
+    }
+
     for (const auto& src_ptr : _src_blocks)
     {
         const IrBasicBlock& src = *src_ptr;
         IrBasicBlock& dst = *remap.at(src_ptr.get());
+
+        if (src.is_function_entry)
+            _current_function_name = src.function_name;
 
         for (const auto& instr : src.instructions)
             lower_instruction(instr, dst.instructions);
@@ -73,6 +84,68 @@ void IRLowering::lower()
     }
 }
 
+void IRLowering::collect_address_taken(const IrBasicBlock& entry, size_t start_index)
+{
+    auto scan_block = [&](const IrBasicBlock& block)
+    {
+        for (const auto& instr : block.instructions)
+        {
+            if (instr.op != IrOpCode::ADDR_OF) continue;
+
+            const std::string& var = instr.arg1.value;
+            if (var.empty() || _global_names.count(var))
+                continue;
+
+            const std::string key = _current_function_name + "::" + var;
+            if (_address_taken.count(key))
+                continue;
+
+            const std::string mangled = mangle_local(_current_function_name, var);
+            _address_taken[key] = mangled;
+
+            IrValueType vt = instr.arg1.value_type != IrValueType::UNKNOWN
+                ? instr.arg1.value_type
+                : IrValueType::UINT32;
+
+            /* set as global */
+            _global_names.insert(mangled);
+            _global_types[mangled] = vt;
+            lowered_globals.push_back({
+                mangled,
+                vt,
+                ASTTypeNode::UINT32,
+                {}
+            });
+        }
+    };
+
+    scan_block(entry);
+    for (size_t i = start_index + 1; i < _src_blocks.size(); ++i)
+    {
+        if (_src_blocks[i]->is_function_entry)
+            break;
+        scan_block(*_src_blocks[i]);
+    }
+
+}
+
+std::string IRLowering::mangle_local(const std::string& fn, const std::string& var)
+{
+    return fn + "__local__" + var;
+}
+
+bool IRLowering::is_address_taken(const std::string& var) const
+{
+    return _address_taken.count(_current_function_name + "::" + var) > 0;
+}
+
+std::string IRLowering::remap_name(const std::string& var) const
+{
+    const auto key = _current_function_name + "::" + var;
+    const auto it = _address_taken.find(key);
+    return it != _address_taken.end() ? it->second : var;
+}
+
 /* Helper */
 std::string IRLowering::new_temp()
 {
@@ -85,8 +158,10 @@ IrOpCode IRLowering::load_opcode(IrValueType t)
     {
     case IrValueType::BOOL:
     case IrValueType::UINT8:
+    case IrValueType::PTR8:
     case IrValueType::INT8: return IrOpCode::LOAD_8;
     case IrValueType::UINT16:
+    case IrValueType::PTR16:
     case IrValueType::INT16: return IrOpCode::LOAD_16;
     default: return IrOpCode::LOAD_32;
     }
@@ -98,8 +173,10 @@ IrOpCode IRLowering::store_opcode(IrValueType t)
     {
     case IrValueType::BOOL:
     case IrValueType::UINT8:
+    case IrValueType::PTR8:
     case IrValueType::INT8: return IrOpCode::STORE_8;
     case IrValueType::UINT16:
+    case IrValueType::PTR16:
     case IrValueType::INT16: return IrOpCode::STORE_16;
     default: return IrOpCode::STORE_32;
     }
@@ -110,6 +187,15 @@ IrOperand IRLowering::lower_src(const IrOperand& op, std::vector<IrInstruction>&
 {
     if (op.type != IrOperandType::Temporary || op.value.empty())
         return op;
+
+    const std::string remapped = remap_name(op.value);
+    if (remapped != op.value)
+    {
+        IrOperand remapped_op = op;
+        remapped_op.value = remapped;
+        return lower_src(remapped_op, out);
+    }
+
 
     if (_global_names.count(op.value))
     {
@@ -147,18 +233,30 @@ void IRLowering::lower_instruction(
 
         out.push_back({IrOpCode::STORE_ARR, base, index, value});
     }
+    else if (instr.op == IrOpCode::ADDR_OF)
+    {
+        const std::string mangled = remap_name(instr.arg1.value);
+        IrOperand mangled_op = instr.arg1;
+        mangled_op.value = mangled;
+
+        out.push_back({IrOpCode::ADDR_OF, instr.result, mangled_op});
+        return;
+
+    }
     else if (instr.op == IrOpCode::COPY)
     {
-        const std::string& dest_name = instr.result.value;
+        const std::string dest_name = remap_name(instr.result.value);
+        IrOperand remapped_result = instr.result;
+        remapped_result.value = dest_name;
 
-        if (_global_names.count(dest_name)) // If dest is global -> store in memory
+        if (_global_names.count(dest_name))
         {
-            const IrValueType vt = effective_type(instr.result.value_type, dest_name);
+            const IrValueType vt = effective_type(remapped_result.value_type, dest_name);
             IrOperand addr = {IrOperandType::Temporary, dest_name, vt};
             auto val = lower_src(instr.arg1, out);
             out.push_back({store_opcode(vt), {}, addr, val});
         }
-        else if (instr.arg1.type == IrOperandType::Constant // If the value is a table (like string)
+        else if (instr.arg1.type == IrOperandType::Constant
             && ir_value_type_is_ptr(instr.arg1.value_type))
         {
             const std::string& str_val = instr.arg1.value;
@@ -173,11 +271,12 @@ void IRLowering::lower_instruction(
             });
 
             IrOperand mangled_op = {IrOperandType::Temporary, mangled, instr.arg1.value_type};
-            out.push_back({IrOpCode::COPY, instr.result, mangled_op});
-        } else // Just a simple copy
+            out.push_back({IrOpCode::COPY, remapped_result, mangled_op});
+        }
+        else
         {
             auto val = lower_src(instr.arg1, out);
-            out.push_back({IrOpCode::COPY, instr.result, val});
+            out.push_back({IrOpCode::COPY, remapped_result, val});
         }
         return;
     }
@@ -195,9 +294,16 @@ void IRLowering::lower_instruction(
         auto ptr = lower_src(instr.result, out);
         auto val = lower_src(instr.arg1, out);
 
-        const IrValueType vt = (val.value_type != IrValueType::UNKNOWN)
-                                   ? val.value_type
-                                   : IrValueType::UINT32;
+        IrValueType vt;
+        switch (instr.result.value_type)
+        {
+        case IrValueType::PTR8: vt = IrValueType::UINT8;
+            break;
+        case IrValueType::PTR16: vt = IrValueType::UINT16;
+            break;
+        default: vt = IrValueType::UINT32;
+            break;
+        }
 
         out.push_back({store_opcode(vt), {}, ptr, val});
         return;
