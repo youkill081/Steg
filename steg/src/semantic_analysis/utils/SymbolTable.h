@@ -90,9 +90,12 @@ namespace compiler
             using T = ASTTypeNode::Types;
             auto v = [](const T t, int d = 0) { return ResolvedType::from(t, d); };
 
-            builtin("print_n", v(T::VOID), {v(T::UINT32, 0)}, "DISPLAY_N");
-            builtin("print_c", v(T::VOID), {v(T::UINT8, 0)}, "DISPLAY_C");
-            builtin("exit", v(T::VOID), {v(T::UINT8, 0)}, "HALT");
+            builtin("print_n", v(T::VOID), {v(T::UINT32)}, "DISPLAY_N");
+            builtin("print_c", v(T::VOID), {v(T::UINT8)}, "DISPLAY_C");
+            builtin("exit", v(T::VOID), {v(T::UINT8)}, "HALT");
+            builtin("aloc", v(T::VOID, 1), {v(T::UINT32)}, "ALOC");
+            builtin("free", v(T::VOID), {v(T::VOID, 1)}, "FREE");
+            builtin("rand", v(T::UINT32), {}, "RAND");
 
             builtin("window_create", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::UINT8, 1)}, "WINDOW_CREATE");
             builtin("window_close", v(T::VOID), {}, "WINDOW_CLOSE");

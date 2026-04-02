@@ -13,6 +13,13 @@ ResolvedType TypeInferenceVisitor::check_assignable(
     ) {
     if (from == to) return to;
 
+    if (from.is_pointer() && to.is_pointer())
+    {
+        if (from.base == ASTTypeNode::VOID || to.base == ASTTypeNode::VOID) {
+            return to;
+        }
+    }
+
     if (from.is_numeric() && to.is_numeric()) {
         const ResolvedType promoted = promote(from, to);
         if (!promoted.is_void()) {
@@ -45,7 +52,7 @@ void TypeInferenceVisitor::visit(ASTMainProgramNode* node)
 void TypeInferenceVisitor::visit(ASTFunctionProgramNode* node)
 {
     if (is_invalid_pointer(ResolvedType::from(node->return_type)))
-        type_error("Return type cannot be a pointer to void", node->return_type->token);
+        type_error("Return type cannot be a pointer to this type", node->return_type->token);
 
     const ResolvedType previous = _current_return_type;
     _current_return_type = ResolvedType::from(node->return_type);
@@ -64,7 +71,7 @@ void TypeInferenceVisitor::visit(ASTParameterProgramNode *node)
     if (t.is_void())
         type_error("Parameter '" + node->name + "' cannot be of type void", node->token);
     else if (is_invalid_pointer(t))
-        type_error("Parameter '" + node->name + "' cannot be a pointer to void", node->token);
+        type_error("Parameter '" + node->name + "' cannot be a pointer to this type", node->token);
 }
 
 
@@ -85,7 +92,7 @@ void TypeInferenceVisitor::visit(ASTVariableStatement* node)
     }
     if (is_invalid_pointer(declared))
     {
-        type_error("Cannot declare a pointer to void", node->token);
+        type_error("Cannot declare a pointer to this type", node->token);
         return;
     }
 
@@ -276,6 +283,8 @@ void TypeInferenceVisitor::visit(ASTBinaryExpressionNode* node)
     case Op::MULTIPLICATION:
     case Op::DIVISION:
     case Op::MODULO:
+        if (L.base == ASTTypeNode::VOID)
+            type_error("Cannot perform arithmetic on void", node->token);
         if (is_opaque(L) || is_opaque(R))
         {
             type_error("Arithmetic not allowed on opaque types (file, clock)", node->token);
@@ -389,6 +398,8 @@ void TypeInferenceVisitor::visit(ASTDereferenceExpressionNode* node)
     const ResolvedType t = node->expression->resolved_type;
     if (!t.is_pointer())
         type_error("Dereference of non-pointer type: " + t.to_string(), node->token);
+    else if (t.base == ASTTypeNode::VOID)
+        type_error("Cannot dereference a void pointer", node->token);
     else
         node->resolved_type = t.deref();
 }

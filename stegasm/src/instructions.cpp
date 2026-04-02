@@ -562,14 +562,14 @@ void instr_ALOCR(Runtime &runtime, InstructionView view)
 {
     runtime.registries.write(
         view.r1(),
-        runtime.memory.allocate(runtime.registries.read(view.r2()))
+        runtime.memory.allocate(view.get_r2(runtime))
     );
 }
 
 void instr_FREE(Runtime &runtime, InstructionView view)
 {
     runtime.memory.free(
-        runtime.registries.read(view.r1())
+        view.get_r1(runtime)
     );
 }
 
@@ -618,7 +618,7 @@ void instr_POP(Runtime& runtime, InstructionView view)
 void instr_RAND(Runtime& runtime, InstructionView view)
 {
     static std::mt19937 rng(std::random_device{}());
-    static std::uniform_int_distribution<uint16_t> dist(0, UINT16_MAX);
+    static std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
     runtime.registries.write(
         view.r1(),

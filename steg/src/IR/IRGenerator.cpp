@@ -162,6 +162,25 @@ IrValueType IRGenerator::resolved_to_ir_type(const ResolvedType& t)
     }
 }
 
+uint8_t IRGenerator::type_size_in_byte(const ResolvedType& t)
+{
+    switch (t.base)
+    {
+    case ASTTypeNode::BOOL:
+    case ASTTypeNode::UINT8:
+    case ASTTypeNode::INT8: return 1;
+    case ASTTypeNode::INT16:
+    case ASTTypeNode::UINT16: return 2;
+    case ASTTypeNode::FILE:
+    case ASTTypeNode::CLOCK:
+    case ASTTypeNode::UINT32:
+    case ASTTypeNode::INT32:
+    case ASTTypeNode::STRING:
+    case ASTTypeNode::VOID:
+    default: return 4;
+    }
+}
+
 /* Visitor */
 void IRGenerator::visit(ASTLiteralExpressionNode* node)
 {
@@ -199,6 +218,25 @@ static bool is_value_type_signed(IrValueType t)
     return t == IrValueType::INT8
         || t == IrValueType::INT16
         || t == IrValueType::INT32;
+}
+
+IrOperand IRGenerator::ensure_type(IrOperand op, IrValueType target_type) {
+    if (op.value_type == target_type || target_type == IrValueType::UNKNOWN) {
+        return op;
+    }
+
+    if (op.type == IrOperandType::Constant) {
+        op.value_type = target_type;
+        return op;
+    }
+
+    IrOperand promoted = temp_op(new_temp());
+    promoted.value_type = target_type;
+
+    IrOpCode conv = is_value_type_signed(op.value_type) ? IrOpCode::SEXT : IrOpCode::ZEXT;
+    add_instruction({conv, promoted, op});
+
+    return promoted;
 }
 
 // Pick the larger value of two IR value types
@@ -318,10 +356,25 @@ void IRGenerator::visit(ASTUnaryExpressionNode* node)
 
 void IRGenerator::visit(ASTIndexExpressionNode* node)
 {
-    const auto index = eval(node->index.get());
+    auto index = eval(node->index.get());
+    uint8_t stride = type_size_in_byte(node->resolved_type);
+
+    if (stride > 1) {
+        IrOperand scaled_index = temp_op(new_temp());
+        scaled_index.value_type = index.value_type;
+
+        IrOperand stride_op = const_op(std::to_string(stride));
+        stride_op.value_type = index.value_type;
+
+        add_instruction({IrOpCode::MUL, scaled_index, index, stride_op});
+        index = scaled_index;
+    }
+
     IrOperand dest = temp_op(new_temp());
     dest.value_type = resolved_to_ir_type(node->resolved_type);
+
     add_instruction({IrOpCode::LOAD_ARR, dest, temp_op(node->array->name), index});
+
     _current_operand = dest;
 }
 
@@ -380,30 +433,42 @@ void IRGenerator::visit(ASTCallExpressionNode* node)
 void IRGenerator::visit(ASTAssignExpressionStatement* node)
 {
     auto val = eval(node->value.get());
+    const IrValueType dest_type = resolved_to_ir_type(node->target->resolved_type);
 
     if (node->op != ASTAssignExpressionStatement::ASSIGN)
     {
         auto to = eval(node->target.get());
         IrOperand dest = temp_op(new_temp());
+        dest.value_type = dest_type;
         add_instruction({composed_opcode(node->op), dest, to, val});
         val = dest;
     }
 
+    val = ensure_type(val, dest_type);
+
     if (const auto* idx = dynamic_cast<ASTIndexExpressionNode*>(node->target.get()))
     {
-        // Place data at the right index
-        const auto index = eval(idx->index.get());
+        auto index = eval(idx->index.get());
+
+        int stride = type_size_in_byte(idx->array->resolved_type.deref());
+        if (stride > 1) {
+            IrOperand scaled = temp_op(new_temp());
+            scaled.value_type = index.value_type;
+            add_instruction({IrOpCode::MUL, scaled, index, const_op(std::to_string(stride))});
+            index = scaled;
+        }
+
+        val = ensure_type(val, dest_type);
+
         add_instruction({IrOpCode::STORE_ARR, temp_op(idx->array->name), index, val});
     }
     else if (const auto* deref = dynamic_cast<ASTDereferenceExpressionNode*>(node->target.get()))
     {
-        // Place data at the pointer position
         const auto ptr = eval(deref->expression.get());
         add_instruction({IrOpCode::DEREF_STORE, ptr, val});
     }
     else
     {
-        // Place data directly
         const auto target = eval(node->target.get());
         add_instruction({IrOpCode::COPY, target, val});
     }

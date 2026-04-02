@@ -30,8 +30,7 @@ namespace compiler
 
         static bool is_invalid_pointer(const ResolvedType& t) {
             if (!t.is_pointer()) return false;
-            return t.base == ASTTypeNode::VOID ||
-                   t.base == ASTTypeNode::FILE ||
+            return t.base == ASTTypeNode::FILE ||
                    t.base == ASTTypeNode::CLOCK;
         }
 

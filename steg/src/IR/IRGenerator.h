@@ -64,6 +64,8 @@ namespace compiler
         static IrOpCode composed_opcode(const ASTAssignExpressionStatement::assignmentType op);
         static IrValueType type_to_ptr_type(const ResolvedType &t);
         static IrValueType resolved_to_ir_type(const ResolvedType &t);
+        uint8_t type_size_in_byte(const ResolvedType& t);
+
     public:
         /* --Visitors-- */
 
@@ -71,6 +73,7 @@ namespace compiler
 
         void visit(ASTLiteralExpressionNode *node) override; // t0 = ConstantValue
         void visit(ASTIdentifierExpressionNode *node) override;
+        IrOperand ensure_type(IrOperand op, IrValueType target_type);
         void visit(ASTBinaryExpressionNode *node) override; // t0 = 5 + 3 (or t1 = t0 + 5, for example)
         void visit(ASTUnaryExpressionNode *node) override;
         void visit(ASTIndexExpressionNode *node) override; // t0 = array[50] (or t1 = array[t0], for example)
