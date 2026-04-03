@@ -77,6 +77,6 @@ add_library(steg_lib STATIC ${STEG_LIB_SOURCES})
 target_include_directories(steg_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(steg_lib PUBLIC stegcommon)
 
-add_executable(steg src/main.cpp)
+add_executable(steg_test src/main.cpp)
 
-target_link_libraries(steg PRIVATE steg_lib stegasm_lib)
+target_link_libraries(steg_test PRIVATE steg_lib stegasm_lib)
