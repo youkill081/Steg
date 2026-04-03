@@ -36,12 +36,12 @@ namespace compiler
     inline Parser<std::vector<std::unique_ptr<ASTParameterProgramNode>>, TokenSpan>
 parseFunctionParameters =
     lintedParseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >>
-    (
+    choice(
         map( // No parameters
             parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>,
             [](auto) { return std::vector<std::unique_ptr<ASTParameterProgramNode>>{}; }
         )
-        |
+        ,
         map( // With parameters
             seq(
                 parseParameter,
@@ -152,25 +152,26 @@ parseFunctionParameters =
     >::type;
 
     inline Parser<std::unique_ptr<ASTMainProgramNode>, TokenSpan> parseMainProgram =
-        map(many(
+        to_parser<std::unique_ptr<ASTMainProgramNode>, TokenSpan>(map(many(
+            choice(
                 lint_checkpoint<globals_stop, main_sync, ASTErrorNode>(
                     map(parseVariableDeclarationWithSemicolon, [](auto v) -> std::unique_ptr<ASTNode>
                     {
                         return std::move(v);
                     })
                 )
-                |
+                ,
                 lint_checkpoint<function_stop, main_sync, ASTErrorNode>(
                     map(parseFunction, [](auto f) -> std::unique_ptr<ASTNode> { return std::move(f); })
                 )
-                |
+                ,
                 lint_checkpoint<import_stop, main_sync, ASTErrorNode>(
                     map(parseImport, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
                 )
-                |
+                ,
                 lint_checkpoint<files_stop, main_sync, ASTErrorNode>(
                     map(parseFiles, [](auto v) -> std::unique_ptr<ASTNode> { return std::move(v); })
-                )
+                ))
             ), [](std::vector<std::unique_ptr<ASTNode>> nodes)
             {
                 std::vector<std::unique_ptr<ASTFunctionProgramNode>> functions;
@@ -210,5 +211,6 @@ parseFunctionParameters =
                     std::move(files),
                     LexerToken::dummy()
                 );
-            });
+            })
+        );
 }

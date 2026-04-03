@@ -13,40 +13,54 @@
 namespace compiler
 {
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parsePrimary =
-        parseParenthesizedExpr | parseLiteral | parseBool | parseStringLiteral | parseFunctionCall  | parseIndexExpression | parseIdentifier;
+        choice(
+            parseParenthesizedExpr,
+            parseLiteral,
+            parseBool,
+            parseStringLiteral ,
+            parseFunctionCall ,
+            parseIndexExpression ,
+            parseIdentifier
+        );
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseUnary =
-        parseNegationUnary | parseNotUnary | parseAddressOfUnary  | parseDereferenceUnary | parsePrimary;
+        choice(
+            parseNegationUnary,
+            parseNotUnary,
+            parseAddressOfUnary,
+            parseDereferenceUnary,
+            parsePrimary
+        );
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer4 = map(
-        seq(compiler::ref(parseUnary), many(parseMultiplicationPart | parseDivisionPart | parseModuloPart)),
+        seq(compiler::ref(parseUnary), many(choice(parseMultiplicationPart, parseDivisionPart, parseModuloPart))),
         foldInfix
     );
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer3 = map(
-        seq(compiler::ref(parseLayer4), many(parseAdditionPart | parseSubtractionPart)),
+        seq(compiler::ref(parseLayer4), many(choice(parseAdditionPart, parseSubtractionPart))),
         foldInfix
     );
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer2 = map(
-        seq(compiler::ref(parseLayer3), many(
-            parseComparisonEqual |
-            parseComparisonNotEqual |
-            parseComparisonLess |
-            parseComparisonGreater |
-            parseComparisonLessOrEqual |
+        seq(compiler::ref(parseLayer3), many(choice(
+            parseComparisonEqual,
+            parseComparisonNotEqual,
+            parseComparisonLess,
+            parseComparisonGreater,
+            parseComparisonLessOrEqual,
             parseComparisonGreaterOrEqual
-        )),
+        ))),
         foldInfix
     );
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer1 = map(
-        seq(compiler::ref(parseLayer2), many(parseComparisonAnd | parseComparisonOr)),
+        seq(compiler::ref(parseLayer2), many(choice(parseComparisonAnd, parseComparisonOr))),
         foldInfix
     );
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer0 = map(
-        seq(compiler::ref(parseLayer1), optional(parseAssignPart | parseAssignAddPart | parseAssignSubPart | parseAssignMulPart | parseAssignDivPart)),
+        seq(compiler::ref(parseLayer1), optional(choice(parseAssignPart, parseAssignAddPart, parseAssignSubPart, parseAssignMulPart, parseAssignDivPart))),
         foldAssign
     );
 

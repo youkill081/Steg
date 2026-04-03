@@ -13,7 +13,7 @@
 
 int main()
 {
-    auto result = compiler::compile("C:/Users/Roumite/CLionProjects/stegnocode/steg/examples/test.steg");
+    auto result = compiler::compile("/home/roumite/CLionProjects/Stegnocode/steg/test.steg");
     if (!compiler::Linter::instance().has_errors())
     {
         std::cout << "Compilation successful" << std::endl;

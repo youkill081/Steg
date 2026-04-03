@@ -61,10 +61,10 @@ set(STEG_LIB_SOURCES
         src/IR/ir_structure.h
         src/IR/IRGenerator.cpp
         src/IR/IRGenerator.h
-        src/IR/IRprinter.cpp
-        src/IR/IRprinter.h
-        src/IR/Irlowering.cpp
-        src/IR/Irlowering.h
+        src/IR/IRPrinter.cpp
+        src/IR/IRPrinter.h
+        src/IR/IRLowering.cpp
+        src/IR/IRLowering.h
         src/asm_gen/Registerallocator.cpp
         src/asm_gen/Registerallocator.h
         src/asm_gen/AsmGenerator.h

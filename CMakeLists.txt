@@ -5,6 +5,7 @@ project(stegnocode)
 set(APP_NAME stegnocode)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 
@@ -20,7 +21,7 @@ add_subdirectory(test)
 
 set(LIB_SOURCES
         steganographer/images/pixel.h
-        steganographer/images/pixels.h
+        steganographer/images/Pixels.h
         steganographer/images/Image.cpp
         steganographer/images/Image.h
         steganographer/steganographer/Steganographer.cpp
@@ -33,7 +34,7 @@ set(LIB_SOURCES
         steganographer/steganographer/constant.h
         steganographer/steganographer/sequences/ReadSequence.cpp
         steganographer/steganographer/sequences/ReadSequence.h
-        steganographer/steganographer/header.hpp
+        steganographer/steganographer/Header.hpp
         steganographer/utils/Parameters.cpp
         steganographer/utils/Parameters.h
         steganographer/handlers/IHander.h

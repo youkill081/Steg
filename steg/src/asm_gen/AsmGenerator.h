@@ -5,7 +5,7 @@
 #pragma once
 
 #include "IR/ir_structure.h"
-#include "asm_gen/RegisterAllocator.h"
+#include "asm_gen/Registerallocator.h"
 
 #include <memory>
 #include <sstream>

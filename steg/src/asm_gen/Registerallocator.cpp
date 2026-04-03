@@ -2,8 +2,8 @@
 // Created by Roumite on 20/03/2026.
 //
 
-#include "RegisterAllocator.h"
-#include "Linter/Linter.h"
+#include "Registerallocator.h"
+#include "linter/Linter.h"
 
 #include <algorithm>
 

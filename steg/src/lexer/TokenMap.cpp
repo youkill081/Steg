@@ -4,6 +4,8 @@
 
 #include "TokenMap.h"
 
+#include <algorithm>
+
 std::string compiler::TokenMap::make_key(const LexerToken& token)
 {
     return std::to_string(token.line_number) + ":" + std::to_string(token.column_number);

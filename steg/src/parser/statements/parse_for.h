@@ -15,7 +15,7 @@ namespace compiler
     extern  Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseCondition;
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseForInit =
-        lintedParseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >> parseExpression << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>;
+        (lintedParseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >> parseExpression) << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>;
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseForCondition = parseExpression << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>;
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseForPost = parseExpression << lintedParseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>;
 

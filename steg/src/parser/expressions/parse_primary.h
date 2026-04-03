@@ -34,19 +34,20 @@ namespace compiler
 
     /* Bool */
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseBool =
-        as_expression(map(parseToken<TOKEN_BOOL_TRUE>, [](LexerToken token) {
-            return std::make_unique<ASTLiteralExpressionNode>(
-                "true",
-                std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, 0, token),
-                token
-            );
-    })) | as_expression(map(parseToken<TOKEN_BOOL_FALSE>, [](LexerToken token) {
-        return std::make_unique<ASTLiteralExpressionNode>(
-            "false",
-            std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, 0, token),
-            token
-        );
-    }));
+        choice(
+            as_expression(map(parseToken<TOKEN_BOOL_TRUE>, [](LexerToken token) {
+                return std::make_unique<ASTLiteralExpressionNode>(
+                    "true",
+                    std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, 0, token),
+                    token
+                );
+            })), as_expression(map(parseToken<TOKEN_BOOL_FALSE>, [](LexerToken token) {
+                return std::make_unique<ASTLiteralExpressionNode>(
+                    "false",
+                    std::make_unique<ASTTypeNode>(ASTTypeNode::BOOL, 0, token),
+                    token
+                );
+            })));
 
     /* String */
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseStringLiteral =
@@ -84,20 +85,27 @@ namespace compiler
         = parseToken<TOKEN_PUNCTUATION_COMMA> >> compiler::ref(parseLayer1);
 
     inline Parser<std::vector<std::unique_ptr<ASTExpressionNode>>, TokenSpan> parseFunctionCallParameters =
-        map(parseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >>
-            seq(optional(parseFirstFunctionCallParameter), many(parseFunctionCallParameter) <<
-                parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>),
-    [](auto data)
-        {
-            auto [first, rest] = std::move(data);
-            std::vector<std::unique_ptr<ASTExpressionNode>> end{};
+        map(
+            parseToken<TOKEN_PUNCTUATION_LEFT_PARENTHESIS> >>
+            seq(
+                optional(compiler::ref(parseFirstFunctionCallParameter)),
+                many(compiler::ref(parseFunctionCallParameter))
+            ) << parseToken<TOKEN_PUNCTUATION_RIGHT_PARENTHESIS>,
 
-            if (first.has_value())
-                end.push_back(std::move(*first));
-            for (auto &param : rest)
-                end.push_back(std::move(param));
-            return end;
-        });
+            [](auto data) {
+                auto [first, rest] = std::move(data);
+                std::vector<std::unique_ptr<ASTExpressionNode>> end{};
+
+                if (first.has_value()) {
+                    end.push_back(std::move(*first));
+                }
+
+                for (auto &param : rest) {
+                    end.push_back(std::move(param));
+                }
+                return end;
+            }
+        );
 
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseFunctionCall =
         as_expression(map(seq(parseToken<TOKEN_IDENTIFIER>, parseFunctionCallParameters), [](auto data) {

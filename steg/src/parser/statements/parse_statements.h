@@ -33,7 +33,15 @@ namespace compiler
     inline auto expressionStatement = as_statement(parseExpressionStatement << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
 
     inline Parser<std::unique_ptr<ASTStatementNode>, TokenSpan> parseStatement =
-        varStatement | ifStatement | whileStatement | forStatement | returnStatement | breakStatement | continueStatement | expressionStatement;
+        choice(
+            varStatement,
+            ifStatement,
+            whileStatement,
+            forStatement,
+            returnStatement, breakStatement,
+            continueStatement,
+            expressionStatement
+        );
 
     using block_recovery = RecoverySet<
         TOKEN_PUNCTUATION_RIGHT_BRACKET,

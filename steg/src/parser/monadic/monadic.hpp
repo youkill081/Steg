@@ -53,8 +53,56 @@ namespace compiler
         using stream_type = Stream;
     };
 
+    template<typename Sig>
+    class ErasedCallable;
+
+    template<typename Ret, typename Arg>
+    class ErasedCallable<Ret(Arg)>
+    {
+        struct Base {
+            virtual Ret call(Arg) const = 0;
+            virtual ~Base() = default;
+        };
+
+        template<typename F>
+        struct Impl : Base {
+            F f;
+            explicit Impl(F&& func) : f(std::forward<F>(func)) {}
+            Ret call(Arg a) const override { return f(a); }
+        };
+
+        std::shared_ptr<Base> ptr;
+
+    public:
+        ErasedCallable() = default;
+        ErasedCallable(ErasedCallable const&) = default;
+        ErasedCallable(ErasedCallable&&) = default;
+        ErasedCallable& operator=(ErasedCallable const&) = default;
+        ErasedCallable& operator=(ErasedCallable&&) = default;
+
+        // Constructeur inconditionnel — pas d'enable_if, GCC ne peut plus râler
+        template<typename F>
+        requires (!std::is_same_v<std::decay_t<F>, ErasedCallable>)
+        ErasedCallable(F&& f)
+            : ptr(std::make_shared<Impl<std::decay_t<F>>>(std::forward<F>(f)))
+        {}
+
+        Ret operator()(Arg a) const { return ptr->call(a); }
+        explicit operator bool() const { return bool(ptr); }
+    };
+
+    // Remplace l'ancien using Parser = std::function<...>
     template <typename T, typename Stream>
-    using Parser = std::function<std::optional<Result<T, Stream>>(Stream)>;
+    using Parser = ErasedCallable<std::optional<Result<T, Stream>>(Stream)>;
+
+    template <typename P, typename S>
+    using _parser_val_t = std::invoke_result_t<P, S>::value_type::value_type;
+
+    template<typename T, typename Stream, typename F>
+    Parser<T, Stream> to_parser(F&& f)
+    {
+        return Parser<T, Stream>(std::forward<F>(f));
+    }
 
     /* Utility Methods */
 
@@ -76,10 +124,6 @@ namespace compiler
             };
         };
     }
-
-
-    template <typename P, typename S>
-    using _parser_val_t = std::invoke_result_t<P, S>::value_type::value_type;
 
     /*
      * Exec x parsers and insert the result in a tuple
@@ -316,20 +360,30 @@ namespace compiler
     /*
      * Try a parser, if didn't work try the second one (<|> equivalent in haskell)
      */
-    template <typename ParserA, typename ParserB>
-    auto operator|(ParserA parser_a, ParserB parser_b)
+    template <typename... Parsers>
+auto choice(Parsers... parsers)
     {
-        return [=](auto input) -> decltype(parser_a(input))
-        {
-            auto parser_a_result = parser_a(input);
-            if (parser_a_result) return parser_a_result;
-            return parser_b(input);
+        return [=](auto input) {
+            using Stream = decltype(input);
+            using FirstParser = std::tuple_element_t<0, std::tuple<Parsers...>>;
+            using RetType = std::invoke_result_t<FirstParser, Stream>;
+
+            RetType result = std::nullopt;
+
+            auto execute_choice = [&](const auto& parser) -> bool {
+                result = parser(input);
+                return result.has_value();
+            };
+
+            (execute_choice(parsers) || ...);
+            return result;
         };
     }
 
     template <typename T>
-    concept IsParser =  requires(T p, TokenSpan ts) { { p(ts) }; } ||
-                    requires(T p, CharSpan cs)  { { p(cs) }; };
+    concept IsParser = requires(T p, TokenSpan ts) {
+            { p(ts) };
+    };
 
     /*
      * Applicative right
@@ -339,12 +393,15 @@ namespace compiler
     template <IsParser ParserA, IsParser ParserB>
     auto operator>>(ParserA parser_a, ParserB parser_b)
     {
-        return [=](auto input) -> decltype(parser_b(input))
+        using Stream = TokenSpan;
+        using T = _parser_val_t<ParserB, Stream>;
+
+        return to_parser<T, Stream>([=](Stream input) -> std::optional<Result<T, Stream>>
         {
-            auto parser_a_result = parser_a(input);
-            if (!parser_a_result) return std::nullopt;
-            return parser_b(parser_a_result->remaining);
-        };
+            auto res_a = parser_a(input);
+            if (!res_a) return std::nullopt;
+            return parser_b(res_a->remaining);
+        });
     }
 
     /*
@@ -355,22 +412,23 @@ namespace compiler
     template <IsParser ParserA, IsParser ParserB>
     auto operator<<(ParserA parser_a, ParserB parser_b)
     {
-        return [=](auto input) -> decltype(parser_a(input))
+        using Stream = TokenSpan;
+        using T = _parser_val_t<ParserA, Stream>;
+
+        return to_parser<T, Stream>([=](Stream input) -> std::optional<Result<T, Stream>>
         {
-            auto parser_a_result = parser_a(input);
-            if (!parser_a_result) return std::nullopt;
+            auto res_a = parser_a(input);
+            if (!res_a) return std::nullopt;
 
-            auto parser_b_result = parser_b(parser_a_result->remaining);
-            if (!parser_b_result) return std::nullopt;
+            auto res_b = parser_b(res_a->remaining);
+            if (!res_b) return std::nullopt;
 
-            using ResType = decltype(parser_a(input))::value_type;
-
-            return std::optional<ResType>{
-                ResType{
-                    std::move(*parser_a_result).value,
-                    parser_b_result->remaining
+            return std::optional<Result<T, Stream>>{
+                Result<T, Stream>{
+                    std::move(*res_a).value,
+                    res_b->remaining
                 }
             };
-        };
+        });
     }
 }

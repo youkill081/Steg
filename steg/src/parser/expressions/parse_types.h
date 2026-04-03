@@ -20,16 +20,18 @@ namespace compiler
     );
 
     inline Parser<std::pair<ASTTypeNode::Types, LexerToken>, TokenSpan> parseBaseType =
-        map(parseToken<TOKEN_TYPE_UINT8>, [](const auto &t) { return std::make_pair(ASTTypeNode::UINT8,  t); }) |
-        map(parseToken<TOKEN_TYPE_INT8>, [](const auto &t) { return std::make_pair(ASTTypeNode::INT8,   t); }) |
-        map(parseToken<TOKEN_TYPE_UINT16>, [](const auto &t) { return std::make_pair(ASTTypeNode::UINT16, t); }) |
-        map(parseToken<TOKEN_TYPE_INT16>, [](const auto &t) { return std::make_pair(ASTTypeNode::INT16,  t); }) |
-        map(parseToken<TOKEN_TYPE_UINT32>, [](const auto &t) { return std::make_pair(ASTTypeNode::UINT32, t); }) |
-        map(parseToken<TOKEN_TYPE_INT32>, [](const auto &t) { return std::make_pair(ASTTypeNode::INT32,  t); }) |
-        map(parseToken<TOKEN_TYPE_BOOL>, [](const auto &t) { return std::make_pair(ASTTypeNode::BOOL,   t); }) |
-        map(parseToken<TOKEN_TYPE_FILE>, [](const auto &t) { return std::make_pair(ASTTypeNode::FILE,   t); }) |
-        map(parseToken<TOKEN_TYPE_CLOCK>, [](const auto &t) { return std::make_pair(ASTTypeNode::CLOCK,  t); }) |
-        map(parseToken<TOKEN_TYPE_VOID>, [](const auto &t) { return std::make_pair(ASTTypeNode::VOID,   t); });
+        choice(
+            map(parseToken<TOKEN_TYPE_UINT8>, [](const auto &t) { return std::make_pair(ASTTypeNode::UINT8,  t); }),
+            map(parseToken<TOKEN_TYPE_INT8>, [](const auto &t) { return std::make_pair(ASTTypeNode::INT8,   t); }),
+            map(parseToken<TOKEN_TYPE_UINT16>, [](const auto &t) { return std::make_pair(ASTTypeNode::UINT16, t); }),
+            map(parseToken<TOKEN_TYPE_INT16>, [](const auto &t) { return std::make_pair(ASTTypeNode::INT16,  t); }),
+            map(parseToken<TOKEN_TYPE_UINT32>, [](const auto &t) { return std::make_pair(ASTTypeNode::UINT32, t); }),
+            map(parseToken<TOKEN_TYPE_INT32>, [](const auto &t) { return std::make_pair(ASTTypeNode::INT32,  t); }),
+            map(parseToken<TOKEN_TYPE_BOOL>, [](const auto &t) { return std::make_pair(ASTTypeNode::BOOL,   t); }),
+            map(parseToken<TOKEN_TYPE_FILE>, [](const auto &t) { return std::make_pair(ASTTypeNode::FILE,   t); }),
+            map(parseToken<TOKEN_TYPE_CLOCK>, [](const auto &t) { return std::make_pair(ASTTypeNode::CLOCK,  t); }),
+            map(parseToken<TOKEN_TYPE_VOID>, [](const auto &t) { return std::make_pair(ASTTypeNode::VOID,   t); })
+        );
 
     inline Parser<std::unique_ptr<ASTTypeNode>, TokenSpan> parseType = map(
             seq(parseBaseType, parsePointerDepth),
