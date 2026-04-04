@@ -217,6 +217,8 @@ void instr_FILE_CREATE2(Runtime &runtime, InstructionView view);
 void instr_FILE_SAVE(Runtime &runtime, InstructionView view);
 void instr_FILE_DELETE(Runtime &runtime, InstructionView view);
 void instr_FILE_CLOSE(Runtime &runtime, InstructionView view);
+void instr_FILE_GET_SIZE(Runtime &runtime, InstructionView view);
+void instr_FILE_MAP(Runtime &runtime, InstructionView view);
 void instr_FILE_RESET_CURSOR(Runtime &runtime, InstructionView view);
 void instr_FILE_SEEK_CURSOR(Runtime &runtime, InstructionView view);
 void instr_FILE_CLEAR_DATA(Runtime &runtime, InstructionView view);
@@ -451,6 +453,8 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"FILE_SAVE", true, InstructionHandler(&instr_FILE_SAVE, REG)},
     RawInstruction{"FILE_DELETE", true, InstructionHandler(&instr_FILE_DELETE, REG)},
     RawInstruction{"FILE_CLOSE", true, InstructionHandler(&instr_FILE_CLOSE, REG)},
+    RawInstruction{"FILE_GET_SIZE", true, InstructionHandler(&instr_FILE_GET_SIZE, REG, REG_BOTH)},
+    RawInstruction{"FILE_MAP", true, InstructionHandler(&instr_FILE_MAP, REG, REG_BOTH)},
     RawInstruction{"FILE_RESET_CURSOR", true, InstructionHandler(&instr_FILE_RESET_CURSOR, REG)},
     RawInstruction{"FILE_SEEK_CURSOR", true, InstructionHandler(&instr_FILE_SEEK_CURSOR, REG, REG)},
     RawInstruction{"FILE_CLEAR_DATA", true, InstructionHandler(&instr_FILE_CLEAR_DATA, REG)},

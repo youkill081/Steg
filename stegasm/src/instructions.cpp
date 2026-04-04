@@ -988,6 +988,26 @@ void instr_FILE_CLOSE(Runtime& runtime, InstructionView view)
     );
 }
 
+void instr_FILE_GET_SIZE(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.get_file(view.get_r2(runtime))->get_size()
+    );
+}
+
+void instr_FILE_MAP(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    auto addr = runtime.memory.allocate(file->get_size());
+    runtime.registries.write(view.r1(), addr);
+
+    for (const uint8_t &byte : file->get_file_data().get_buffer())
+    {
+        runtime.memory.write_uint8(addr++, byte);
+    }
+}
+
 void instr_FILE_RESET_CURSOR(Runtime& runtime, InstructionView view)
 {
     runtime.files.get_file(view.get_r1(runtime))->reset_cursor();

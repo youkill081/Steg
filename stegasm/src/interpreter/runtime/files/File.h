@@ -22,6 +22,7 @@ private:
     std::string _extension;
     ByteBuffer _file_data{};
 
+private:
     void read_data_if_needed();
 
 public:
@@ -74,5 +75,8 @@ public:
     bool has_byte_remaining();
     bool has_word_remaining();
     bool has_doubleword_remaining();
+
+    uint32_t get_size();
     FileBaseType get_file_type() override { return FILE_TYPE; }
+    [[nodiscard]] const ByteBuffer &get_file_data();
 };

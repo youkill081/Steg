@@ -12,6 +12,8 @@ class ByteBuffer
 {
 private:
     std::vector<uint8_t> buffer;
+
+private:
     size_t cursor = 0;
 
     uint8_t write_bit_buffer = 0;
@@ -54,5 +56,6 @@ public:
 
     [[nodiscard]] const std::vector<uint8_t>& data() const;
     void clear_data();
+    [[nodiscard]] const std::vector<uint8_t> &get_buffer() const { return buffer; }
 };
 

@@ -207,3 +207,15 @@ bool File::has_doubleword_remaining()
     this->read_data_if_needed();
     return this->_file_data.remaining_uint32() != 0;
 }
+
+uint32_t File::get_size()
+{
+    this->read_data_if_needed();
+    return this->_file_data.size();
+}
+
+const ByteBuffer& File::get_file_data()
+{
+    this->read_data_if_needed();
+    return _file_data;
+}

@@ -96,6 +96,8 @@ namespace compiler
             builtin("aloc", v(T::VOID, 1), {v(T::UINT32)}, "ALOC");
             builtin("free", v(T::VOID), {v(T::VOID, 1)}, "FREE");
             builtin("rand", v(T::UINT32), {}, "RAND");
+            builtin("debug_r", v(T::VOID), {}, "DEBUG_R");
+            builtin("debug_m", v(T::VOID), {}, "DEBUG_M");
 
             builtin("window_create", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::UINT8, 1)}, "WINDOW_CREATE");
             builtin("window_close", v(T::VOID), {}, "WINDOW_CLOSE");
@@ -133,6 +135,8 @@ namespace compiler
             builtin("file_save", v(T::VOID), {v(T::FILE)}, "FILE_SAVE");
             builtin("file_delete", v(T::VOID), {v(T::FILE)}, "FILE_DELETE");
             builtin("file_close", v(T::VOID), {v(T::FILE)}, "FILE_CLOSE");
+            builtin("file_size", v(T::UINT32), {v(T::FILE)}, "FILE_GET_SIZE");
+            builtin("file_map", v(T::VOID, 1), {v(T::FILE)}, "FILE_MAP");
             builtin("file_reset_cursor", v(T::VOID), {v(T::FILE)}, "FILE_RESET_CURSOR");
             builtin("file_seek_cursor", v(T::VOID), {v(T::UINT32), v(T::FILE)}, "FILE_SEEK_CURSOR");
             builtin("file_clear_data", v(T::VOID), {v(T::FILE)}, "FILE_CLEAR_DATA");
