@@ -44,7 +44,7 @@ void ReadSequence::check_checksum()
     Logger::log("ReadSequence::check_checksum: checksum OK !", "ReadSequence");
 }
 
-ReadSequence::ReadSequence(Image& image, uint32_t seed) : SequenceManager(image, seed)
+ReadSequence::ReadSequence(steganographer::Image& image, uint32_t seed) : SequenceManager(image, seed)
 {
     this->check_checksum();
 

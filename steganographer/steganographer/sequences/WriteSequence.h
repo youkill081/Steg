@@ -9,6 +9,8 @@
 
 #include <vector>
 
+#include "../../images/Image.h"
+
 class ByteBuffer;
 
 class WriteSequence : public SequenceManager
@@ -18,7 +20,7 @@ private:
     void write_uint8(uint8_t value);
     void write_byte_buffer(const ByteBuffer& buffer);
 public:
-    WriteSequence(Image& image, uint32_t seed)
+    WriteSequence(steganographer::Image& image, uint32_t seed)
         : SequenceManager(image, seed)
     {
     }

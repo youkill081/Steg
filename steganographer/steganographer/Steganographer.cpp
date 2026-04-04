@@ -18,7 +18,7 @@ uint32_t Steganographer::generate_real_random()
     return rd();
 }
 
-uint32_t Steganographer::get_seed_size(const Image& image)
+uint32_t Steganographer::get_seed_size(const steganographer::Image& image)
 {
     std::size_t n_pixels = image.get_number_of_pixels();
 
@@ -38,7 +38,7 @@ uint32_t Steganographer::zero_unused_seed_bits(uint32_t full_seed, uint32_t seed
     return full_seed & mask;
 }
 
-uint32_t Steganographer::complete_to_final_seed(const Image &image, uint32_t complete_seed)
+uint32_t Steganographer::complete_to_final_seed(const steganographer::Image &image, uint32_t complete_seed)
 {
     random.reseed(complete_seed);
     uint32_t final_seed = 0;
@@ -48,7 +48,7 @@ uint32_t Steganographer::complete_to_final_seed(const Image &image, uint32_t com
     return final_seed;
 }
 
-void Steganographer::write_seed(Image& image, uint32_t seed, uint32_t seed_size)
+void Steganographer::write_seed(steganographer::Image& image, uint32_t seed, uint32_t seed_size)
 {
     uint32_t padding = 0;
 
@@ -74,7 +74,7 @@ void Steganographer::write_seed(Image& image, uint32_t seed, uint32_t seed_size)
     }
 }
 
-uint32_t Steganographer::read_seed(Image& image, uint32_t seed_size)
+uint32_t Steganographer::read_seed(steganographer::Image& image, uint32_t seed_size)
 {
     uint32_t padding = 0;
     uint32_t seed = 0;
@@ -105,7 +105,7 @@ uint32_t Steganographer::read_seed(Image& image, uint32_t seed_size)
     return seed;
 }
 
-void Steganographer::encode(Image& image, const ByteBuffer& data, DataType type)
+void Steganographer::encode(steganographer::Image& image, const ByteBuffer& data, DataType type)
 {
     uint32_t seed = generate_real_random();
     uint32_t seed_size = get_seed_size(image);
@@ -119,7 +119,7 @@ void Steganographer::encode(Image& image, const ByteBuffer& data, DataType type)
     write_sequencer.write_sequence(data, type);
 }
 
-Steganographer::DecodeResult Steganographer::decode(Image& image)
+Steganographer::DecodeResult Steganographer::decode(steganographer::Image& image)
 {
     uint32_t seed_size = get_seed_size(image);
     uint32_t seed = read_seed(image, seed_size);

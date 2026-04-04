@@ -7,6 +7,8 @@
 
 #include "Random32.h"
 #include "../images/pixel.h"
+#include "../images/Image.h"
+
 
 class Image;
 
@@ -16,7 +18,7 @@ protected:
     Random32 random{};
     uint32_t padding = 0;
 
-    Image &_image;
+    steganographer::Image &_image;
     uint32_t _seed;
 
     pixel &get_next_pixel();
@@ -25,7 +27,7 @@ protected:
     static void write_bit_in_pixel(pixel &pixel, bool bit);
     static bool read_bit_in_pixel(pixel &pixel);
 public:
-    SequenceManager(Image &image, uint32_t seed) : _image(image), _seed(seed)
+    SequenceManager(steganographer::Image &image, uint32_t seed) : _image(image), _seed(seed)
     {
         random.reseed(_seed);
     }

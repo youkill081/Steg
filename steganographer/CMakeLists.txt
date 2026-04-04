@@ -39,7 +39,7 @@ target_link_libraries(stegnocode_lib PUBLIC stegasm_lib) # Link stegasm
 
 target_include_directories(stegnocode_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/steganographer
-        ${CMAKE_CURRENT_SOURCE_DIR}/libs/stb
+        ${CMAKE_CURRENT_SOURCE_DIR}/../libs/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/libs/stegcommon
 )
 

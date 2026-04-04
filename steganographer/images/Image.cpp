@@ -13,8 +13,12 @@
 
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <filesystem>
+
 #include "stb_image_write.h"
 #include "Logger.h"
+
+using namespace steganographer;
 
 Image::Image(const std::string& path)
 {
@@ -55,7 +59,14 @@ void Image::save_png(const std::string& output_path) const
         throw std::runtime_error("Image::save_png: pixels size doesn't match width*height");
     }
 
-    Logger::log("Saving image to " + output_path, "Image");
+    std::string absolute_path;
+    try {
+        absolute_path = std::filesystem::absolute(output_path).string();
+    } catch (...) {
+        absolute_path = output_path;
+    }
+
+    Logger::log("Saving image to " + absolute_path, "Image");
 
     std::vector<unsigned char> data;
     data.resize(static_cast<std::size_t>(_width) * static_cast<std::size_t>(_height) * 3u);
