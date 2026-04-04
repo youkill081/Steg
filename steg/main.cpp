@@ -305,7 +305,7 @@ int run_img(int ac, char** av)
 
         auto handler = handler_factory(CODE);
         return run_local(decoded.data);
-    } catch (const ReadSequenceError &e)
+    } catch (const ReadSequenceError &)
     {
         std::cerr << AnsiColors::Red << "Error: This image do not contains data !" << AnsiColors::Reset << std::endl;
         return 1;
