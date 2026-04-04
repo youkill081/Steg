@@ -74,6 +74,18 @@ public:
     bool key_down(uint16_t key);
     bool key_pressed(uint16_t key);
 
+    // Mouse management
+    [[nodiscard]] int32_t mouse_x() const;
+    [[nodiscard]] int32_t mouse_y() const;
+    [[nodiscard]] int32_t mouse_delta_x() const;
+    [[nodiscard]] int32_t mouse_delta_y() const;
+    [[nodiscard]] bool mouse_button_pressed(int button) const;
+    [[nodiscard]] bool mouse_button_down(int button) const;
+    [[nodiscard]] bool mouse_button_released(int button) const;
+    [[nodiscard]] int32_t mouse_wheel_delta() const;
+    void hide_cursor() const;
+    void show_cursor() const;
+
     // Utils
 
     /*

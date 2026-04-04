@@ -838,6 +838,104 @@ void instr_WINDOW_SET_ICON1(Runtime& runtime, InstructionView view)
     );
 }
 
+void instr_WINDOW_MOUSE_X(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_x()
+    );
+}
+
+void instr_WINDOW_MOUSE_Y(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_y()
+    );
+}
+
+void instr_WINDOW_MOUSE_DELTA_X(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_delta_x()
+    );
+}
+
+void instr_WINDOW_MOUSE_DELTA_Y(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_delta_y()
+    );
+}
+
+void instr_WINDOW_MOUSE_BUTTON_PRESSED(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_button_pressed(view.get_r2(runtime))
+    );
+}
+
+void instr_WINDOW_MOUSE_BUTTON_PRESSED2(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_button_pressed(view.get_data(runtime))
+    );
+}
+
+void instr_WINDOW_MOUSE_BUTTON_DOWN(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_button_down(view.get_r2(runtime))
+    );
+}
+
+void instr_WINDOW_MOUSE_BUTTON_DOWN2(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_button_down(view.get_data(runtime))
+    );
+}
+
+void instr_WINDOW_MOUSE_BUTTON_RELEASED(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_button_released(view.get_r2(runtime))
+    );
+}
+
+void instr_WINDOW_MOUSE_BUTTON_RELEASED2(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_button_released(view.get_data(runtime))
+    );
+}
+
+void instr_WINDOW_MOUSE_WHEEL_DELTA(Runtime &runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.mouse_wheel_delta()
+    );
+}
+
+void instr_WINDOW_HIDE_CURSOR(Runtime &runtime, InstructionView view)
+{
+    runtime.graphical_backend.hide_cursor();
+}
+
+void instr_WINDOW_SHOW_CURSOR(Runtime &runtime, InstructionView view)
+{
+    runtime.graphical_backend.show_cursor();
+}
+
 void instr_FILE_OPEN(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(

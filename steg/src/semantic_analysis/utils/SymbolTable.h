@@ -117,6 +117,16 @@ namespace compiler
                     "WINDOW_SET_TEXTURE_COLOR_MASK");
             builtin("window_reset_texture_color_mask", v(T::VOID), {}, "WINDOW_RESET_TEXTURE_COLOR_MASK");
             builtin("window_set_icon", v(T::VOID), {v(T::FILE)}, "WINDOW_SET_ICON");
+            builtin("window_mouse_x", v(T::UINT32), {}, "WINDOW_MOUSE_X");
+            builtin("window_mouse_y", v(T::UINT32), {}, "WINDOW_MOUSE_Y");
+            builtin("window_mouse_delta_x", v(T::INT32), {}, "WINDOW_MOUSE_DELTA_X");
+            builtin("window_mouse_delta_y", v(T::INT32), {}, "WINDOW_MOUSE_DELTA_Y");
+            builtin("window_mouse_button_pressed", v(T::BOOL), {v(T::UINT32)}, "WINDOW_MOUSE_BUTTON_PRESSED");
+            builtin("window_mouse_button_down", v(T::BOOL), {v(T::UINT32)}, "WINDOW_MOUSE_BUTTON_DOWN");
+            builtin("window_mouse_button_released", v(T::BOOL), {v(T::UINT32)}, "WINDOW_MOUSE_BUTTON_RELEASED");
+            builtin("window_mouse_wheel_delta", v(T::INT32), {}, "WINDOW_MOUSE_WHEEL_DELTA");
+            builtin("window_hide_cursor", v(T::VOID), {}, "WINDOW_HIDE_CURSOR");
+            builtin("window_show_cursor", v(T::VOID), {}, "WINDOW_SHOW_CURSOR");
 
             builtin("file_open", v(T::FILE), {v(T::UINT8, 1)}, "FILE_OPEN");
             builtin("file_create", v(T::FILE), {v(T::UINT8, 1)}, "FILE_CREATE");

@@ -197,6 +197,19 @@ void instr_WINDOW_SET_TEXTURE_COLOR_MASK(Runtime &runtime, InstructionView view)
 void instr_WINDOW_RESET_TEXTURE_COLOR_MASK(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_ICON(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_ICON1(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_X(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_Y(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_DELTA_X(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_DELTA_Y(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_BUTTON_PRESSED(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_BUTTON_PRESSED2(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_BUTTON_DOWN(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_BUTTON_DOWN2(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_BUTTON_RELEASED(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_BUTTON_RELEASED2(Runtime &runtime, InstructionView view);
+void instr_WINDOW_MOUSE_WHEEL_DELTA(Runtime &runtime, InstructionView view);
+void instr_WINDOW_HIDE_CURSOR(Runtime &runtime, InstructionView view);
+void instr_WINDOW_SHOW_CURSOR(Runtime &runtime, InstructionView view);
 void instr_FILE_OPEN(Runtime &runtime, InstructionView view);
 void instr_FILE_OPEN2(Runtime &runtime, InstructionView view);
 void instr_FILE_CREATE(Runtime &runtime, InstructionView view);
@@ -277,7 +290,7 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"LOAD_32", true,
         InstructionHandler(&instr_LOADD_32, REG, ONE_DATA),
         InstructionHandler(&instr_LOADR_32, REG, REG_BOTH)
-        },
+    },
     RawInstruction{"LOAD_16", true,
         InstructionHandler(&instr_LOADD_16, REG, ONE_DATA),
         InstructionHandler(&instr_LOADR_16, REG, REG_BOTH)},
@@ -406,6 +419,25 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"WINDOW_SET_ICON", true,
         InstructionHandler(&instr_WINDOW_SET_ICON, ONE_DATA),
         InstructionHandler(&instr_WINDOW_SET_ICON1, REG_BOTH)},
+    RawInstruction{"WINDOW_MOUSE_X", true, InstructionHandler(&instr_WINDOW_MOUSE_X, REG)},
+    RawInstruction{"WINDOW_MOUSE_Y", true, InstructionHandler(&instr_WINDOW_MOUSE_Y, REG)},
+    RawInstruction{"WINDOW_MOUSE_DELTA_X", true, InstructionHandler(&instr_WINDOW_MOUSE_DELTA_X, REG)},
+    RawInstruction{"WINDOW_MOUSE_DELTA_Y", true, InstructionHandler(&instr_WINDOW_MOUSE_DELTA_Y, REG)},
+    RawInstruction{"WINDOW_MOUSE_BUTTON_PRESSED", true,
+        InstructionHandler(&instr_WINDOW_MOUSE_BUTTON_PRESSED, REG, REG_BOTH),
+        InstructionHandler(&instr_WINDOW_MOUSE_BUTTON_PRESSED2, REG, ONE_DATA)},
+    RawInstruction{"WINDOW_MOUSE_BUTTON_DOWN", true,
+        InstructionHandler(&instr_WINDOW_MOUSE_BUTTON_DOWN, REG, REG_BOTH),
+        InstructionHandler(&instr_WINDOW_MOUSE_BUTTON_DOWN2, REG, ONE_DATA)},
+    RawInstruction{"WINDOW_MOUSE_BUTTON_RELEASED", true,
+        InstructionHandler(&instr_WINDOW_MOUSE_BUTTON_RELEASED, REG, REG_BOTH),
+        InstructionHandler(&instr_WINDOW_MOUSE_BUTTON_RELEASED2, REG, ONE_DATA)},
+    RawInstruction{"WINDOW_MOUSE_WHEEL_DELTA", true,
+        InstructionHandler(&instr_WINDOW_MOUSE_WHEEL_DELTA, REG)},
+    RawInstruction{"WINDOW_HIDE_CURSOR", true,
+        InstructionHandler(&instr_WINDOW_HIDE_CURSOR)},
+    RawInstruction{"WINDOW_WINDOW_SHOW_CURSOR", true,
+        InstructionHandler(&instr_WINDOW_SHOW_CURSOR)},
     RawInstruction{"FILE_OPEN", true,
         InstructionHandler(&instr_FILE_OPEN, REG, ONE_DATA),
         InstructionHandler(&instr_FILE_OPEN2, REG, REG_BOTH)},

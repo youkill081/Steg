@@ -261,6 +261,58 @@ bool GraphicalBackend::key_pressed(uint16_t key)
     return IsKeyPressed(key);
 }
 
+int32_t GraphicalBackend::mouse_x() const
+{
+    Vector2 pos = screen_to_viewport(GetMousePosition());
+    return static_cast<int32_t>(pos.x);
+}
+
+int32_t GraphicalBackend::mouse_y() const
+{
+    Vector2 pos = screen_to_viewport(GetMousePosition());
+    return static_cast<int32_t>(pos.y);
+}
+
+int32_t GraphicalBackend::mouse_delta_x() const
+{
+    return static_cast<int32_t>(GetMouseDelta().x);
+}
+
+int32_t GraphicalBackend::mouse_delta_y() const
+{
+    return static_cast<int32_t>(GetMouseDelta().y);
+}
+
+bool GraphicalBackend::mouse_button_pressed(int button) const
+{
+    return IsMouseButtonPressed(button);
+}
+
+bool GraphicalBackend::mouse_button_down(int button) const
+{
+    return IsMouseButtonDown(button);
+}
+
+bool GraphicalBackend::mouse_button_released(int button) const
+{
+    return IsMouseButtonReleased(button);
+}
+
+int32_t GraphicalBackend::mouse_wheel_delta() const
+{
+    return static_cast<int32_t>(GetMouseWheelMove());
+}
+
+void GraphicalBackend::hide_cursor() const
+{
+    HideCursor();
+}
+
+void GraphicalBackend::show_cursor() const
+{
+    ShowCursor();
+}
+
 Vector2 GraphicalBackend::screen_to_viewport(const Vector2& screenPos) const
 {
     if (!_viewport_active || _target.id == 0)
