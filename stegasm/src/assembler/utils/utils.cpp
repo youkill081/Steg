@@ -9,6 +9,8 @@
 #include "assembler/assembler_exception.h"
 #include "assembler/TextParser.h"
 
+#include <charconv>
+
 namespace assembler
 {
     std::span<const ParsedLine> get_section_lines(
