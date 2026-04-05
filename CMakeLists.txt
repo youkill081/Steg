@@ -26,7 +26,6 @@ add_subdirectory(libs/raylib)
 
 # All subprojects
 add_subdirectory(steg)
-add_subdirectory(stegcli)
 add_subdirectory(stegasm)
 add_subdirectory(steg/lsp)
 add_subdirectory(steganographer)
