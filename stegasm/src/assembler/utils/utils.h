@@ -19,7 +19,7 @@ namespace assembler
         const std::string& sectionName
     );
 
-    bool token_is_uint32_value(const std::string &token);
-    uint32_t token_to_uint32(const std::string &token);
+    bool token_is_numeric_value(const std::string &token);
+    uint32_t token_to_numeric(const std::string &token);
 
 }
