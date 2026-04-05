@@ -23,6 +23,8 @@ jobs:
       - name: Extract Version and Check Tag
         id: version_check
         run: |
+          git fetch --tags
+
           VERSION=$(grep -oP 'project\(stegnocode VERSION \K[0-9.]+' CMakeLists.txt)
           TAG="v$VERSION"
 
