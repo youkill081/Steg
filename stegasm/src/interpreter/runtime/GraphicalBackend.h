@@ -17,6 +17,15 @@
 #define FONT_TEXT_SPACING 1.0f
 #define DEFAULT_TEXTURE_COLOR_MASK WHITE
 
+class Runtime;
+
+struct Framebuffer {
+    RenderTexture2D renderTex;
+    uint32_t memoryAddress; // Address in runtime memory
+    uint32_t width;
+    uint32_t height;
+};
+
 class GraphicalBackend
 {
 private:
@@ -26,6 +35,8 @@ private:
     Color _text_color = WHITE;
 
     std::map<std::shared_ptr<FileBase>, Texture2D, std::owner_less<>> _textures;
+    std::map<uint32_t, Framebuffer> _framebuffers;  // Id -> Framebuffer
+
     Color _texture_color_mask = DEFAULT_TEXTURE_COLOR_MASK;
 
     void load_texture(const std::shared_ptr<FileBase> &file);
@@ -85,6 +96,12 @@ public:
     [[nodiscard]] int32_t mouse_wheel_delta() const;
     void hide_cursor() const;
     void show_cursor() const;
+
+    // Framebuffer management
+    uint32_t create_framebuffer(Runtime &runtime, uint32_t width, uint32_t height);
+    void sync_framebuffer(Runtime &runtime, uint32_t framebuffer_id);
+    uint32_t framebuffer_get_address(uint32_t framebuffer_id);
+    void draw_framebuffer(uint32_t framebuffer_id, int x, int y);
 
     // Utils
 

@@ -39,7 +39,7 @@ public:
     ComparisonFlag comparison_flag;
     Files files;
     Clocks clocks;
-    std::stack<uint16_t> stack{};
+    std::stack<uint32_t> stack{};
     GraphicalBackend graphical_backend;
     Utils utils{*this};
 
@@ -48,5 +48,5 @@ public:
     uint64_t instruction_pointer = 0;
 
     bool is_running = true;
-    uint16_t return_value = 0;
+    uint32_t return_value = 0;
 };

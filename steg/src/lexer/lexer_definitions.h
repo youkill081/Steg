@@ -51,6 +51,7 @@ namespace compiler
         TOKEN_TYPE_VOID,
         TOKEN_TYPE_FILE,
         TOKEN_TYPE_CLOCK,
+        TOKEN_TYPE_FRAMEBUFFER,
 
         TOKEN_BOOL_TRUE,
         TOKEN_BOOL_FALSE,
@@ -131,6 +132,7 @@ namespace compiler
         TokenEntry{"void", TOKEN_TYPE_VOID},
         TokenEntry{"file", TOKEN_TYPE_FILE},
         TokenEntry{"clock", TOKEN_TYPE_CLOCK},
+        TokenEntry{"framebuffer", TOKEN_TYPE_FRAMEBUFFER},
 
         // Literals
         TokenEntry{"true", TOKEN_BOOL_TRUE},
@@ -196,6 +198,7 @@ namespace compiler
         {TOKEN_TYPE_INT32, "TOKEN_TYPE_INT32"},
         {TOKEN_TYPE_BOOL, "TOKEN_TYPE_BOOL"},
         {TOKEN_TYPE_VOID, "TOKEN_TYPE_VOID"},
+        {TOKEN_TYPE_FRAMEBUFFER, "TOKEN_TYPE_FRAMEBUFFER"},
         {TOKEN_BOOL_TRUE, "TOKEN_BOOL_TRUE"},
         {TOKEN_BOOL_FALSE, "TOKEN_BOOL_FALSE"},
         {TOKEN_OPERATOR_PLUS, "TOKEN_OPERATOR_PLUS"},
@@ -263,6 +266,7 @@ namespace compiler
     {TOKEN_TYPE_VOID, TOKEN_CATH_TYPE},
     {TOKEN_TYPE_FILE, TOKEN_CATH_TYPE},
     {TOKEN_TYPE_CLOCK, TOKEN_CATH_TYPE},
+    {TOKEN_TYPE_FRAMEBUFFER, TOKEN_CATH_TYPE},
 
     {TOKEN_OPERATOR_PLUS, TOKEN_CATH_OPERATOR},
     {TOKEN_OPERATOR_MINUS, TOKEN_CATH_OPERATOR},

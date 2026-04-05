@@ -129,6 +129,10 @@ namespace compiler
             builtin("window_mouse_wheel_delta", v(T::INT32), {}, "WINDOW_MOUSE_WHEEL_DELTA");
             builtin("window_hide_cursor", v(T::VOID), {}, "WINDOW_HIDE_CURSOR");
             builtin("window_show_cursor", v(T::VOID), {}, "WINDOW_SHOW_CURSOR");
+            builtin("window_framebuffer_create", v(T::FRAMEBUFFER), {v(T::UINT32), v(T::UINT32)}, "WINDOW_TEXTURE_FRAMEBUFFER_CREATE");
+            builtin("window_framebuffer_get_address", v(T::UINT32, 1), {v(T::FRAMEBUFFER)}, "WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS");
+            builtin("window_framebuffer_sync", v(T::VOID), {v(T::FRAMEBUFFER)}, "WINDOW_TEXTURE_FRAMEBUFFER_SYNC");
+            builtin("window_framebuffer_draw", v(T::VOID), {v(T::FRAMEBUFFER), v(T::UINT32), v(T::UINT32)}, "WINDOW_TEXTURE_FRAMEBUFFER_DRAW");
 
             builtin("file_open", v(T::FILE), {v(T::UINT8, 1)}, "FILE_OPEN");
             builtin("file_create", v(T::FILE), {v(T::UINT8, 1)}, "FILE_CREATE");

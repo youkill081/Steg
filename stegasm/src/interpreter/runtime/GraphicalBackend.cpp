@@ -10,6 +10,8 @@
 
 #include <iostream>
 
+#include "Runtime.h"
+
 bool GraphicalBackend::check_inited(bool throw_if_not_inited)
 {
     if (not IsWindowReady() && throw_if_not_inited)
@@ -228,23 +230,70 @@ void GraphicalBackend::set_texture_color_mask(const Color &color)
     _texture_color_mask = color;
 }
 
-void GraphicalBackend::draw_texture(const std::shared_ptr<FileBase> &file, int x, int y)
+void draw_texture_internal(
+    const Texture2D& texture,
+    int x, int y,
+    int width, int height,
+    const Color &tint,
+    const bool flipY = false
+)
+{
+    Rectangle source = {
+        0.0f,
+        0.0f,
+        static_cast<float>(width),
+        flipY ? -static_cast<float>(height) : static_cast<float>(height)
+    };
+
+    const Rectangle dest = {
+        static_cast<float>(x),
+        static_cast<float>(y),
+        static_cast<float>(width),
+        static_cast<float>(height)
+    };
+
+    const Vector2 origin = {0.0f, 0.0f};
+    DrawTexturePro(texture, source, dest, origin, 0.0f, tint);
+}
+
+void GraphicalBackend::draw_texture(const std::shared_ptr<FileBase>& file, int x, int y)
 {
     check_inited(true);
 
-    if (not _textures.contains(file))
-        this->load_texture(file);
+    if (!_textures.contains(file))
+        load_texture(file);
 
-    if (auto crop = file->get_crop())
+    const Texture2D& tex = _textures[file];
+
+    if (const auto crop = file->get_crop())
     {
-        Rectangle src = { (float)crop->x, (float)crop->y, (float)crop->w, (float)crop->h };
-        DrawTextureRec(_textures[file], src, { (float)x, (float)y }, _texture_color_mask);
+        const Rectangle src = {
+            static_cast<float>(crop->x),
+            static_cast<float>(crop->y),
+            static_cast<float>(crop->w),
+            static_cast<float>(crop->h)
+        };
+        const Rectangle dest = {
+            static_cast<float>(x),
+            static_cast<float>(y),
+            static_cast<float>(crop->w),
+            static_cast<float>(crop->h)
+        };
+
+        DrawTexturePro(tex, src, dest, {0.0f, 0.0f}, 0.0f, _texture_color_mask);
     }
     else
     {
-        DrawTexture(_textures[file], x, y, _texture_color_mask);
+        draw_texture_internal(
+            tex,
+            x,
+            y,
+            tex.width,
+            tex.height,
+            _texture_color_mask,
+            false
+        );
     }
-
 }
 
 bool GraphicalBackend::key_down(uint16_t key)
@@ -311,6 +360,65 @@ void GraphicalBackend::hide_cursor() const
 void GraphicalBackend::show_cursor() const
 {
     ShowCursor();
+}
+
+uint32_t GraphicalBackend::create_framebuffer(Runtime &runtime, uint32_t width, uint32_t height)
+{
+    static uint32_t current_id = 0;
+
+    auto nbr_uint32 =  width * height;
+    uint32_t address = runtime.memory.allocate(nbr_uint32 * sizeof(uint32_t));
+
+    auto &block_data = runtime.memory.get_block(address).data;
+
+    std::memset(block_data.data(), 0xFF, nbr_uint32 * sizeof(uint32_t)); // All white
+
+    this->_framebuffers[current_id++] = Framebuffer{
+        .renderTex = LoadRenderTexture(width, height),
+        .memoryAddress = address,
+        .width = width,
+        .height = height,
+    };
+
+    return current_id - 1;
+}
+
+void GraphicalBackend::sync_framebuffer(Runtime &runtime, uint32_t framebuffer_id)
+{
+    const Framebuffer &framebuffer = _framebuffers[framebuffer_id];
+    auto& data = runtime.memory.get_block(framebuffer.memoryAddress).data;
+    UpdateTexture(framebuffer.renderTex.texture, data.data());
+}
+
+uint32_t GraphicalBackend::framebuffer_get_address(uint32_t framebuffer_id)
+{
+    if (not _framebuffers.contains(framebuffer_id))
+        throw GraphicalBackendError("Invalid framebuffer id");
+    return _framebuffers[framebuffer_id].memoryAddress;
+}
+
+void GraphicalBackend::draw_framebuffer(uint32_t framebuffer_id, int x, int y)
+{
+    check_inited(true);
+
+    auto it = _framebuffers.find(framebuffer_id);
+    if (it == _framebuffers.end())
+        throw GraphicalBackendError("Invalid framebuffer id");
+
+    const Framebuffer& fb = it->second;
+
+    if (fb.renderTex.id == 0 || fb.renderTex.texture.id == 0)
+        throw GraphicalBackendError("Invalid framebuffer texture");
+
+    draw_texture_internal(
+        fb.renderTex.texture,
+        x,
+        y,
+        fb.width,
+        fb.height,
+        _texture_color_mask,
+        true
+    );
 }
 
 Vector2 GraphicalBackend::screen_to_viewport(const Vector2& screenPos) const

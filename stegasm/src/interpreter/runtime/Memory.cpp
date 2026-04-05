@@ -152,17 +152,22 @@ void MemoryBlockSet::free(uint32_t address)
 
 MemoryBlock& MemoryBlockSet::get_block_for_address(uint32_t address)
 {
-    uint32_t idx = find_address_block_index(address);
+    const uint32_t idx = find_address_block_index(address);
     return blocks[idx];
 }
 
 const MemoryBlock& MemoryBlockSet::get_block_for_address(uint32_t address) const
 {
-    uint32_t idx = find_address_block_index(address);
+    const uint32_t idx = find_address_block_index(address);
     return blocks[idx];
 }
 
 // ----- Memory -----
+
+MemoryBlock& Memory::get_block(uint32_t address)
+{
+    return _blocks.get_block_for_address(address);
+}
 
 uint8_t Memory::read_uint8(uint32_t address) const
 {

@@ -30,7 +30,8 @@ namespace compiler
             map(parseToken<TOKEN_TYPE_BOOL>, [](const auto &t) { return std::make_pair(ASTTypeNode::BOOL,   t); }),
             map(parseToken<TOKEN_TYPE_FILE>, [](const auto &t) { return std::make_pair(ASTTypeNode::FILE,   t); }),
             map(parseToken<TOKEN_TYPE_CLOCK>, [](const auto &t) { return std::make_pair(ASTTypeNode::CLOCK,  t); }),
-            map(parseToken<TOKEN_TYPE_VOID>, [](const auto &t) { return std::make_pair(ASTTypeNode::VOID,   t); })
+            map(parseToken<TOKEN_TYPE_VOID>, [](const auto &t) { return std::make_pair(ASTTypeNode::VOID,   t); }),
+            map(parseToken<TOKEN_TYPE_FRAMEBUFFER>, [](const auto &t) { return std::make_pair(ASTTypeNode::FRAMEBUFFER,   t); })
         );
 
     inline Parser<std::unique_ptr<ASTTypeNode>, TokenSpan> parseType = map(

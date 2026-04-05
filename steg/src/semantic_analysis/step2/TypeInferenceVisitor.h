@@ -25,7 +25,8 @@ namespace compiler
         }
 
         static bool is_opaque(const ResolvedType& t) {
-            return !t.is_pointer() && (t.base == ASTTypeNode::FILE || t.base == ASTTypeNode::CLOCK);
+            return !t.is_pointer() &&
+                (t.base == ASTTypeNode::FILE || t.base == ASTTypeNode::CLOCK || t.base == ASTTypeNode::FRAMEBUFFER);
         }
 
         static bool is_invalid_pointer(const ResolvedType& t) {

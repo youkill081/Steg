@@ -210,6 +210,10 @@ void instr_WINDOW_MOUSE_BUTTON_RELEASED2(Runtime &runtime, InstructionView view)
 void instr_WINDOW_MOUSE_WHEEL_DELTA(Runtime &runtime, InstructionView view);
 void instr_WINDOW_HIDE_CURSOR(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SHOW_CURSOR(Runtime &runtime, InstructionView view);
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_CREATE(Runtime &runtime, InstructionView view);
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS(Runtime &runtime, InstructionView view);
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_SYNC(Runtime &runtime, InstructionView view);
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_DRAW(Runtime &runtime, InstructionView view);
 void instr_FILE_OPEN(Runtime &runtime, InstructionView view);
 void instr_FILE_OPEN2(Runtime &runtime, InstructionView view);
 void instr_FILE_CREATE(Runtime &runtime, InstructionView view);
@@ -444,6 +448,14 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_WINDOW_HIDE_CURSOR)},
     RawInstruction{"WINDOW_WINDOW_SHOW_CURSOR", true,
         InstructionHandler(&instr_WINDOW_SHOW_CURSOR)},
+    RawInstruction{"WINDOW_TEXTURE_FRAMEBUFFER_CREATE", true,
+        InstructionHandler(&instr_WINDOW_TEXTURE_FRAMEBUFFER_CREATE, REG, REG_BOTH, REG_BOTH)},
+    RawInstruction{"WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS", true,
+        InstructionHandler(&instr_WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS, REG, REG_BOTH)},
+    RawInstruction{"WINDOW_TEXTURE_FRAMEBUFFER_SYNC", true,
+        InstructionHandler(&instr_WINDOW_TEXTURE_FRAMEBUFFER_SYNC, REG_BOTH)},
+    RawInstruction{"WINDOW_TEXTURE_FRAMEBUFFER_DRAW", true,
+        InstructionHandler(&instr_WINDOW_TEXTURE_FRAMEBUFFER_DRAW, REG_BOTH, REG_BOTH, REG_BOTH)},
     RawInstruction{"FILE_OPEN", true,
         InstructionHandler(&instr_FILE_OPEN, REG, ONE_DATA),
         InstructionHandler(&instr_FILE_OPEN2, REG, REG_BOTH)},

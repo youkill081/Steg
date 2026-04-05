@@ -40,7 +40,6 @@ uint32_t InstructionView::get_r1(const Runtime& rt, uint8_t size) const
 
 uint32_t InstructionView::get_r2(const Runtime& rt, uint8_t size) const
 {
-
     uint32_t value = rt.registries.read(this->r2());
     if (is_r2_addr())
     {
@@ -628,8 +627,8 @@ void instr_RAND(Runtime& runtime, InstructionView view)
 
 void instr_WINDOW_CREATE(Runtime& runtime, InstructionView view)
 {
-    uint16_t width = view.get_r1(runtime);
-    uint16_t height = view.get_r2(runtime);
+    uint32_t width = view.get_r1(runtime);
+    uint32_t height = view.get_r2(runtime);
     std::string name = runtime.utils.get_string_from_address(view.get_data(runtime));
 
     runtime.graphical_backend.create_window(width, height, name);
@@ -637,8 +636,8 @@ void instr_WINDOW_CREATE(Runtime& runtime, InstructionView view)
 
 void instr_WINDOW_CREATE3(Runtime& runtime, InstructionView view)
 {
-    uint16_t width = view.get_r1(runtime);
-    uint16_t height = view.get_r2(runtime);
+    uint32_t width = view.get_r1(runtime);
+    uint32_t height = view.get_r2(runtime);
     std::string name = runtime.utils.get_string_from_address(view.get_r3(runtime));
 
     runtime.graphical_backend.create_window(width, height, name);
@@ -775,8 +774,8 @@ void instr_WINDOW_SET_FONT1(Runtime& runtime, InstructionView view)
 
 void instr_WINDOW_DRAW_TEXT(Runtime& runtime, InstructionView view)
 {
-    uint16_t x = view.get_r1(runtime);
-    uint16_t y = view.get_r2(runtime);
+    uint32_t x = view.get_r1(runtime);
+    uint32_t y = view.get_r2(runtime);
     std::string text = runtime.utils.get_string_from_address(view.get_data(runtime));
 
     runtime.graphical_backend.draw_text(text, x, y);
@@ -784,8 +783,8 @@ void instr_WINDOW_DRAW_TEXT(Runtime& runtime, InstructionView view)
 
 void instr_WINDOW_DRAW_TEXT3(Runtime& runtime, InstructionView view)
 {
-    uint16_t x = view.get_r1(runtime);
-    uint16_t y = view.get_r2(runtime);
+    uint32_t x = view.get_r1(runtime);
+    uint32_t y = view.get_r2(runtime);
     std::string text = runtime.utils.get_string_from_address(view.get_r3(runtime));
 
     runtime.graphical_backend.draw_text(text, x, y);
@@ -934,6 +933,45 @@ void instr_WINDOW_HIDE_CURSOR(Runtime &runtime, InstructionView view)
 void instr_WINDOW_SHOW_CURSOR(Runtime &runtime, InstructionView view)
 {
     runtime.graphical_backend.show_cursor();
+}
+
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_CREATE(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.create_framebuffer(
+            runtime,
+            view.get_r2(runtime),
+            view.get_r3(runtime)
+        )
+    );
+}
+
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.graphical_backend.framebuffer_get_address(
+            view.get_r2(runtime)
+        )
+    );
+}
+
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_SYNC(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.sync_framebuffer(
+        runtime,
+        view.get_r1(runtime)
+    );
+}
+
+void instr_WINDOW_TEXTURE_FRAMEBUFFER_DRAW(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.draw_framebuffer(
+        view.get_r1(runtime),
+        view.get_r2(runtime),
+        view.get_r3(runtime)
+    );
 }
 
 void instr_FILE_OPEN(Runtime& runtime, InstructionView view)

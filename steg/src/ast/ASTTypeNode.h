@@ -27,7 +27,8 @@ namespace compiler
             STRING,
             VOID,
             FILE,
-            CLOCK
+            CLOCK,
+            FRAMEBUFFER
         };
 
         ASTTypeNode(
