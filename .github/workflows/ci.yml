@@ -78,12 +78,15 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           mkdir -p dist
-          cp build/steg/steg dist/
+          cp build/steg/steg dist/steg_${{ matrix.os }}_${{ needs.check-version.outputs.version }}
+          cp build/steg/lsp/steglsp dist/steglsp_${{ matrix.os }}_${{ needs.check-version.outputs.version }}
 
       - name: Prepare Artifact (Windows)
         if: runner.os == 'Windows'
         run: |
           mkdir dist
+          copy build\steg\steg.exe dist\steg_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
+          copy build\steg\lsp\steglsp.exe dist\steglsp_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
