@@ -1,6 +1,13 @@
 name: Steg CI Build
 
-on: [push]
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ "main", "steg" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   check-version:
@@ -11,27 +18,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
-      - name: Extract Version and Compare
+      - name: Extract Version and Check Tag
         id: version_check
         run: |
-          NEW_VER=$(grep -oP 'project\(stegnocode VERSION \K[0-9.]+' CMakeLists.txt)
-          echo "Current version: $NEW_VER"
-          
-          git checkout HEAD^ CMakeLists.txt || true
-          OLD_VER=$(grep -oP 'project\(stegnocode VERSION \K[0-9.]+' CMakeLists.txt || echo "0.0.0")
-          git checkout HEAD CMakeLists.txt
-          
-          echo "Old version: $OLD_VER"
-          
-          if [ "$NEW_VER" != "$OLD_VER" ]; then
-            echo "Version bumped. Starting build process."
-            echo "should_build=true" >> $GITHUB_OUTPUT
-            echo "version=$NEW_VER" >> $GITHUB_OUTPUT
-          else
-            echo "No version change. Skipping build."
+          VERSION=$(grep -oP 'project\(stegnocode VERSION \K[0-9.]+' CMakeLists.txt)
+          TAG="v$VERSION"
+
+          echo "Version: $VERSION"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Skipping build."
             echo "should_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $TAG does not exist. Building."
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
           fi
 
   build:
@@ -82,3 +85,17 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: build/${{ matrix.artifact_name }}
+  tag:
+    needs: build
+    runs-on: ubuntu-latest
+    if: needs.check-version.outputs.should_build == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag v${{ needs.check-version.outputs.version }}
+          git push origin v${{ needs.check-version.outputs.version }}
