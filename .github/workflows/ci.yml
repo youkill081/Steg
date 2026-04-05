@@ -5,7 +5,7 @@ permissions:
 
 on:
   push:
-    branches: [ "main", "steg" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -112,3 +112,23 @@ jobs:
           git config user.email "github-actions@github.com"
           git tag v${{ needs.check-version.outputs.version }}
           git push origin v${{ needs.check-version.outputs.version }}
+  release:
+    needs: [ tag, check-version ]
+    runs-on: ubuntu-latest
+    if: needs.check-version.outputs.should_build == 'true'
+
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          name: "v${{ needs.check-version.outputs.version }}"
+          draft: false
+          prerelease: false
+          files: dist/**
