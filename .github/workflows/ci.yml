@@ -44,11 +44,9 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact_name: steg_winx86-64_${{ needs.check-version.outputs.version }}.exe
-            triplet: x64-windows
+            os_name: windows
           - os: ubuntu-latest
-            artifact_name: steg_linux86-64_${{ needs.check-version.outputs.version }}
-            triplet: x64-linux
+            os_name: linux
 
     runs-on: ${{ matrix.os }}
 
