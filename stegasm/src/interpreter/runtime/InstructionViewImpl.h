@@ -12,7 +12,7 @@ inline uint32_t InstructionView::get_r1(const Runtime &rt, uint8_t size) const
     const uint16_t reg_idx = r1();
     const uint32_t value = rt.registries.read(reg_idx);
 
-    if (__builtin_expect(is_r1_addr(), 0)) {
+    if (is_r1_addr()) [[unlikely]] {
         return read_mem_sized(rt, value, size);
     }
     return value;
@@ -23,7 +23,7 @@ inline uint32_t InstructionView::get_r2(const Runtime &rt, uint8_t size) const
     const uint16_t reg_idx = r2();
     const uint32_t value = rt.registries.read(reg_idx);
 
-    if (__builtin_expect(is_r2_addr(), 0)) {
+    if (is_r2_addr()) [[unlikely]] {
         return read_mem_sized(rt, value, size);
     }
     return value;
@@ -35,7 +35,7 @@ inline uint32_t InstructionView::get_r3(const Runtime &rt, uint8_t size) const
     const uint16_t reg_idx = r3();
     uint32_t value = rt.registries.read(reg_idx);
 
-    if (__builtin_expect(is_r3_addr(), 0)) {
+    if (is_r3_addr()) [[unlikely]] {
         return read_mem_sized(rt, value, size);
     }
     return value;
