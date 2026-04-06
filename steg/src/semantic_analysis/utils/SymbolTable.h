@@ -103,6 +103,11 @@ namespace compiler
             builtin("rand", v(T::UINT32), {}, "RAND");
             builtin("debug_r", v(T::VOID), {}, "DEBUG_R");
             builtin("debug_m", v(T::VOID), {}, "DEBUG_M");
+            builtin("sin", v(T::FLOAT), {v(T::FLOAT)}, "FSIN");
+            builtin("cos", v(T::FLOAT), {v(T::FLOAT)}, "FCOS");
+            builtin("sqrt", v(T::FLOAT), {v(T::FLOAT)}, "FSQRT");
+            builtin("deg2rad", v(T::FLOAT), {v(T::FLOAT)}, "FDEG2RAD");
+            builtin("rad2deg", v(T::FLOAT), {v(T::FLOAT)}, "FRAD2DEG");
 
             builtin("window_create", v(T::VOID), {v(T::UINT32), v(T::UINT32), v(T::UINT8, 1)}, "WINDOW_CREATE");
             builtin("window_close", v(T::VOID), {}, "WINDOW_CLOSE");

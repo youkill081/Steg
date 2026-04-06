@@ -62,6 +62,16 @@ void instr_MODR(Runtime &runtime, InstructionView view);
 void instr_MODD(Runtime &runtime, InstructionView view);
 void instr_FMODR(Runtime &runtime, InstructionView view);
 void instr_FMODD(Runtime &runtime, InstructionView view);
+void instr_FSINR(Runtime &runtime, InstructionView view);
+void instr_FSIND(Runtime &runtime, InstructionView view);
+void instr_FCOSR(Runtime &runtime, InstructionView view);
+void instr_FCOSD(Runtime &runtime, InstructionView view);
+void instr_FSQRTR(Runtime &runtime, InstructionView view);
+void instr_FSQRTD(Runtime &runtime, InstructionView view);
+void instr_FDEG2RADR(Runtime &runtime, InstructionView view);
+void instr_FDEG2RADD(Runtime &runtime, InstructionView view);
+void instr_FRAD2DEGR(Runtime &runtime, InstructionView view);
+void instr_FRAD2DEGD(Runtime &runtime, InstructionView view);
 void instr_ADDR3(Runtime &runtime, InstructionView view);
 void instr_ADDD3(Runtime &runtime, InstructionView view);
 void instr_FADDD3(Runtime &runtime, InstructionView view);
@@ -359,6 +369,26 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_FMODD, REG, ONE_DATA),
         InstructionHandler(&instr_FMODR3, REG, REG_BOTH, REG_BOTH),
         InstructionHandler(&instr_FMODD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"FSIN", true,
+        InstructionHandler(&instr_FSINR, REG, REG_BOTH),
+        InstructionHandler(&instr_FSIND, REG, ONE_DATA),
+    },
+    RawInstruction{"FCOS", true,
+        InstructionHandler(&instr_FCOSR, REG, REG_BOTH),
+        InstructionHandler(&instr_FCOSD, REG, ONE_DATA),
+    },
+    RawInstruction{"FSQRT", true,
+        InstructionHandler(&instr_FSQRTR, REG, REG_BOTH),
+        InstructionHandler(&instr_FSQRTD, REG, ONE_DATA),
+    },
+    RawInstruction{"FDEG2RAD", true,
+        InstructionHandler(&instr_FDEG2RADR, REG, REG_BOTH),
+        InstructionHandler(&instr_FDEG2RADD, REG, ONE_DATA),
+    },
+    RawInstruction{"FRAD2DEG", true,
+        InstructionHandler(&instr_FRAD2DEGR, REG, REG_BOTH),
+        InstructionHandler(&instr_FRAD2DEGD, REG, ONE_DATA),
     },
     RawInstruction{"JMP", true, InstructionHandler(&instr_JMP, ONE_DATA)},
     RawInstruction{"CMP", true,

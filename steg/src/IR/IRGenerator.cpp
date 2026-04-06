@@ -410,8 +410,13 @@ void IRGenerator::visit(ASTIndexExpressionNode* node)
 void IRGenerator::visit(ASTCallExpressionNode* node)
 {
     std::vector<IrOperand> args;
-    for (auto& arg : node->args)
-        args.push_back(eval(arg.get()));
+    for (std::size_t i = 0; i < node->args.size(); ++i)
+    {
+        auto arg = eval(node->args[i].get());
+        if (node->resolved_symbol && i < node->resolved_symbol->param_types.size())
+            arg = ensure_type(arg, resolved_to_ir_type(node->resolved_symbol->param_types[i]));
+        args.push_back(arg);
+    }
 
     IrInstruction instruction;
     instruction.call_args = std::move(args);

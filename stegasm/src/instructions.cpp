@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <numbers>
 #include <random>
 #include <bit>
 
@@ -440,6 +441,115 @@ void instr_FMODD(Runtime& runtime, InstructionView view)
         view.r1(),
         std::bit_cast<uint32_t>(
             std::fmod(std::bit_cast<float>(view.get_r1(runtime)), std::bit_cast<float>(view.get_data(runtime)))
+        )
+    );
+}
+
+void instr_FSINR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::sin(std::bit_cast<float>(view.get_r2(runtime)))
+        )
+    );
+}
+
+void instr_FSIND(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::sin(std::bit_cast<float>(view.get_data(runtime)))
+        )
+    );
+}
+
+void instr_FCOSR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::cos(std::bit_cast<float>(view.get_r2(runtime)))
+        )
+    );
+}
+
+void instr_FCOSD(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::cos(std::bit_cast<float>(view.get_data(runtime)))
+        )
+    );
+}
+
+void instr_FSQRTR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::sqrtf(std::bit_cast<float>(view.get_r2(runtime)))
+        )
+    );
+}
+
+void instr_FSQRTD(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::sqrtf(std::bit_cast<float>(view.get_data(runtime)))
+        )
+    );
+}
+
+inline float degToRad(float degrees) {
+    return degrees * (std::numbers::pi / 180.0);
+}
+
+
+void instr_FDEG2RADR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            degToRad(std::bit_cast<float>(view.get_r2(runtime)))
+        )
+    );
+}
+
+void instr_FDEG2RADD(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            degToRad(std::bit_cast<float>(view.get_data(runtime)))
+        )
+    );
+}
+
+float radToDeg(float radians) {
+    return radians * (180.0 / std::numbers::pi);
+}
+
+void instr_FRAD2DEGR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            radToDeg(std::bit_cast<float>(view.get_r2(runtime)))
+        )
+    );
+}
+
+void instr_FRAD2DEGD(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            radToDeg(std::bit_cast<float>(view.get_data(runtime)))
         )
     );
 }

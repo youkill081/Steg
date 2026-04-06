@@ -72,6 +72,10 @@ nlohmann::json encodeTokens(const std::string& uri, const std::string& filePath)
             ? compiler::TextParser::from_string(*stored, filePath)
             : compiler::TextParser::from_file(filePath);
 
+        std::cerr << "[lsp] parser source: " << (stored.has_value() ? "store" : "file") << '\n';
+        std::cerr << "[lsp] content size: " << (stored.has_value() ? stored->size() : 0) << '\n';
+        std::cerr << "[lsp] first 50 chars: " << (stored.has_value() ? stored->substr(0, 50) : "") << '\n';
+
         auto result = compiler::analyze(parser);
 
         if (!result.has_value())
