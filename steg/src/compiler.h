@@ -25,6 +25,7 @@
 
 #include "asm_gen/AsmGenerator.h"
 #include "asm_gen/Registerallocator.h"
+#include "IR/IRConstantFolding.h"
 #include "IR/IRRenumbering.h"
 
 
@@ -188,6 +189,10 @@ namespace compiler
 
         if (Linter::instance().has_errors())
             return std::nullopt;
+
+        /* Fold and propages */
+        IRConstantFolding constant_folding(out.ir_blocks, out.globals);
+        constant_folding.fold();
 
         IRRenumbering renumbering(out.ir_blocks, out.globals);
         renumbering.renumber();

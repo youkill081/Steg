@@ -565,7 +565,10 @@ void IRGenerator::visit(ASTVariableStatement* node)
         auto val = eval(node->expression.get());
         const IrValueType dest_type = resolved_to_ir_type(ResolvedType::from(node->type));
         val = ensure_type(val, dest_type);
-        add_instruction({IrOpCode::COPY, temp_op(node->name), val});
+
+        auto dest = temp_op(node->name);
+        dest.value_type = dest_type;
+        add_instruction({IrOpCode::COPY, dest, val});
     }
 }
 

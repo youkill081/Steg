@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "ast/ASTTypeNode.h"
 
@@ -42,8 +43,12 @@ namespace compiler
         IrValueType value_type = IrValueType::UNKNOWN;
 
         [[nodiscard]] int32_t as_int() const { return std::stoi(value); }
+        [[nodiscard]] float as_float() const { return std::stof(value); }
         [[nodiscard]] bool is_signed() const {
             return value_type == IrValueType::INT;
+        }
+        [[nodiscard]] bool is_float() const {
+            return value_type == IrValueType::FLOAT;
         }
 
         [[nodiscard]] bool empty() const { return value.empty(); }
@@ -101,6 +106,7 @@ namespace compiler
         uint64_t instr_nbr = current_instr_nbr++;
 
         std::vector<IrOperand> call_args; // For function call
+        std::optional<std::function<IrOperand(IrOperand, IrOperand)>> exec = std::nullopt; // Used to compute folding values
 
         static IrInstruction make_3addr(
             const IrOpCode op,

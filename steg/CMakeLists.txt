@@ -70,6 +70,9 @@ set(STEG_LIB_SOURCES
         src/asm_gen/AsmGenerator.h
         src/asm_gen/AsmGenerator.cpp
         src/IR/IRRenumbering.h
+        src/IR/IRConstantFolding.cpp
+        src/IR/IRConstantFolding.h
+        src/IR/utils/exec.h
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})
