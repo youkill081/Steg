@@ -18,9 +18,11 @@ namespace compiler
     static constexpr int k_reg_return      = 0;
     static constexpr int k_reg_param_first = 1;
     static constexpr int k_reg_param_last  = 6;
-    static constexpr int k_reg_free_first  = 10;
-    static constexpr int k_reg_free_last   = 31;
-    static constexpr int k_reg_free_count  = k_reg_free_last - k_reg_free_first + 1; // 25
+
+    static constexpr int k_reg_volatile_first  = 10; // Registry that may be erased during a function call
+    static constexpr int k_reg_volatile_last   = 20;
+    static constexpr int k_reg_preserved_first = 21; // Preserved registries during function calls
+    static constexpr int k_reg_preserved_last  = 31;
 
     inline std::string reg_name(int index) { return "R" + std::to_string(index); }
 
@@ -51,7 +53,9 @@ namespace compiler
 
         std::string _current_function;
         std::unordered_map<std::string, LifeDuration> _registry_life_duration;
-        std::vector<int> _free_regs;
+        std::vector<int> _free_volatile;
+        std::vector<int> _free_preserved;
+        std::unordered_set<uint64_t> _call_sites; // instr_nbr of each CALL
         RegisterAllocation _result;
 
         void compute_instruction_duration(const IrInstruction& instr);
@@ -59,9 +63,11 @@ namespace compiler
         void extend_lifetimes_for_back_jumps(uint64_t start_offset);
 
         void assign_parameters(const IrBasicBlock& entry);
+        bool spans_call(const LifeDuration& life) const;
         void linear_scan_function();
 
         void insert_function_spills(uint64_t start_index);
+        void insert_preserved_saves(uint64_t start_index);
         void insert_spills_for_block(IrBasicBlock& block);
 
         void reset_free_pool();

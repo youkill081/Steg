@@ -683,16 +683,25 @@ void IRGenerator::visit(ASTFunctionProgramNode* node)
     _temp_count = 0;
 
     const std::string label = node->path.empty()
-                                  ? node->name
-                                  : gen_function_label(node->path, node->name);
+        ? node->name
+        : gen_function_label(node->path, node->name);
 
     _current_block = new_block(label);
-
     _current_block->is_function_entry = true;
     _current_block->function_name = label;
 
     for (const auto& param : node->parameters)
-        _current_block->parameters.push_back(param->name);
+    { // Copy all parameters to prevent losing it
+        const std::string saved_name = "_p_" + param->name;
+        _current_block->parameters.push_back(saved_name);
+
+        const IrValueType vt = resolved_to_ir_type(ResolvedType::from(param->type));
+        IrOperand dest = temp_op(param->name);
+        dest.value_type = vt;
+        IrOperand src = temp_op(saved_name);
+        src.value_type = vt;
+        add_instruction({IrOpCode::COPY, dest, src});
+    }
 
     node->statement->accept(this);
     terminate_return();
