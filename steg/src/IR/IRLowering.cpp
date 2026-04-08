@@ -19,7 +19,6 @@ IRLowering::IRLowering(
         _global_names.insert(global.name);
         _global_types[global.name] = global.type;
     }
-    _str_count = 0;
 }
 
 void IRLowering::lower()

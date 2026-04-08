@@ -63,6 +63,11 @@ namespace compiler
 
         SDIV, SMUL,
 
+        BIT_AND, BIT_OR, BIT_XOR,
+        BIT_NOT, BIT_SHIFT_LEFT, BIT_SHIFT_RIGHT,
+
+        SIGNED_BIT_SHIFT_RIGHT, // Signed version
+
         EQ, NEQ,
         LT, GT, LEQ, GEQ,
         SLT, SGT, SLEQ, SGEQ, // Signed version

@@ -23,7 +23,11 @@ namespace compiler
     extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parsePrimary;
     extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseUnary;
     extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer1;
+    extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseBitOrLayer;
+    extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseBitXorLayer;
+    extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseBitAndLayer;
     extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer2;
+    extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseShiftLayer;
     extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer3;
     extern Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer4;
 

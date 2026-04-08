@@ -64,6 +64,43 @@ void instr_FMAXR(Runtime &runtime, InstructionView view);
 void instr_FMAXD(Runtime &runtime, InstructionView view);
 void instr_MODR(Runtime &runtime, InstructionView view);
 void instr_MODD(Runtime &runtime, InstructionView view);
+
+void instr_BIT_ANDR2(Runtime &runtime, InstructionView view);
+void instr_BIT_ANDD2(Runtime &runtime, InstructionView view);
+void instr_BIT_ANDR3(Runtime &runtime, InstructionView view);
+void instr_BIT_ANDD3(Runtime &runtime, InstructionView view);
+
+void instr_BIT_ORR2(Runtime &runtime, InstructionView view);
+void instr_BIT_ORD2(Runtime &runtime, InstructionView view);
+void instr_BIT_ORR3(Runtime &runtime, InstructionView view);
+void instr_BIT_ORD3(Runtime &runtime, InstructionView view);
+
+void instr_BIT_XORR2(Runtime &runtime, InstructionView view);
+void instr_BIT_XORD2(Runtime &runtime, InstructionView view);
+void instr_BIT_XORR3(Runtime &runtime, InstructionView view);
+void instr_BIT_XORD3(Runtime &runtime, InstructionView view);
+
+void instr_BIT_NOTR(Runtime &runtime, InstructionView view);
+void instr_BIT_NOTD(Runtime &runtime, InstructionView view);
+
+void instr_BIT_SHIFT_LEFTR2(Runtime &runtime, InstructionView view);
+void instr_BIT_SHIFT_LEFTD2(Runtime &runtime, InstructionView view);
+void instr_BIT_SHIFT_LEFTR3(Runtime &runtime, InstructionView view);
+void instr_BIT_SHIFT_LEFTD3(Runtime &runtime, InstructionView view);
+
+void instr_BIT_SHIFT_RIGHTR2(Runtime &runtime, InstructionView view);
+void instr_BIT_SHIFT_RIGHTD2(Runtime &runtime, InstructionView view);
+void instr_BIT_SHIFT_RIGHTR3(Runtime &runtime, InstructionView view);
+void instr_BIT_SHIFT_RIGHTD3(Runtime &runtime, InstructionView view);
+
+void instr_BIT_S_SHIFT_RIGHTR2(Runtime &runtime, InstructionView view);
+void instr_BIT_S_SHIFT_RIGHTD2(Runtime &runtime, InstructionView view);
+void instr_BIT_S_SHIFT_RIGHTR3(Runtime &runtime, InstructionView view);
+void instr_BIT_S_SHIFT_RIGHTD3(Runtime &runtime, InstructionView view);
+
+
+
+
 void instr_FMODR(Runtime &runtime, InstructionView view);
 void instr_FMODD(Runtime &runtime, InstructionView view);
 void instr_FSINR(Runtime &runtime, InstructionView view);
@@ -397,6 +434,46 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_FMODD, REG, ONE_DATA),
         InstructionHandler(&instr_FMODR3, REG, REG_BOTH, REG_BOTH),
         InstructionHandler(&instr_FMODD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"AND", true,
+        InstructionHandler(&instr_BIT_ANDR2, REG, REG_BOTH),
+        InstructionHandler(&instr_BIT_ANDD2, REG, ONE_DATA),
+        InstructionHandler(&instr_BIT_ANDR3, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_BIT_ANDD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"OR", true,
+        InstructionHandler(&instr_BIT_ORR2, REG, REG_BOTH),
+        InstructionHandler(&instr_BIT_ORD2, REG, ONE_DATA),
+        InstructionHandler(&instr_BIT_ORR3, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_BIT_ORD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"XOR", true,
+        InstructionHandler(&instr_BIT_XORR2, REG, REG_BOTH),
+        InstructionHandler(&instr_BIT_XORD2, REG, ONE_DATA),
+        InstructionHandler(&instr_BIT_XORR3, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_BIT_XORD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"BIT_NOT", true,
+        InstructionHandler(&instr_BIT_NOTR, REG, REG_BOTH),
+        InstructionHandler(&instr_BIT_NOTD, REG, ONE_DATA)
+    },
+    RawInstruction{"SHIFT_LEFT", true,
+        InstructionHandler(&instr_BIT_SHIFT_LEFTR2, REG, REG_BOTH),
+        InstructionHandler(&instr_BIT_SHIFT_LEFTD2, REG, ONE_DATA),
+        InstructionHandler(&instr_BIT_SHIFT_LEFTR3, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_BIT_SHIFT_LEFTD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"SHIFT_RIGHT", true,
+        InstructionHandler(&instr_BIT_SHIFT_RIGHTR2, REG, REG_BOTH),
+        InstructionHandler(&instr_BIT_SHIFT_RIGHTD2, REG, ONE_DATA),
+        InstructionHandler(&instr_BIT_SHIFT_RIGHTR3, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_BIT_SHIFT_RIGHTD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"SSHIFT_RIGHT", true,
+        InstructionHandler(&instr_BIT_S_SHIFT_RIGHTR2, REG, REG_BOTH),
+        InstructionHandler(&instr_BIT_S_SHIFT_RIGHTD2, REG, ONE_DATA),
+        InstructionHandler(&instr_BIT_S_SHIFT_RIGHTR3, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_BIT_S_SHIFT_RIGHTD3, REG, REG_BOTH, ONE_DATA)
     },
     RawInstruction{"FSIN", true,
         InstructionHandler(&instr_FSINR, REG, REG_BOTH),

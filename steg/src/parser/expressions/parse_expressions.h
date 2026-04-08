@@ -28,6 +28,7 @@ namespace compiler
         choice(
             parseNegationUnary,
             parseNotUnary,
+            parseBitNotUnary,
             parseAddressOfUnary,
             parseDereferenceUnary,
             parsePrimary
@@ -43,8 +44,13 @@ namespace compiler
         foldInfix
     );
 
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseShiftLayer = map(
+        seq(compiler::ref(parseLayer3), many(choice(parseShiftLeft, parseShiftRight))),
+        foldInfix
+    );
+
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer2 = map(
-        seq(compiler::ref(parseLayer3), many(choice(
+        seq(compiler::ref(parseShiftLayer), many(choice(
             parseComparisonEqual,
             parseComparisonNotEqual,
             parseComparisonLess,
@@ -55,8 +61,23 @@ namespace compiler
         foldInfix
     );
 
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseBitAndLayer = map(
+        seq(compiler::ref(parseLayer2), many(parseBitAnd)),
+        foldInfix
+    );
+
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseBitXorLayer = map(
+        seq(compiler::ref(parseBitAndLayer), many(parseBitXor)),
+        foldInfix
+    );
+
+    inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseBitOrLayer = map(
+        seq(compiler::ref(parseBitXorLayer), many(parseBitOr)),
+        foldInfix
+    );
+
     inline Parser<std::unique_ptr<ASTExpressionNode>, TokenSpan> parseLayer1 = map(
-        seq(compiler::ref(parseLayer2), many(choice(parseComparisonAnd, parseComparisonOr))),
+        seq(compiler::ref(parseBitOrLayer), many(choice(parseComparisonAnd, parseComparisonOr))),
         foldInfix
     );
 

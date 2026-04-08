@@ -108,6 +108,13 @@ IrOpCode IRGenerator::binary_opcode(const ASTBinaryExpressionNode::binaryOperati
     case ASTBinaryExpressionNode::COMPARISON_GREATER_OR_EQUAL: return IrOpCode::GEQ;
     case ASTBinaryExpressionNode::COMPARISON_AND: return IrOpCode::AND;
     case ASTBinaryExpressionNode::COMPARISON_OR: return IrOpCode::OR;
+    case ASTBinaryExpressionNode::BIT_AND: return IrOpCode::BIT_AND;
+    case ASTBinaryExpressionNode::BIT_OR: return IrOpCode::BIT_OR;
+    case ASTBinaryExpressionNode::BIT_XOR: return IrOpCode::BIT_XOR;
+    case ASTBinaryExpressionNode::BIT_NOT: return IrOpCode::BIT_NOT;
+    case ASTBinaryExpressionNode::BIT_SHIFT_LEFT: return IrOpCode::BIT_SHIFT_LEFT;
+    case ASTBinaryExpressionNode::BIT_SHIFT_RIGHT: return IrOpCode::BIT_SHIFT_RIGHT;
+    case ASTBinaryExpressionNode::SIGNED_BIT_SHIFT_RIGHT: return IrOpCode::SIGNED_BIT_SHIFT_RIGHT;
     }
     return IrOpCode::ADD;
 }
@@ -293,6 +300,8 @@ static IrValueType wider_type(IrValueType a, IrValueType b)
 
 void IRGenerator::visit(ASTBinaryExpressionNode* node)
 {
+    using ASTBinExpr = ASTBinaryExpressionNode;
+
     auto left  = eval(node->left.get());
     auto right = eval(node->right.get());
 
@@ -320,11 +329,49 @@ void IRGenerator::visit(ASTBinaryExpressionNode* node)
         left = ensure_type(left, IrValueType::FLOAT);
         right = ensure_type(right, IrValueType::FLOAT);
     }
-    else if (node->op_type == node->SIGNED_DIVISION || node->op_type == node->SIGNED_MULTIPLICATION)
+    else if (node->op_type == ASTBinExpr::SIGNED_DIVISION || node->op_type == ASTBinExpr::SIGNED_MULTIPLICATION)
     {
         left = ensure_type(left, IrValueType::INT);
         right = ensure_type(right, IrValueType::INT);
-    } else
+    }
+    else if (
+        node->op_type == ASTBinExpr::BIT_AND ||
+        node->op_type == ASTBinExpr::BIT_OR ||
+        node->op_type == ASTBinExpr::BIT_XOR ||
+        node->op_type == ASTBinExpr::BIT_SHIFT_LEFT ||
+        node->op_type == ASTBinExpr::BIT_SHIFT_RIGHT ||
+        node->op_type == ASTBinExpr::SIGNED_BIT_SHIFT_RIGHT)
+    {
+        if (node->op_type == ASTBinaryExpressionNode::BIT_SHIFT_LEFT ||
+            node->op_type == ASTBinaryExpressionNode::BIT_SHIFT_RIGHT ||
+            node->op_type == ASTBinaryExpressionNode::SIGNED_BIT_SHIFT_RIGHT)
+        {
+            if (node->op_type == ASTBinExpr::SIGNED_BIT_SHIFT_RIGHT)
+                left = ensure_type(left, IrValueType::INT);
+
+            if (is_value_type_signed(right.value_type))
+                right = ensure_type(right, IrValueType::UINT32);
+        }
+        else
+        {
+            const IrValueType operand_target = wider_type(left_type, right_type);
+            if (left.value_type != operand_target)
+            {
+                IrOperand dest = temp_op(new_temp());
+                dest.value_type = operand_target;
+                add_instruction({IrOpCode::COPY, dest, left});
+                left = dest;
+            }
+            if (right.value_type != operand_target)
+            {
+                IrOperand dest = temp_op(new_temp());
+                dest.value_type = operand_target;
+                add_instruction({IrOpCode::COPY, dest, right});
+                right = dest;
+            }
+        }
+    }
+    else
     {
         const IrValueType operand_target = is_comparison
             ? wider_type(left_type, right_type)

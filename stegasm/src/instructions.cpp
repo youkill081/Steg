@@ -466,6 +466,222 @@ void instr_MODD(Runtime& runtime, InstructionView view)
     );
 }
 
+void instr_BIT_ANDR2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) & view.get_r2(runtime)
+    );
+}
+
+void instr_BIT_ANDD2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) & view.get_data(runtime)
+    );
+}
+
+void instr_BIT_ANDR3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) & view.get_r3(runtime)
+    );
+}
+
+void instr_BIT_ANDD3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) & view.get_data(runtime)
+    );
+}
+
+void instr_BIT_ORR2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) | view.get_r2(runtime)
+    );
+}
+
+void instr_BIT_ORD2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) | view.get_data(runtime)
+    );
+}
+
+void instr_BIT_ORR3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) | view.get_r3(runtime)
+    );
+}
+
+void instr_BIT_ORD3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) | view.get_data(runtime)
+    );
+}
+
+void instr_BIT_XORR2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) ^ view.get_r2(runtime)
+    );
+}
+
+void instr_BIT_XORD2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) ^ view.get_data(runtime)
+    );
+}
+
+void instr_BIT_XORR3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) ^ view.get_r3(runtime)
+    );
+}
+
+void instr_BIT_XORD3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) ^ view.get_data(runtime)
+    );
+}
+
+void instr_BIT_NOTR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        ~view.get_r2(runtime)
+    );
+}
+
+void instr_BIT_NOTD(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        ~view.get_data(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_LEFTR2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) << view.get_r2(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_LEFTD2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) << view.get_data(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_LEFTR3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) << view.get_r3(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_LEFTD3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) << view.get_data(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_RIGHTR2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) >> view.get_r2(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_RIGHTD2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r1(runtime) >> view.get_data(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_RIGHTR3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) >> view.get_r3(runtime)
+    );
+}
+
+void instr_BIT_SHIFT_RIGHTD3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        view.get_r2(runtime) >> view.get_data(runtime)
+    );
+}
+
+void instr_BIT_S_SHIFT_RIGHTR2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::bit_cast<int>(view.get_r1(runtime)) >> view.get_r2(runtime)
+        )
+    );
+}
+
+void instr_BIT_S_SHIFT_RIGHTD2(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::bit_cast<int>(view.get_r1(runtime)) >> view.get_data(runtime)
+        )
+    );
+}
+
+void instr_BIT_S_SHIFT_RIGHTR3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::bit_cast<int>(view.get_r2(runtime)) >> view.get_r3(runtime)
+        )
+    );
+}
+
+void instr_BIT_S_SHIFT_RIGHTD3(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::bit_cast<int>(view.get_r2(runtime)) >> view.get_data(runtime)
+        )
+    );
+}
+
 void instr_FMODR(Runtime& runtime, InstructionView view)
 {
     if (std::bit_cast<float>(view.get_r2(runtime)) == 0)

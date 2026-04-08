@@ -74,11 +74,11 @@ namespace compiler
         void visit(ASTIndexExpressionNode* node) override;
 
 
-        void visit(ASTTypeNode*)          override {}
-        void visit(ASTErrorNode*)         override {}
-        void visit(ASTStatementError*)    override {}
+        void visit(ASTTypeNode*) override {}
+        void visit(ASTErrorNode*) override {}
+        void visit(ASTStatementError*) override {}
         void visit(ASTImportProgramNode*) override {}
-        void visit(ASTFilesProgramNode*)  override {}
-        void visit(ASTFileProgramNode*)   override {}
+        void visit(ASTFilesProgramNode*) override {}
+        void visit(ASTFileProgramNode*) override {}
     };
 }

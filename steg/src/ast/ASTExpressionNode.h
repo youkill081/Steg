@@ -55,6 +55,15 @@ namespace compiler
             FLOAT_MULTIPLICATION,
             FLOAT_DIVISION,
             FLOAT_MODULO,
+
+            BIT_AND,
+            BIT_OR,
+            BIT_XOR,
+            BIT_NOT,
+            BIT_SHIFT_LEFT,
+            BIT_SHIFT_RIGHT,
+
+            SIGNED_BIT_SHIFT_RIGHT,
         };
 
         ASTBinaryExpressionNode(
@@ -81,6 +90,7 @@ namespace compiler
         {
             NEGATION,
             NOT,
+            BIT_NOT,
 
             FLOAT_NEGATION,
         };
@@ -220,7 +230,10 @@ namespace compiler
     /* UTILS */
 
     static inline std::map<ASTUnaryExpressionNode::unaryOperationType, std::string_view> ASTUnaryExpressionNode_type_to_string = {
-        {ASTUnaryExpressionNode::unaryOperationType::NEGATION, "NEGATION"}
+        {ASTUnaryExpressionNode::unaryOperationType::NEGATION, "NEGATION"},
+        {ASTUnaryExpressionNode::unaryOperationType::NOT, "NOT"},
+        {ASTUnaryExpressionNode::unaryOperationType::BIT_NOT, "BIT_NOT"},
+        {ASTUnaryExpressionNode::unaryOperationType::FLOAT_NEGATION, "FLOAT_NEGATION"}
     };
 
     static inline std::map<ASTBinaryExpressionNode::binaryOperationType, std::string_view> ASTBinaryExpressionNode_type_to_string = {
@@ -237,6 +250,20 @@ namespace compiler
         {ASTBinaryExpressionNode::binaryOperationType::COMPARISON_GREATER_OR_EQUAL, "COMPARISON_GREATER_OR_EQUAL"},
         {ASTBinaryExpressionNode::binaryOperationType::COMPARISON_AND, "COMPARISON_AND"},
         {ASTBinaryExpressionNode::binaryOperationType::COMPARISON_OR, "COMPARISON_OR"},
+        {ASTBinaryExpressionNode::binaryOperationType::SIGNED_MULTIPLICATION, "SIGNED_MULTIPLICATION"},
+        {ASTBinaryExpressionNode::binaryOperationType::SIGNED_DIVISION, "SIGNED_DIVISION"},
+        {ASTBinaryExpressionNode::binaryOperationType::FLOAT_ADDITION, "FLOAT_ADDITION"},
+        {ASTBinaryExpressionNode::binaryOperationType::FLOAT_SUBTRACTION, "FLOAT_SUBTRACTION"},
+        {ASTBinaryExpressionNode::binaryOperationType::FLOAT_MULTIPLICATION, "FLOAT_MULTIPLICATION"},
+        {ASTBinaryExpressionNode::binaryOperationType::FLOAT_DIVISION, "FLOAT_DIVISION"},
+        {ASTBinaryExpressionNode::binaryOperationType::FLOAT_MODULO, "FLOAT_MODULO"},
+        {ASTBinaryExpressionNode::binaryOperationType::BIT_AND, "BIT_AND"},
+        {ASTBinaryExpressionNode::binaryOperationType::BIT_OR, "BIT_OR"},
+        {ASTBinaryExpressionNode::binaryOperationType::BIT_XOR, "BIT_XOR"},
+        {ASTBinaryExpressionNode::binaryOperationType::BIT_NOT, "BIT_NOT"},
+        {ASTBinaryExpressionNode::binaryOperationType::BIT_SHIFT_LEFT, "BIT_SHIFT_LEFT"},
+        {ASTBinaryExpressionNode::binaryOperationType::BIT_SHIFT_RIGHT, "BIT_SHIFT_RIGHT"},
+        {ASTBinaryExpressionNode::binaryOperationType::SIGNED_BIT_SHIFT_RIGHT, "SIGNED_BIT_SHIFT_RIGHT"},
     };
 
     static inline std::map<ASTAssignExpressionStatement::assignmentType, std::string_view> ASTAssignExpressionStatement_type_to_string = {

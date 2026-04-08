@@ -388,6 +388,20 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
         break;
     case IrOpCode::FMOD: emit_binop("FMOD", instr);
         break;
+    case IrOpCode::BIT_AND: emit_binop("AND", instr);
+        break;
+    case IrOpCode::BIT_OR: emit_binop("OR", instr);
+        break;
+    case IrOpCode::BIT_XOR: emit_binop("XOR", instr);
+        break;
+    case IrOpCode::BIT_SHIFT_LEFT: emit_binop("SHIFT_LEFT", instr);
+        break;
+    case IrOpCode::BIT_SHIFT_RIGHT: emit_binop("SHIFT_RIGHT", instr);
+        break;
+    case IrOpCode::SIGNED_BIT_SHIFT_RIGHT: emit_binop("SSHIFT_RIGHT", instr);
+        break;
+    case IrOpCode::BIT_NOT: emit_unop("BIT_NOT", instr);
+        break;
     case IrOpCode::NEG:
         {
             bool imm;

@@ -220,4 +220,43 @@ namespace compiler
     {
         return a || b;
     }
+
+    /* Bitwise */
+
+    inline uint32_t exec_bit_and(const uint32_t a, const uint32_t b)
+    {
+        return a & b;
+    }
+
+    inline uint32_t exec_bit_or(const uint32_t a, const uint32_t b)
+    {
+        return a | b;
+    }
+
+    inline uint32_t exec_bit_xor(const uint32_t a, const uint32_t b)
+    {
+        return a ^ b;
+    }
+
+    inline uint32_t exec_bit_not(const uint32_t a, const uint32_t b)
+    {
+        return ~a;
+    }
+
+    inline uint32_t exec_bit_shift_left(const uint32_t a, const uint32_t b)
+    {
+        return a << b;
+    }
+
+    inline uint32_t exec_bit_shift_right(const uint32_t a, const uint32_t b)
+    {
+        return a >> b;
+    }
+
+    inline uint32_t exec_bit_signed_shift_right(const uint32_t a, const uint32_t b)
+    {
+        return std::bit_cast<uint32_t>(
+            std::bit_cast<int>(a) >> b
+        );
+    }
 }

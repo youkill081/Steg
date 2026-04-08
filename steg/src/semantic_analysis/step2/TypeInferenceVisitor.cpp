@@ -366,6 +366,50 @@ void TypeInferenceVisitor::visit(ASTBinaryExpressionNode* node)
     case ASTBinaryExpressionNode::FLOAT_DIVISION:
     case ASTBinaryExpressionNode::FLOAT_MODULO:
         node->resolved_type = ResolvedType::from(ASTTypeNode::FLOAT);
+
+    case ASTBinaryExpressionNode::BIT_AND:
+    case ASTBinaryExpressionNode::BIT_OR:
+    case ASTBinaryExpressionNode::BIT_XOR:
+    case ASTBinaryExpressionNode::BIT_NOT:
+    case ASTBinaryExpressionNode::BIT_SHIFT_LEFT:
+    case ASTBinaryExpressionNode::BIT_SHIFT_RIGHT:
+        if (any_float)
+        {
+            type_error("Bitwise operations not allowed on float types", node->token);
+            node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            break;
+        }
+        if (is_opaque(L) || is_opaque(R))
+        {
+            type_error("Bitwise operations not allowed on opaque types", node->token);
+            node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            break;
+        }
+
+        if (node->op_type == Op::BIT_SHIFT_LEFT || node->op_type == Op::BIT_SHIFT_RIGHT)
+        {
+            if (node->op_type == Op::BIT_SHIFT_RIGHT && L.is_signed())
+                node->op_type = Op::SIGNED_BIT_SHIFT_RIGHT;
+
+            node->resolved_type = L;
+            break;
+        }
+
+        {
+            const ResolvedType promoted = promote(L, R);
+            if (promoted.is_void())
+            {
+                type_error("Invalid operands for bitwise operation: " + L.to_string() + " and " + R.to_string(),
+                           node->token);
+                node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            }
+            else
+            {
+                node->resolved_type = promoted;
+            }
+        }
+
+        break;
     }
 }
 
@@ -393,7 +437,6 @@ void TypeInferenceVisitor::visit(ASTUnaryExpressionNode* node)
             return;
         }
         if (!t.is_signed()) {
-            const uint8_t w = t.bit_width();
             const ResolvedType signed_t = ResolvedType::from(ASTTypeNode::INT);
             if (!dynamic_cast<ASTLiteralExpressionNode *>(node->expression.get())) // Don't hint if user type '-5'
                 type_hint("Negation of unsigned " + t.to_string() + " promoted to " + signed_t.to_string(), node->token);
@@ -416,6 +459,28 @@ void TypeInferenceVisitor::visit(ASTUnaryExpressionNode* node)
             return;
         }
         node->resolved_type = ResolvedType::from(ASTTypeNode::BOOL);
+    } else if (node->op_type == Op::BIT_NOT)
+    {
+        const ResolvedType t = node->expression->resolved_type;
+
+        if (is_opaque(t)) {
+            type_error("Bitwise NOT not allowed on opaque type: " + t.to_string(), node->token);
+            node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            return;
+        }
+        if (!t.is_numeric()) {
+            type_error("Bitwise NOT to non-numeric type: " + t.to_string(), node->token);
+            node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            return;
+        }
+        if (t.is_float())
+        {
+            type_error("Bitwise NOT can't be applied on float " + t.to_string(), node->token);
+            node->resolved_type = ResolvedType::from(ASTTypeNode::VOID);
+            return;
+        }
+
+        node->resolved_type = t;
     }
 }
 

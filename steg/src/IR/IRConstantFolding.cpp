@@ -14,6 +14,10 @@ const std::unordered_map<IrOpCode, ExecFn> IRConstantFolding::_binary_exec = {
     {IrOpCode::MUL, exec_mul}, {IrOpCode::DIV, exec_div},
     {IrOpCode::MOD, exec_mod},
 
+    {IrOpCode::BIT_AND, exec_bit_and}, {IrOpCode::BIT_OR, exec_bit_or}, {IrOpCode::BIT_XOR, exec_bit_xor},
+    {IrOpCode::BIT_SHIFT_LEFT, exec_bit_shift_left}, {IrOpCode::BIT_SHIFT_RIGHT, exec_bit_shift_right},
+    {IrOpCode::SIGNED_BIT_SHIFT_RIGHT, exec_bit_signed_shift_right},
+
     {IrOpCode::FADD, exec_fadd}, {IrOpCode::FSUB, exec_fsub},
     {IrOpCode::FMUL, exec_fmul}, {IrOpCode::FDIV, exec_fdiv},
     {IrOpCode::FMOD, exec_fmod},
@@ -33,7 +37,7 @@ const std::unordered_map<IrOpCode, ExecFn> IRConstantFolding::_binary_exec = {
 };
 
 const std::unordered_map<IrOpCode, ExecFn> IRConstantFolding::_unary_exec = {
-    {IrOpCode::NOT, exec_not},
+    {IrOpCode::NOT, exec_not}, {IrOpCode::BIT_NOT, exec_bit_not},
     {IrOpCode::ITOF, exec_itof}, {IrOpCode::UTOF, exec_utof},
     {IrOpCode::FTOI, exec_ftoi}, {IrOpCode::FTOU, exec_ftou},
 };

@@ -185,6 +185,20 @@ std::string IRPrinter::format_instruction(const IrInstruction& i)
         break;
     case IrOpCode::SMUL: out << res << " = " << a1 << " *.s " << a2;
         break;
+    case IrOpCode::BIT_AND: out << res << " = " << a1 << " & " << a2;
+        break;
+    case IrOpCode::BIT_OR: out << res << " = " << a1 << " | " << a2;
+        break;
+    case IrOpCode::BIT_XOR: out << res << " = " << a1 << " ^ " << a2;
+        break;
+    case IrOpCode::BIT_NOT: out << res << " = ~" << a1;
+        break;
+    case IrOpCode::BIT_SHIFT_LEFT: out << res << " = " << a1 << " << " << a2;
+        break;
+    case IrOpCode::BIT_SHIFT_RIGHT: out << res << " = " << a1 << " >>.u " << a2;
+        break;
+    case IrOpCode::SIGNED_BIT_SHIFT_RIGHT: out << res << " = " << a1 << " >>.s " << a2;
+        break;
     }
 
     out << " [instr -> " << i.instr_nbr << "]";
