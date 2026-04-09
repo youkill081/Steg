@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 #include <functional>
 
 #include "ast/ASTTypeNode.h"

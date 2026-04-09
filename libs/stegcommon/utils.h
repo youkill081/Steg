@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <charconv>
 
 /*
  * AI function to check if two string are equal, case_insensitive

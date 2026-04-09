@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 4.0)
 
 project(stegnocode VERSION 0.0.1)
 
+if(MINGW)
+    add_compile_options("-Wa,-mbig-obj")
+endif()
+
 set(APP_NAME stegnocode)
 
 set(CMAKE_CXX_STANDARD 23)

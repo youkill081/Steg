@@ -3,9 +3,10 @@
 //
 
 #include "IRConstantFolding.h"
-#include <bit>
-
 #include "utils/exec.h"
+
+#include <bit>
+#include <format>
 
 using namespace compiler;
 

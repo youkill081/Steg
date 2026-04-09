@@ -5,6 +5,7 @@
 #include <iostream>
 #include <numbers>
 #include <random>
+#include <cmath>
 #include <bit>
 
 #include "Logger.h"
@@ -751,7 +752,7 @@ void instr_FSQRTR(Runtime& runtime, InstructionView view)
     runtime.registries.write(
         view.r1(),
         std::bit_cast<uint32_t>(
-            std::sqrtf(std::bit_cast<float>(view.get_r2(runtime)))
+            std::sqrt(std::bit_cast<float>(view.get_r2(runtime)))
         )
     );
 }
@@ -761,7 +762,7 @@ void instr_FSQRTD(Runtime& runtime, InstructionView view)
     runtime.registries.write(
         view.r1(),
         std::bit_cast<uint32_t>(
-            std::sqrtf(std::bit_cast<float>(view.get_data(runtime)))
+            std::sqrt(std::bit_cast<float>(view.get_data(runtime)))
         )
     );
 }

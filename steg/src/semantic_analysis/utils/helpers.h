@@ -16,15 +16,19 @@ namespace compiler::utils {
         std::filesystem::path source_dir = current_file_path.parent_path();
         std::filesystem::path exec_dir = std::filesystem::current_path();
 
-        if (std::filesystem::exists(source_dir / target)) return source_dir / target;
-        if (std::filesystem::exists(exec_dir / target)) return exec_dir / target;
+        if (std::filesystem::exists(source_dir / target)) {
+            return (source_dir / target).lexically_normal();
+        }
+        if (std::filesystem::exists(exec_dir / target)) {
+            return (exec_dir / target).lexically_normal();
+        }
 
         return std::nullopt;
     }
 
     [[nodiscard]] inline std::string get_mangled_prefix(const std::filesystem::path &path)
     {
-        const std::filesystem::path absolute = std::filesystem::absolute(path);
+        const std::filesystem::path absolute = std::filesystem::absolute(path).lexically_normal();
         std::string result;
 
         for (const auto& part : absolute)
