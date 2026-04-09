@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #define MAX_VALUE_IN_UINT32 4294967295
+#define MAX_VALUE_IN_UINT16 65536
 
 enum BlockType
 {

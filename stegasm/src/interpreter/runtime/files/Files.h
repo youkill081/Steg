@@ -10,6 +10,7 @@
 
 #include "File.h"
 #include "FileBase.h"
+#include "interpreter/runtime/Memory.h"
 
 using descriptor = uint16_t;
 
@@ -17,11 +18,15 @@ class Files
 {
 private:
     descriptor _current = 0;
-    std::map<descriptor, std::shared_ptr<FileBase>> _entries;
+    std::vector<std::shared_ptr<FileBase>> _entries;
 
     descriptor next_descriptor();
 
 public:
+    Files() {
+        _entries.resize(MAX_VALUE_IN_UINT16); // descriptor are in uint16
+    }
+
     descriptor open_file(const std::string& path);
     descriptor create_file(const std::string& path);
     void push_file(descriptor desc, std::shared_ptr<FileBase> entry);
