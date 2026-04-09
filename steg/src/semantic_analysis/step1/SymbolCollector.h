@@ -15,9 +15,41 @@ namespace compiler
 {
     class SymbolCollector : public ASTVisitor
     {
+        std::string current_function_name;
     public:
         SymbolTable table;
         std::vector<std::filesystem::path> imported_paths;
+
+        /*
+         * Utils
+         */
+
+        struct symbol_with_name
+        {
+            std::string name;
+            std::shared_ptr<SymbolInfo> symbol;
+        };
+
+        std::optional<symbol_with_name> get_symbols_with_name(const std::string& name, const std::filesystem::path& path)
+        {
+            if (auto symbol = table.get(name))
+                return symbol_with_name{ name, symbol };
+
+            // Try with local function mangling
+            std::string mangled = utils::mangle_function(path, name);
+            if (auto symbol = table.get(mangled))
+                return symbol_with_name{ mangled, symbol };
+
+            // Try with imported function mangling
+            for (const auto& imported_path : imported_paths)
+            {
+                mangled = utils::mangle_function(imported_path, name);
+                if (auto symbol = table.get(mangled))
+                    return symbol_with_name{ mangled, symbol };
+            }
+
+            return std::nullopt;
+        }
 
         void visit(ASTMainProgramNode* node) override {
             for (const auto &import : node->imports)
@@ -31,6 +63,8 @@ namespace compiler
         }
 
         void visit(ASTFunctionProgramNode* node) override {
+            node->name = utils::mangle_function(node->path, node->name);
+            current_function_name = node->name;
             if (table.contains(node->name))
                 Linter::instance().report("Function already declared: " + node->name, node->token);
 
@@ -52,28 +86,44 @@ namespace compiler
                 param->accept(this);
             node->statement->accept(this);
             table.exit_scope();
+
+            current_function_name.clear();
         }
 
         void visit(ASTParameterProgramNode* node) override {
-            table.declare(node->name, SymbolInfo{
+            std::string mangled_name = utils::mangle_local(current_function_name, node->name);
+
+            table.declare(mangled_name, SymbolInfo{
                 .kind = SymbolKind::VARIABLE,
                 .type = ResolvedType::from(node->type),
                 .token = node->token
             });
+
+            node->name = mangled_name;
         }
 
         void visit(ASTVariableStatement* node) override {
-            if (table.contains(node->name))
+            std::string mangled_name;
+
+            if (current_function_name.empty()) { // It's a global
+                mangled_name = utils::mangle_global(node->token.path, node->name);
+            } else { // Local
+                mangled_name = utils::mangle_local(current_function_name, node->name);
+            }
+
+            if (table.contains(mangled_name))
                 Linter::instance().report("Variable already declared: " + node->name, node->token);
 
             if (node->expression)
                 node->expression->accept(this);
 
-            table.declare(node->name, SymbolInfo{
+            table.declare(mangled_name, SymbolInfo{
                 .kind  = SymbolKind::VARIABLE,
                 .type  = ResolvedType::from(node->type),
                 .token = node->token
             });
+
+            node->name = mangled_name;
         }
 
         void visit(ASTBlockStatementNode* node) override {
@@ -178,32 +228,41 @@ namespace compiler
             if (manager.currently_parsing.contains(absolute_path))
                 return;
 
-            if (!manager.module_cache.contains(absolute_path)) {
-                manager.currently_parsing.insert(absolute_path);
+            manager.currently_parsing.insert(absolute_path);
+            auto exports = analyzeExports(absolute_path);
 
-                auto exports = analyzeExports(absolute_path);
-
-                if (exports) {
-                    manager.module_cache[absolute_path] = std::move(*exports);
-                } else {
-                    Linter::instance().report("Failed to parse imported file: " + node->path, node->token);
-                }
-
-                manager.currently_parsing.erase(absolute_path);
+            if (exports) {
+                manager.module_cache[absolute_path] = std::move(*exports);
+            } else {
+                Linter::instance().report("Failed to parse imported file: " + node->path, node->token);
             }
 
+            manager.currently_parsing.erase(absolute_path);
+
             auto &cache = manager.module_cache[absolute_path];
-            for (const auto& name : node->functions_variables) {
-                if (cache.contains(name.value)) {
-                    if (table.contains(name.value)) {
-                        Linter::instance().report("Import conflict: '" + name.value + "' is already defined.", name);
+
+            const auto &get_in_cache = [&](std::filesystem::path &token_path, std::string &name) -> std::optional<symbol_with_name>
+            {
+                if (cache.contains(name))
+                    return symbol_with_name{ name, cache[name] };
+                name = utils::mangle_function(token_path, name);
+                if (cache.contains(name))
+                    return symbol_with_name{name, cache[name]};
+                return std::nullopt;
+            };
+
+            for (auto &tok : node->functions_variables) {
+                auto cached_symbol = get_in_cache(*path, tok.value);
+                if (cached_symbol) {
+                    if (table.contains(cached_symbol->name)) {
+                        Linter::instance().report("Import conflict: '" + tok.value + "' is already defined.", tok);
                     } else {
-                        auto symbol = std::make_shared<SymbolInfo>(*cache[name.value]);
+                        auto symbol = std::make_shared<SymbolInfo>(*cache[cached_symbol->name]);
                         symbol->source_file = absolute_path;
-                        table.declare(name.value, *symbol);
+                        table.declare(cached_symbol->name, *symbol);
                     }
                 } else {
-                    Linter::instance().report("Symbol '" + name.value + "' is not exported by " + node->path, name);
+                    Linter::instance().report("Symbol '" + tok.value + "' is not exported by " + node->path, tok);
                 }
             }
         }
@@ -224,12 +283,28 @@ namespace compiler
         void visit(ASTLiteralExpressionNode*) override {}
 
         void visit(ASTIdentifierExpressionNode* node) override {
-            const auto symbol = table.get(node->name);
+            auto symbol_info = get_symbols_with_name(node->name, node->token.path);
 
-            if (symbol) {
-                node->resolved_symbol = symbol;
+            if (!symbol_info) {
+                // Try with local variable mangling
+                if (!current_function_name.empty()) {
+                    std::string mangled = utils::mangle_local(current_function_name, node->name);
+                    if (auto symbol = table.get(mangled))
+                        symbol_info = symbol_with_name{ mangled, symbol };
+                }
+
+                // Try with global variable mangling
+                if (!symbol_info) {
+                    std::string mangled = utils::mangle_global(node->token.path, node->name);
+                    if (auto symbol = table.get(mangled))
+                        symbol_info = symbol_with_name{ mangled, symbol };
+                }
+            }
+
+            if (symbol_info) {
+                node->resolved_symbol = symbol_info->symbol;
+                node->name = symbol_info->name;
             } else {
-                Linter::instance().report("Undeclared identifier: " + node->name, node->token);
                 Linter::instance().report("Undeclared identifier: " + node->name, node->token);
             }
         }

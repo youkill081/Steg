@@ -24,9 +24,9 @@ inline ByteBuffer gen_header(const ByteBuffer &data, DataType data_type)
     ByteBuffer header_buffer;
 
     header_buffer.write_uint8(PROTOCOL_VERSION);
-    header_buffer.write_uint32(data.size());
+    header_buffer.write_uint32_big(data.size());
     header_buffer.write_uint8(data_type);
-    header_buffer.write_uint32(data.get_crc32());
+    header_buffer.write_uint32_big(data.get_crc32());
     return header_buffer;
 }
 

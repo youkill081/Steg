@@ -32,10 +32,10 @@ void assembler::SubtexturesSet::push_subtexture_from_parsed_line(const ParsedLin
         Linter::error("x, y, w, h must be integer in subtexture declaration !");
 
     const File &file = get_file(line.tokens[1], files);
-    const uint16_t x = token_to_numeric(line.tokens[2]);
-    const uint16_t y = token_to_numeric(line.tokens[3]);
-    const uint16_t w = token_to_numeric(line.tokens[4]);
-    const uint16_t h = token_to_numeric(line.tokens[5]);
+    const uint16_t x = token_uint32_to_numeric(line.tokens[2]);
+    const uint16_t y = token_uint32_to_numeric(line.tokens[3]);
+    const uint16_t w = token_uint32_to_numeric(line.tokens[4]);
+    const uint16_t h = token_uint32_to_numeric(line.tokens[5]);
 
     Subtexture new_subtexture = {
         .origin_file = file,

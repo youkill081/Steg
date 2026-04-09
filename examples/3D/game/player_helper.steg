@@ -1,0 +1,124 @@
+float px = 0.0;
+float py = 0.0;
+float pa = 0.0;
+
+import { map_is_wall } from "./map_helper.steg"
+
+export fn load_player_helper(file p1) -> void
+{
+    uint32 i = 0;
+
+    file_reset_cursor(p1);
+    while (i < 64*64) {
+        uint16 value = file_read_little_uint16(p1);
+
+        if (value == 19) {
+            px = (i % 64) + 0.5;
+            py = (i / 64) + 0.5;
+            pa = 270.0;
+            return;
+        }
+        if (value == 20) {
+            px = (i % 64) + 0.5;
+            py = (i / 64) + 0.5;
+            pa = 0.0;
+            return;
+        }
+        if (value == 21) {
+            px = (i % 64) + 0.5;
+            py = (i / 64) + 0.5;
+            pa = 90.0;
+            return;
+        }
+        if (value == 22) {
+            px = (i % 64) + 0.5;
+            py = (i / 64) + 0.5;
+            pa = 180.0;
+            return;
+        }
+        i += 1;
+    }
+}
+
+fn rotate_player() -> void {
+    pa += window_mouse_delta_x() * 0.5;
+
+    if (pa >= 360.0)  {
+        pa -= 360.0;
+    }
+    if (pa < 0.0) {
+        pa += 360.0;
+    }
+}
+
+fn compute_move_dir(float @mx, float @my) -> void {
+    // front / back
+    if (window_key_down(87)) { // Z
+        #my += sin(deg2rad(pa));
+        #mx += cos(deg2rad(pa));
+    }
+    if (window_key_down(83)) { // S
+        #my -= sin(deg2rad(pa));
+        #mx -= cos(deg2rad(pa));
+    }
+
+    // left / right
+    if (window_key_down(65)) { // Q
+        #my -= sin(deg2rad(pa + 90.0));
+        #mx -= cos(deg2rad(pa + 90.0));
+    }
+    if (window_key_down(68)) { // D
+        #my += sin(deg2rad(pa + 90.0));
+        #mx += cos(deg2rad(pa + 90.0));
+    }
+}
+
+fn handle_mouse_capture() -> void {
+    if (window_mouse_button_pressed(0)) { // left click
+        window_disable_cursor();
+    }
+
+    if (window_key_pressed(256)) { // escape
+        window_enable_cursor();
+    }
+}
+
+export fn update_player_pos() -> void {
+    handle_mouse_capture();
+    rotate_player();
+
+    if (window_key_pressed(300)) {
+        window_toggle_fullscreen();
+    }
+
+    float mx = 0.0;
+    float my = 0.0;
+
+    compute_move_dir(@mx, @my);
+
+    float len   = sqrt((mx * mx) + (my * my));
+    float norm  = fmax(len, 0.0001);
+    float delta = window_get_delta() * 75;
+    float spd   = 0.05 * delta;
+    float dx    = (mx / norm) * spd;
+    float dy    = (my / norm) * spd;
+
+    float margin = 0.25;
+
+    if (!map_is_wall(px + dx + margin * (dx > 0.0) - margin * (dx < 0.0), py)) { // Collisions
+        px += dx;
+    }
+    if (!map_is_wall(px, py + dy + margin * (dy > 0.0) - margin * (dy < 0.0))) {
+        py += dy;
+    }
+}
+
+export fn display_player_pos() -> void {
+    print_f(px);
+    print_f(py);
+    print_f(pa);
+}
+
+export fn get_pa() -> float { return pa; }
+export fn get_px() -> float { return px; }
+export fn get_py() -> float { return py; }

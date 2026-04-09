@@ -62,15 +62,20 @@ public:
 
     void reset_cursor();
     void seek_cursor(uint32_t);
+    uint32_t get_cursor();
     void clear_data();
 
     uint8_t read_byte();
     uint16_t read_word();
+    uint16_t read_word_little();
     uint32_t read_doubleword();
+    uint32_t read_doubleword_little();
 
     void append_byte(uint8_t byte);
-    void append_word(uint16_t word);
-    void append_doubleword(uint32_t word);
+    void append_word_big(uint16_t word);
+    void append_word_little(uint16_t word);
+    void append_doubleword_big(uint32_t word);
+    void append_doubleword_little(uint32_t word);
 
     bool has_byte_remaining();
     bool has_word_remaining();

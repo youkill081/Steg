@@ -4,6 +4,8 @@
 
 #include "Registries.h"
 
+#include <bitset>
+
 #include "Logger.h"
 #include "../exceptions.h"
 #include "interpreter/runtime/InstructionView.h"
@@ -33,6 +35,6 @@ void Registries::display() const
     for (uint16_t i = 0; i < number_of_registries; i++)
     {
         auto reg = static_cast<RegNames>(i);
-        Logger::log(registryToString[reg] + " -> " + std::to_string(registries[i]), "Registries");
+        Logger::log(registryToString[reg] + " -> " + std::to_string(registries[i]) + " | " + std::bitset<32>(registries[i]).to_string(), "Registries");
     }
 }

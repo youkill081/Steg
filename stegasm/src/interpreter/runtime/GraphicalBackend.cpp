@@ -46,6 +46,7 @@ void GraphicalBackend::create_window(uint16_t width, uint16_t height, const std:
     if (check_inited())
         throw GraphicalBackendError("A window is already created");
     InitWindow(width, height, title.c_str());
+    SetExitKey(0);
 }
 
 void GraphicalBackend::close_window()
@@ -57,6 +58,8 @@ void GraphicalBackend::close_window()
 
 void GraphicalBackend::poll_events()
 {
+    check_inited(true);
+
     PollInputEvents();
 }
 
@@ -65,6 +68,12 @@ bool GraphicalBackend::should_close()
     check_inited(true);
 
     return WindowShouldClose();
+}
+
+void GraphicalBackend::toogle_fullscreen()
+{
+    check_inited(true);
+    ToggleFullscreen();
 }
 
 void GraphicalBackend::set_target_fps(uint16_t fps)
@@ -83,6 +92,11 @@ void GraphicalBackend::set_window_icon(const std::shared_ptr<FileBase>& file)
         throw GraphicalBackendError("Invalid icon");
     SetWindowIcon(icon);
     UnloadImage(icon);
+}
+
+float GraphicalBackend::get_time_delta()
+{
+    return GetFrameTime();
 }
 
 void GraphicalBackend::set_viewport_size(uint16_t width, uint16_t height)
@@ -361,6 +375,16 @@ void GraphicalBackend::hide_cursor() const
 void GraphicalBackend::show_cursor() const
 {
     ShowCursor();
+}
+
+void GraphicalBackend::disable_cursor() const
+{
+    DisableCursor();
+}
+
+void GraphicalBackend::enable_cursor() const
+{
+    EnableCursor();
 }
 
 uint32_t GraphicalBackend::create_framebuffer(Runtime &runtime, uint32_t width, uint32_t height)

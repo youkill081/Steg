@@ -1512,6 +1512,11 @@ void instr_WINDOW_PRESENT(Runtime& runtime, InstructionView view)
     runtime.graphical_backend.present_window();
 }
 
+void instr_WINDOW_TOGGLE_FULLSCREEN(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.toogle_fullscreen();
+}
+
 void instr_WINDOW_KEY_PRESSED(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(
@@ -1555,6 +1560,14 @@ void instr_WINDOW_SET_TARGET_FPS1(Runtime& runtime, InstructionView view)
 {
     runtime.graphical_backend.set_target_fps(
         view.get_r1(runtime)
+    );
+}
+
+void instr_WINDOW_GET_DELTA(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(runtime.graphical_backend.get_time_delta())
     );
 }
 
@@ -1759,6 +1772,16 @@ void instr_WINDOW_SHOW_CURSOR(Runtime &runtime, InstructionView view)
     runtime.graphical_backend.show_cursor();
 }
 
+void instr_WINDOW_DISABLE_CURSOR(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.disable_cursor();
+}
+
+void instr_WINDOW_ENABLE_CURSOR(Runtime& runtime, InstructionView view)
+{
+    runtime.graphical_backend.enable_cursor();
+}
+
 void instr_WINDOW_TEXTURE_FRAMEBUFFER_CREATE(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(
@@ -1861,13 +1884,34 @@ void instr_FILE_GET_SIZE(Runtime& runtime, InstructionView view)
 void instr_FILE_MAP(Runtime& runtime, InstructionView view)
 {
     const auto file = runtime.files.get_file(view.get_r2(runtime));
-    auto addr = runtime.memory.allocate(file->get_size());
+    const uint32_t size = file->get_size();
+
+    const auto addr = runtime.memory.allocate(file->get_size());
     runtime.registries.write(view.r1(), addr);
 
-    for (const uint8_t &byte : file->get_file_data().get_buffer())
-    {
-        runtime.memory.write_uint8(addr++, byte);
-    }
+    auto &buffer = file->get_file_data().get_buffer();
+    auto &block = runtime.memory.get_block(addr);
+
+    std::copy_n(buffer.begin(), size, block.data.begin());
+}
+
+void instr_FILE_MAP_FROM_CURSOR(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    const uint32_t qtt_to_copy = view.get_r3(runtime);
+
+    const uint32_t cursor_pos = file->get_cursor();
+    if (cursor_pos + qtt_to_copy > file->get_size())
+        throw InterpreterError("FILE_MAP_FROM_CURSOR: Not enough data to copy");
+
+
+    const auto addr = runtime.memory.allocate(qtt_to_copy);
+    runtime.registries.write(view.r1(), addr);
+
+    const auto &buffer = file->get_file_data().get_buffer();
+    auto &block = runtime.memory.get_block(addr);
+
+    std::copy_n(buffer.begin() + cursor_pos, qtt_to_copy, block.data.begin());
 }
 
 void instr_FILE_RESET_CURSOR(Runtime& runtime, InstructionView view)
@@ -1878,6 +1922,14 @@ void instr_FILE_RESET_CURSOR(Runtime& runtime, InstructionView view)
 void instr_FILE_SEEK_CURSOR(Runtime& runtime, InstructionView view)
 {
     runtime.files.get_file(view.get_r2(runtime))->seek_cursor(view.get_r1(runtime));
+}
+
+void instr_FILE_GET_CURSOR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.get_file(view.get_r2(runtime))->get_cursor()
+    );
 }
 
 void instr_FILE_CLEAR_DATA(Runtime& runtime, InstructionView view)
@@ -1893,11 +1945,79 @@ void instr_FILE_READ_BYTE(Runtime& runtime, InstructionView view)
     );
 }
 
+void instr_FILE_READ_BYTE_ATR(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_r3(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_byte()
+    );
+}
+
+void instr_FILE_READ_BYTE_ATD(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_data(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_byte()
+    );
+}
+
 void instr_FILE_READ_WORD(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(
         view.r1(),
         runtime.files.get_file(view.get_r2(runtime))->read_word()
+    );
+}
+
+void instr_FILE_READ_WORD_ATR(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_r3(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_word()
+    );
+}
+
+void instr_FILE_READ_WORD_ATD(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_data(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_word()
+    );
+}
+
+void instr_FILE_READ_WORD_LITTLE(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.get_file(view.get_r2(runtime))->read_word_little()
+    );
+}
+
+void instr_FILE_READ_WORD_LITTLE_ATR(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_r3(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_word_little()
+    );
+}
+
+void instr_FILE_READ_WORD_LITTLE_ATD(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_data(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_word_little()
     );
 }
 
@@ -1909,6 +2029,54 @@ void instr_FILE_READ_DOUBLEWORD(Runtime& runtime, InstructionView view)
     );
 }
 
+void instr_FILE_READ_DOUBLEWORD_ATR(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_r3(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_doubleword()
+    );
+}
+
+void instr_FILE_READ_DOUBLEWORD_ATD(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_data(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_doubleword()
+    );
+}
+
+void instr_FILE_READ_DOUBLEWORD_LITTLE(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        runtime.files.get_file(view.get_r2(runtime))->read_doubleword_little()
+    );
+}
+
+void instr_FILE_READ_DOUBLEWORD_LITTLE_ATR(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_r3(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_doubleword_little()
+    );
+}
+
+void instr_FILE_READ_DOUBLEWORD_LITTLE_ATD(Runtime& runtime, InstructionView view)
+{
+    const auto file = runtime.files.get_file(view.get_r2(runtime));
+    file->seek_cursor(view.get_data(runtime));
+    runtime.registries.write(
+        view.r1(),
+        file->read_doubleword_little()
+    );
+}
+
 void instr_FILE_APPEND_BYTE(Runtime& runtime, InstructionView view)
 {
     runtime.files.get_file(view.get_r2(runtime))->append_byte(view.get_r1(runtime));
@@ -1916,12 +2084,22 @@ void instr_FILE_APPEND_BYTE(Runtime& runtime, InstructionView view)
 
 void instr_FILE_APPEND_WORD(Runtime& runtime, InstructionView view)
 {
-    runtime.files.get_file(view.get_r2(runtime))->append_word(view.get_r1(runtime));
+    runtime.files.get_file(view.get_r2(runtime))->append_word_big(view.get_r1(runtime));
+}
+
+void instr_FILE_APPEND_WORD_LITTLE(Runtime& runtime, InstructionView view)
+{
+    runtime.files.get_file(view.get_r2(runtime))->append_word_little(view.get_r1(runtime));
 }
 
 void instr_FILE_APPEND_DOUBLEWORD(Runtime& runtime, InstructionView view)
 {
-    runtime.files.get_file(view.get_r2(runtime))->append_doubleword(view.get_r1(runtime));
+    runtime.files.get_file(view.get_r2(runtime))->append_doubleword_big(view.get_r1(runtime));
+}
+
+void instr_FILE_APPEND_DOUBLEWORD_LITTLE(Runtime& runtime, InstructionView view)
+{
+    runtime.files.get_file(view.get_r2(runtime))->append_doubleword_little(view.get_r1(runtime));
 }
 
 void instr_FILE_IS_BYTE_REMAINING(Runtime& runtime, InstructionView view)

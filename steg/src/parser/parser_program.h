@@ -204,12 +204,16 @@ parseFunctionParameters =
                     }
                 }
 
+                auto dummy = LexerToken::dummy();
+                if (!functions.empty())
+                    dummy.path = functions[0]->token.path; // Need for name mangling
+
                 return std::make_unique<ASTMainProgramNode>(
                     std::move(functions),
                     std::move(global_variables),
                     std::move(imports),
                     std::move(files),
-                    LexerToken::dummy()
+                    dummy
                 );
             })
         );

@@ -28,7 +28,7 @@ ByteBuffer FileHandler::encode(const Parameters& parameters)
 
     // Write file name size
     std::string file_name = path.filename().string();
-    end.write_uint32(file_name.size());
+    end.write_uint32_big(file_name.size());
 
     // Write file name
     for (const auto & c : file_name) {

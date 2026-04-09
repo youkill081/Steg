@@ -37,7 +37,7 @@ namespace compiler
 
     private:
         static std::string format_operand(const IrOperand& op);
-        static std::string format_value_type(IrValueType t);
+        static std::string format_value_type(const IrValueType& value_type, uint32_t ptr_depth);
         static std::string format_instruction(const IrInstruction& i);
         static std::string format_terminator(const IrBasicBlock& block);
     };

@@ -40,10 +40,16 @@ void FileSet::push_file_from_parsed_line(const ParsedLine &line)
 {
     if (line.tokens.size() != 2)
         Linter::error("Number of token missmath on file declaration");
+
+    const std::filesystem::path filePath(line.tokens[1]);
+    std::string ext = filePath.extension().string();
+    if (ext.empty())
+        Linter::error("Missing extension for: " + line.tokens[1]);
+
     push_file(
         line.tokens[0],
         line.tokens[1],
-        std::filesystem::path(line.tokens[1]).extension().string().substr(1)
+        ext.substr(1)
     );
 }
 

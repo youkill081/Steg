@@ -24,6 +24,7 @@ namespace compiler
             const std::vector<IrGlobal>& globals,
             const std::vector<IrFile>& files,
             const RegisterAllocation& alloc);
+        uint8_t ptr_depth_of(const std::string &name) const;
 
         [[nodiscard]] std::string generate();
 
@@ -35,6 +36,7 @@ namespace compiler
         static constexpr auto k_ssrc1 = "R8";
         static constexpr auto k_ssrc2 = "R9";
 
+        std::unordered_map<std::string, uint8_t> _global_ptr_depths;
         const std::vector<std::shared_ptr<IrBasicBlock>>& _blocks;
         const std::vector<IrGlobal>& _globals;
         const std::vector<IrFile>& _files;
@@ -54,7 +56,7 @@ namespace compiler
 
         // .data section
         void emit_data_section();
-        static std::string data_directive(IrValueType t);
+        static std::string data_directive(IrValueType t, uint8_t ptr_depth);
         static std::string format_init(const IrGlobal& g);
 
         // .text section
@@ -70,7 +72,7 @@ namespace compiler
         [[nodiscard]] static uint8_t bits_for(IrValueType t);
 
         // Load variable in scratch
-        std::string emit_mem_load(const std::string& name, IrValueType type, const char* scratch);
+        std::string emit_mem_load(const std::string& name, IrValueType type, uint8_t ptr_depth, const char* scratch);
         // Store reg in scratch
         void emit_mem_store(const std::string& reg, const std::string& name);
 

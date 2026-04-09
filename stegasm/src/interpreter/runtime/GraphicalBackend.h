@@ -59,9 +59,11 @@ public:
     void close_window();
     void poll_events();
     bool should_close();
+    void toogle_fullscreen();
 
     void set_target_fps(uint16_t fps);
     void set_window_icon(const std::shared_ptr<FileBase> &file);
+    float get_time_delta();
 
     // Viewport Management
     void set_viewport_size(uint16_t width, uint16_t height);
@@ -96,6 +98,8 @@ public:
     [[nodiscard]] int32_t mouse_wheel_delta() const;
     void hide_cursor() const;
     void show_cursor() const;
+    void disable_cursor() const;
+    void enable_cursor() const;
 
     // Framebuffer management
     uint32_t create_framebuffer(Runtime &runtime, uint32_t width, uint32_t height);

@@ -195,12 +195,14 @@ void instr_WINDOW_POOL(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SHOULD_CLOSE(Runtime &runtime, InstructionView view);
 void instr_WINDOW_CLEAR(Runtime &runtime, InstructionView view);
 void instr_WINDOW_PRESENT(Runtime &runtime, InstructionView view);
+void instr_WINDOW_TOGGLE_FULLSCREEN(Runtime &runtime, InstructionView view);
 void instr_WINDOW_KEY_PRESSED(Runtime &runtime, InstructionView view);
 void instr_WINDOW_KEY_PRESSED2(Runtime &runtime, InstructionView view);
 void instr_WINDOW_KEY_DOWN(Runtime &runtime, InstructionView view);
 void instr_WINDOW_KEY_DOWN2(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TARGET_FPS(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TARGET_FPS1(Runtime &runtime, InstructionView view);
+void instr_WINDOW_GET_DELTA(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TEXT_SIZE(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TEXT_SIZE1(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SET_TEXT_COLOR(Runtime &runtime, InstructionView view);
@@ -227,6 +229,8 @@ void instr_WINDOW_MOUSE_BUTTON_RELEASED2(Runtime &runtime, InstructionView view)
 void instr_WINDOW_MOUSE_WHEEL_DELTA(Runtime &runtime, InstructionView view);
 void instr_WINDOW_HIDE_CURSOR(Runtime &runtime, InstructionView view);
 void instr_WINDOW_SHOW_CURSOR(Runtime &runtime, InstructionView view);
+void instr_WINDOW_DISABLE_CURSOR(Runtime &runtime, InstructionView view);
+void instr_WINDOW_ENABLE_CURSOR(Runtime &runtime, InstructionView view);
 void instr_WINDOW_TEXTURE_FRAMEBUFFER_CREATE(Runtime &runtime, InstructionView view);
 void instr_WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS(Runtime &runtime, InstructionView view);
 void instr_WINDOW_TEXTURE_FRAMEBUFFER_SYNC(Runtime &runtime, InstructionView view);
@@ -240,15 +244,31 @@ void instr_FILE_DELETE(Runtime &runtime, InstructionView view);
 void instr_FILE_CLOSE(Runtime &runtime, InstructionView view);
 void instr_FILE_GET_SIZE(Runtime &runtime, InstructionView view);
 void instr_FILE_MAP(Runtime &runtime, InstructionView view);
+void instr_FILE_MAP_FROM_CURSOR(Runtime &runtime, InstructionView view);
 void instr_FILE_RESET_CURSOR(Runtime &runtime, InstructionView view);
 void instr_FILE_SEEK_CURSOR(Runtime &runtime, InstructionView view);
+void instr_FILE_GET_CURSOR(Runtime &runtime, InstructionView view);
 void instr_FILE_CLEAR_DATA(Runtime &runtime, InstructionView view);
 void instr_FILE_READ_BYTE(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_BYTE_ATR(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_BYTE_ATD(Runtime &runtime, InstructionView view);
 void instr_FILE_READ_WORD(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_WORD_ATR(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_WORD_ATD(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_WORD_LITTLE(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_WORD_LITTLE_ATR(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_WORD_LITTLE_ATD(Runtime &runtime, InstructionView view);
 void instr_FILE_READ_DOUBLEWORD(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_DOUBLEWORD_ATR(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_DOUBLEWORD_ATD(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_DOUBLEWORD_LITTLE(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_DOUBLEWORD_LITTLE_ATR(Runtime &runtime, InstructionView view);
+void instr_FILE_READ_DOUBLEWORD_LITTLE_ATD(Runtime &runtime, InstructionView view);
 void instr_FILE_APPEND_BYTE(Runtime &runtime, InstructionView view);
 void instr_FILE_APPEND_WORD(Runtime &runtime, InstructionView view);
+void instr_FILE_APPEND_WORD_LITTLE(Runtime &runtime, InstructionView view);
 void instr_FILE_APPEND_DOUBLEWORD(Runtime &runtime, InstructionView view);
+void instr_FILE_APPEND_DOUBLEWORD_LITTLE(Runtime &runtime, InstructionView view);
 void instr_FILE_IS_BYTE_REMAINING(Runtime &runtime, InstructionView view);
 void instr_FILE_IS_WORD_REMAINING(Runtime &runtime, InstructionView view);
 void instr_FILE_IS_DOUBLEWORD_REMAINING(Runtime &runtime, InstructionView view);
@@ -560,6 +580,7 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"WINDOW_SHOULD_CLOSE", true, InstructionHandler(&instr_WINDOW_SHOULD_CLOSE, REG)},
     RawInstruction{"WINDOW_CLEAR", true, InstructionHandler(&instr_WINDOW_CLEAR, REG_BOTH, REG_BOTH, REG_BOTH)},
     RawInstruction{"WINDOW_PRESENT", true, InstructionHandler(&instr_WINDOW_PRESENT)},
+    RawInstruction{"WINDOW_TOGGLE_FULLSCREEN", true, InstructionHandler(&instr_WINDOW_TOGGLE_FULLSCREEN)},
     RawInstruction{"WINDOW_KEY_PRESSED", true,
         InstructionHandler(&instr_WINDOW_KEY_PRESSED, REG, ONE_DATA),
         InstructionHandler(&instr_WINDOW_KEY_PRESSED2, REG, REG_BOTH)},
@@ -569,6 +590,7 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"WINDOW_SET_TARGET_FPS", true,
         InstructionHandler(&instr_WINDOW_SET_TARGET_FPS, ONE_DATA),
         InstructionHandler(&instr_WINDOW_SET_TARGET_FPS1, REG_BOTH)},
+    RawInstruction{"WINDOW_GET_DELTA", true, InstructionHandler(&instr_WINDOW_GET_DELTA, REG)},
     RawInstruction{"WINDOW_SET_TEXT_SIZE", true,
         InstructionHandler(&instr_WINDOW_SET_TEXT_SIZE, ONE_DATA),
         InstructionHandler(&instr_WINDOW_SET_TEXT_SIZE1, REG_BOTH)},
@@ -606,6 +628,10 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_WINDOW_HIDE_CURSOR)},
     RawInstruction{"WINDOW_WINDOW_SHOW_CURSOR", true,
         InstructionHandler(&instr_WINDOW_SHOW_CURSOR)},
+    RawInstruction{"WINDOW_DISABLE_CURSOR", true,
+        InstructionHandler(&instr_WINDOW_DISABLE_CURSOR)},
+    RawInstruction{"WINDOW_ENABLE_CURSOR", true,
+        InstructionHandler(&instr_WINDOW_ENABLE_CURSOR)},
     RawInstruction{"WINDOW_TEXTURE_FRAMEBUFFER_CREATE", true,
         InstructionHandler(&instr_WINDOW_TEXTURE_FRAMEBUFFER_CREATE, REG, REG_BOTH, REG_BOTH)},
     RawInstruction{"WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS", true,
@@ -625,15 +651,36 @@ constexpr std::array rawInstructionSet =
     RawInstruction{"FILE_CLOSE", true, InstructionHandler(&instr_FILE_CLOSE, REG)},
     RawInstruction{"FILE_GET_SIZE", true, InstructionHandler(&instr_FILE_GET_SIZE, REG, REG_BOTH)},
     RawInstruction{"FILE_MAP", true, InstructionHandler(&instr_FILE_MAP, REG, REG_BOTH)},
+    RawInstruction{"FILE_MAP_FROM_CURSOR", true, InstructionHandler(&instr_FILE_MAP_FROM_CURSOR, REG, REG_BOTH, REG_BOTH)},
     RawInstruction{"FILE_RESET_CURSOR", true, InstructionHandler(&instr_FILE_RESET_CURSOR, REG)},
     RawInstruction{"FILE_SEEK_CURSOR", true, InstructionHandler(&instr_FILE_SEEK_CURSOR, REG, REG)},
+    RawInstruction{"FILE_GET_CURSOR", true, InstructionHandler(&instr_FILE_GET_CURSOR, REG, REG)},
     RawInstruction{"FILE_CLEAR_DATA", true, InstructionHandler(&instr_FILE_CLEAR_DATA, REG)},
     RawInstruction{"FILE_READ_BYTE", true, InstructionHandler(&instr_FILE_READ_BYTE, REG, REG)},
+    RawInstruction{"FILE_READ_BYTE_AT", true,
+        InstructionHandler(&instr_FILE_READ_BYTE_ATR, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_FILE_READ_BYTE_ATD, REG, REG_BOTH, ONE_DATA)},
     RawInstruction{"FILE_READ_WORD", true, InstructionHandler(&instr_FILE_READ_WORD, REG, REG)},
+    RawInstruction{"FILE_READ_WORD_AT", true,
+        InstructionHandler(&instr_FILE_READ_WORD_ATR, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_FILE_READ_WORD_ATD, REG, REG_BOTH, ONE_DATA)},
+    RawInstruction{"FILE_READ_WORD_LITTLE", true, InstructionHandler(&instr_FILE_READ_WORD_LITTLE, REG, REG)},
+    RawInstruction{"FILE_READ_WORD_LITTLE_AT", true,
+        InstructionHandler(&instr_FILE_READ_WORD_LITTLE_ATR, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_FILE_READ_WORD_LITTLE_ATD, REG, REG_BOTH, ONE_DATA)},
     RawInstruction{"FILE_READ_DOUBLEWORD", true, InstructionHandler(&instr_FILE_READ_DOUBLEWORD, REG, REG)},
+    RawInstruction{"FILE_READ_DOUBLEWORD_AT", true,
+        InstructionHandler(&instr_FILE_READ_DOUBLEWORD_ATR, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_FILE_READ_DOUBLEWORD_ATD, REG, REG_BOTH, ONE_DATA)},
+    RawInstruction{"FILE_READ_DOUBLEWORD_LITTLE", true, InstructionHandler(&instr_FILE_READ_DOUBLEWORD_LITTLE, REG, REG)},
+    RawInstruction{"FILE_READ_DOUBLEWORD_LITTLE_AT", true,
+        InstructionHandler(&instr_FILE_READ_DOUBLEWORD_LITTLE_ATR, REG, REG_BOTH, REG_BOTH),
+        InstructionHandler(&instr_FILE_READ_DOUBLEWORD_LITTLE_ATD, REG, REG_BOTH, ONE_DATA)},
     RawInstruction{"FILE_APPEND_BYTE", true, InstructionHandler(&instr_FILE_APPEND_BYTE, REG, REG)},
     RawInstruction{"FILE_APPEND_WORD", true, InstructionHandler(&instr_FILE_APPEND_WORD, REG, REG)},
+    RawInstruction{"FILE_APPEND_WORD_LITTLE", true, InstructionHandler(&instr_FILE_APPEND_WORD_LITTLE, REG, REG)},
     RawInstruction{"FILE_APPEND_DOUBLEWORD", true, InstructionHandler(&instr_FILE_APPEND_DOUBLEWORD, REG, REG)},
+    RawInstruction{"FILE_APPEND_DOUBLEWORD_LITTLE", true, InstructionHandler(&instr_FILE_APPEND_DOUBLEWORD_LITTLE, REG, REG)},
     RawInstruction{"FILE_IS_BYTE_REMAINING", true, InstructionHandler(&instr_FILE_IS_BYTE_REMAINING, REG, REG)},
     RawInstruction{"FILE_IS_WORD_REMAINING", true, InstructionHandler(&instr_FILE_IS_WORD_REMAINING, REG, REG)},
     RawInstruction{"FILE_IS_DOUBLEWORD_REMAINING", true, InstructionHandler(&instr_FILE_IS_DOUBLEWORD_REMAINING, REG, REG)},

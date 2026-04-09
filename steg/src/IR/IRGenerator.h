@@ -33,8 +33,6 @@ namespace compiler
         [[nodiscard]] bool is_terminated() const { return _current_block->terminator != IrBlockTerminator::NONE; }
         void add_instruction(IrInstruction i) const { _current_block->instructions.push_back(std::move(i)); }
 
-        static std::string gen_function_label(std::filesystem::path path, const std::string& name);
-
         /* Different block termination */
 
         void terminate_jump(const std::shared_ptr<IrBasicBlock> &target) const; // Simple jump
@@ -62,8 +60,8 @@ namespace compiler
         static IrOpCode binary_opcode(const ASTBinaryExpressionNode::binaryOperationType op, bool is_signed);
         static IrOpCode unary_opcode(const ASTUnaryExpressionNode::unaryOperationType op);
         static IrOpCode composed_opcode(const ASTAssignExpressionStatement::assignmentType op);
-        static IrValueType type_to_ptr_type(const ResolvedType &t);
         static IrValueType resolved_to_ir_type(const ResolvedType &t);
+        static IrOperand operand_from_resolved(const ResolvedType& t, const std::string& name);
         uint8_t type_size_in_byte(const ResolvedType& t);
 
     public:

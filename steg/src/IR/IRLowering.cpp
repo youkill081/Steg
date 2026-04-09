@@ -18,6 +18,7 @@ IRLowering::IRLowering(
     {
         _global_names.insert(global.name);
         _global_types[global.name] = global.type;
+        _global_ptr_depths[global.name] = global.ptr_depth;
     }
 }
 
@@ -113,7 +114,8 @@ void IRLowering::collect_address_taken(const IrBasicBlock& entry, size_t start_i
                 mangled,
                 vt,
                 ASTTypeNode::UINT32,
-                {}
+                {},
+                0
             });
         }
     };
@@ -156,10 +158,8 @@ IrOpCode IRLowering::load_opcode(IrValueType t)
     switch (t)
     {
     case IrValueType::BOOL:
-    case IrValueType::UINT8:
-    case IrValueType::PTR8: return IrOpCode::LOAD_8;
-    case IrValueType::UINT16:
-    case IrValueType::PTR16: return IrOpCode::LOAD_16;
+    case IrValueType::UINT8: return IrOpCode::LOAD_8;
+    case IrValueType::UINT16: return IrOpCode::LOAD_16;
     default: return IrOpCode::LOAD_32;
     }
 }
@@ -169,10 +169,8 @@ IrOpCode IRLowering::store_opcode(IrValueType t)
     switch (t)
     {
     case IrValueType::BOOL:
-    case IrValueType::UINT8:
-    case IrValueType::PTR8: return IrOpCode::STORE_8;
-    case IrValueType::UINT16:
-    case IrValueType::PTR16: return IrOpCode::STORE_16;
+    case IrValueType::UINT8: return IrOpCode::STORE_8;
+    case IrValueType::UINT16: return IrOpCode::STORE_16;
     default: return IrOpCode::STORE_32;
     }
 }
@@ -200,8 +198,18 @@ IrOperand IRLowering::lower_src(const IrOperand& op, std::vector<IrInstruction>&
                                    ? _global_types.at(op.value)
                                    : IrValueType::UINT32;
 
+        const uint8_t depth = op.ptr_depth > 0
+                                  ? op.ptr_depth
+                                  : (_global_ptr_depths.count(op.value)
+                                         ? _global_ptr_depths.at(op.value)
+                                         : 0);
+
         IrOperand dest = {IrOperandType::Temporary, new_temp(), vt};
+        dest.ptr_depth = (depth > 0) ? depth - 1 : 0;
+
         IrOperand addr = {IrOperandType::Temporary, op.value, vt};
+        addr.ptr_depth = depth;
+
         out.push_back({load_opcode(vt), dest, addr});
         return dest;
     }
@@ -227,6 +235,7 @@ void IRLowering::lower_instruction(
         auto value = lower_src(instr.arg2, out);
 
         out.push_back({IrOpCode::STORE_ARR, base, index, value});
+        return;
     }
     else if (instr.op == IrOpCode::ADDR_OF)
     {
@@ -251,9 +260,8 @@ void IRLowering::lower_instruction(
             auto val = lower_src(instr.arg1, out);
             out.push_back({store_opcode(vt), {}, addr, val});
         }
-        else if (instr.arg1.type == IrOperandType::Constant
-            && ir_value_type_is_ptr(instr.arg1.value_type))
-        {
+        else if (instr.arg1.type == IrOperandType::Constant && instr.arg1.is_ptr())
+        { // Today it's necessarily a string
             const std::string& str_val = instr.arg1.value;
 
             std::string mangled = "_str_" + std::to_string(_str_count++);
@@ -262,7 +270,7 @@ void IRLowering::lower_instruction(
             _global_types[mangled] = instr.arg1.value_type;
             lowered_globals.push_back({
                 mangled, instr.arg1.value_type, ASTTypeNode::STRING,
-                {IrOperandType::Constant, str_val, instr.arg1.value_type}
+                {IrOperandType::Constant, str_val, instr.arg1.value_type}, instr.arg1.ptr_depth
             });
 
             IrOperand mangled_op = {IrOperandType::Temporary, mangled, instr.arg1.value_type};
@@ -288,19 +296,7 @@ void IRLowering::lower_instruction(
     {
         auto ptr = lower_src(instr.result, out);
         auto val = lower_src(instr.arg1, out);
-
-        IrValueType vt;
-        switch (instr.result.value_type)
-        {
-        case IrValueType::PTR8: vt = IrValueType::UINT8;
-            break;
-        case IrValueType::PTR16: vt = IrValueType::UINT16;
-            break;
-        default: vt = IrValueType::UINT32;
-            break;
-        }
-
-        out.push_back({store_opcode(vt), {}, ptr, val});
+        out.push_back({store_opcode(instr.result.value_type), {}, ptr, val});
         return;
     }
 

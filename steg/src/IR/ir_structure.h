@@ -27,20 +27,15 @@ namespace compiler
         UINT8, UINT16, UINT32,
         INT,
         FLOAT,
-        PTR8, PTR16, PTR32,
         FILE,
         CLOCK
     };
-
-    inline bool ir_value_type_is_ptr(IrValueType t)
-    {
-        return t == IrValueType::PTR8 || t == IrValueType::PTR16 || t == IrValueType::PTR32;
-    }
 
     struct IrOperand {
         IrOperandType type;
         std::string value;
         IrValueType value_type = IrValueType::UNKNOWN;
+        uint8_t ptr_depth = 0;
 
         [[nodiscard]] int32_t as_int() const { return std::stoi(value); }
         [[nodiscard]] float as_float() const { return std::stof(value); }
@@ -50,9 +45,17 @@ namespace compiler
         [[nodiscard]] bool is_float() const {
             return value_type == IrValueType::FLOAT;
         }
+        [[nodiscard]] bool is_ptr() const {
+            return ptr_depth > 0;
+        }
 
         [[nodiscard]] bool empty() const { return value.empty(); }
     };
+
+    inline bool ir_operand_type_is_ptr(IrOperand op)
+    {
+        return op.ptr_depth > 0;
+    }
 
     enum class IrOpCode {
         ADD, SUB, MUL, DIV, MOD,
@@ -139,6 +142,7 @@ namespace compiler
         IrValueType type = IrValueType::UNKNOWN;
         ASTTypeNode::Types default_ast_type = ASTTypeNode::Types::VOID;
         IrOperand initial_value = {};
+        uint8_t ptr_depth = 0;
     };
 
     enum class IrBlockTerminator {

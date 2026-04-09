@@ -31,23 +31,6 @@ std::shared_ptr<IrBasicBlock> IRGenerator::new_block(const std::string& label)
     return block;
 }
 
-std::string IRGenerator::gen_function_label(std::filesystem::path path, const std::string& name)
-{
-    std::string result;
-
-    for (const auto& part : path)
-    {
-        std::string s = part.stem().string();
-        for (auto& c : s)
-            if (!std::isalnum(c)) c = '_';
-        if (!s.empty())
-            result += s + "__";
-    }
-
-    result += name;
-    return result;
-}
-
 /* Terminator */
 void IRGenerator::terminate_jump(const std::shared_ptr<IrBasicBlock>& target) const
 {
@@ -161,26 +144,8 @@ IrOpCode IRGenerator::composed_opcode(const ASTAssignExpressionStatement::assign
     }
 }
 
-IrValueType IRGenerator::type_to_ptr_type(const ResolvedType& t)
-{
-    switch (t.base)
-    {
-    case ASTTypeNode::BOOL:
-    case ASTTypeNode::UINT8: return IrValueType::PTR8;
-
-    case ASTTypeNode::UINT16: return IrValueType::PTR16;
-
-    case ASTTypeNode::FILE:
-    case ASTTypeNode::CLOCK:
-    case ASTTypeNode::UINT32:
-    case ASTTypeNode::INT: return IrValueType::PTR32;
-    default: return IrValueType::UNKNOWN;
-    }
-}
-
 IrValueType IRGenerator::resolved_to_ir_type(const ResolvedType& t)
 {
-    if (t.pointer_depth > 0) return type_to_ptr_type(t);
     switch (t.base)
     {
     case ASTTypeNode::BOOL: return IrValueType::BOOL;
@@ -189,10 +154,19 @@ IrValueType IRGenerator::resolved_to_ir_type(const ResolvedType& t)
     case ASTTypeNode::FLOAT:  return IrValueType::FLOAT;
     case ASTTypeNode::FILE:
     case ASTTypeNode::CLOCK:
+    case ASTTypeNode::FRAMEBUFFER:
     case ASTTypeNode::UINT32: return IrValueType::UINT32;
     case ASTTypeNode::INT: return IrValueType::INT;
     default: return IrValueType::UNKNOWN;
     }
+}
+
+IrOperand IRGenerator::operand_from_resolved(const ResolvedType& t, const std::string& name)
+{
+    IrOperand op = temp_op(name);
+    op.value_type = resolved_to_ir_type(t);
+    op.ptr_depth  = t.pointer_depth;
+    return op;
 }
 
 uint8_t IRGenerator::type_size_in_byte(const ResolvedType& t)
@@ -216,9 +190,7 @@ uint8_t IRGenerator::type_size_in_byte(const ResolvedType& t)
 void IRGenerator::visit(ASTLiteralExpressionNode* node)
 {
     const auto ir_type = resolved_to_ir_type(node->resolved_type);
-
-    IrOperand dest = temp_op(new_temp());
-    dest.value_type = ir_type;
+    const IrOperand dest = operand_from_resolved(node->resolved_type, new_temp());
 
     std::string val = node->value;
     if (ir_type == IrValueType::BOOL)
@@ -229,9 +201,9 @@ void IRGenerator::visit(ASTLiteralExpressionNode* node)
             val = "0";
     }
 
-
     IrOperand src = const_op(val);
     src.value_type = ir_type;
+    src.ptr_depth = node->resolved_type.pointer_depth;
 
     add_instruction({IrOpCode::COPY, dest, src});
     _current_operand = dest;
@@ -239,8 +211,7 @@ void IRGenerator::visit(ASTLiteralExpressionNode* node)
 
 void IRGenerator::visit(ASTIdentifierExpressionNode* node)
 {
-    IrOperand op = temp_op(node->name);
-    op.value_type = resolved_to_ir_type(node->resolved_type);
+    const IrOperand op = operand_from_resolved(node->resolved_type, node->name);
     _current_operand = op;
 }
 
@@ -434,8 +405,7 @@ void IRGenerator::visit(ASTBinaryExpressionNode* node)
 void IRGenerator::visit(ASTUnaryExpressionNode* node)
 {
     const auto operand = eval(node->expression.get());
-    IrOperand dest = temp_op(new_temp());
-    dest.value_type = resolved_to_ir_type(node->resolved_type);
+    const IrOperand dest = operand_from_resolved(node->resolved_type, new_temp());
     add_instruction({unary_opcode(node->op_type), dest, operand});
     _current_operand = dest;
 }
@@ -456,10 +426,9 @@ void IRGenerator::visit(ASTIndexExpressionNode* node)
         index = scaled_index;
     }
 
-    IrOperand dest = temp_op(new_temp());
-    dest.value_type = resolved_to_ir_type(node->resolved_type);
-
-    add_instruction({IrOpCode::LOAD_ARR, dest, temp_op(node->array->name), index});
+    const IrOperand dest = operand_from_resolved(node->resolved_type, new_temp());
+    IrOperand base = operand_from_resolved(node->array->resolved_type, node->array->name);
+    add_instruction({IrOpCode::LOAD_ARR, dest, base, index});
 
     _current_operand = dest;
 }
@@ -483,8 +452,7 @@ void IRGenerator::visit(ASTCallExpressionNode* node)
 
     if (!is_void)
     {
-        IrOperand res = temp_op(new_temp());
-        res.value_type = resolved_to_ir_type(node->resolved_type);
+        const IrOperand res = operand_from_resolved(node->resolved_type, new_temp());
         instruction.result = res;
         _current_operand = res;
     }
@@ -506,15 +474,7 @@ void IRGenerator::visit(ASTCallExpressionNode* node)
     else
     {
         instruction.op = IrOpCode::CALL;
-
-        std::string final_label;
-        if (node->resolved_symbol) {
-            final_label = gen_function_label(node->resolved_symbol->source_file, node->callee->name);
-        } else {
-            final_label = node->callee->name;
-        }
-
-        instruction.arg1 = label_op(final_label);
+        instruction.arg1 = label_op(node->callee->name);
     }
     add_instruction(std::move(instruction));
 }
@@ -551,7 +511,8 @@ void IRGenerator::visit(ASTAssignExpressionStatement* node)
 
         val = ensure_type(val, dest_type);
 
-        add_instruction({IrOpCode::STORE_ARR, temp_op(idx->array->name), index, val});
+        IrOperand base = operand_from_resolved(idx->array->resolved_type, idx->array->name);
+        add_instruction({IrOpCode::STORE_ARR, base, index, val});
     }
     else if (const auto* deref = dynamic_cast<ASTDereferenceExpressionNode*>(node->target.get()))
     {
@@ -570,8 +531,7 @@ void IRGenerator::visit(ASTAssignExpressionStatement* node)
 void IRGenerator::visit(ASTAddressOfExpressionNode* node)
 {
     const auto operand = eval(node->expression.get());
-    IrOperand dest = temp_op(new_temp());
-    dest.value_type = resolved_to_ir_type(node->resolved_type);
+    const IrOperand dest = operand_from_resolved(node->resolved_type, new_temp());
     add_instruction({IrOpCode::ADDR_OF, dest, operand});
     _current_operand = dest;
 }
@@ -579,8 +539,7 @@ void IRGenerator::visit(ASTAddressOfExpressionNode* node)
 void IRGenerator::visit(ASTDereferenceExpressionNode* node)
 {
     const auto operand = eval(node->expression.get());
-    IrOperand dest = temp_op(new_temp());
-    dest.value_type = resolved_to_ir_type(node->resolved_type);
+    const IrOperand dest = operand_from_resolved(node->resolved_type, new_temp());
     add_instruction({IrOpCode::DEREF, dest, operand});
     _current_operand = dest;
 }
@@ -592,6 +551,7 @@ void IRGenerator::visit(ASTVariableStatement* node)
     {
         IrGlobal g;
         g.name = node->name;
+        g.ptr_depth = node->type->pointer_depth;
         g.type = resolved_to_ir_type(ResolvedType::from(node->type));
         g.default_ast_type = node->type->type;
 
@@ -613,8 +573,7 @@ void IRGenerator::visit(ASTVariableStatement* node)
         const IrValueType dest_type = resolved_to_ir_type(ResolvedType::from(node->type));
         val = ensure_type(val, dest_type);
 
-        auto dest = temp_op(node->name);
-        dest.value_type = dest_type;
+        const auto dest = operand_from_resolved(ResolvedType::from(node->type), node->name);
         add_instruction({IrOpCode::COPY, dest, val});
     }
 }
@@ -732,24 +691,18 @@ void IRGenerator::visit(ASTFunctionProgramNode* node)
 {
     _temp_count = 0;
 
-    const std::string label = node->path.empty()
-        ? node->name
-        : gen_function_label(node->path, node->name);
-
-    _current_block = new_block(label);
+    _current_block = new_block(node->name);
     _current_block->is_function_entry = true;
-    _current_block->function_name = label;
+    _current_block->function_name = node->name;
 
     for (const auto& param : node->parameters)
     { // Copy all parameters to prevent losing it
         const std::string saved_name = "_p_" + param->name;
         _current_block->parameters.push_back(saved_name);
 
-        const IrValueType vt = resolved_to_ir_type(ResolvedType::from(param->type));
-        IrOperand dest = temp_op(param->name);
-        dest.value_type = vt;
-        IrOperand src = temp_op(saved_name);
-        src.value_type = vt;
+        const ResolvedType param_rt = ResolvedType::from(param->type);
+        const IrOperand dest = operand_from_resolved(param_rt, param->name);
+        const IrOperand src  = operand_from_resolved(param_rt, saved_name);
         add_instruction({IrOpCode::COPY, dest, src});
     }
 

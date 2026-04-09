@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <set>
 
 namespace compiler
 {
@@ -19,9 +20,9 @@ namespace compiler
     static constexpr int k_reg_param_first = 1;
     static constexpr int k_reg_param_last  = 6;
 
-    static constexpr int k_reg_volatile_first  = 10; // Registry that may be erased during a function call
+    static constexpr int k_reg_volatile_first  = 10; // Registry that may be erased during a function call (caller-saved)
     static constexpr int k_reg_volatile_last   = 20;
-    static constexpr int k_reg_preserved_first = 21; // Preserved registries during function calls
+    static constexpr int k_reg_preserved_first = 21; // Preserved registries during function calls (callee-saved)
     static constexpr int k_reg_preserved_last  = 31;
 
     inline std::string reg_name(int index) { return "R" + std::to_string(index); }

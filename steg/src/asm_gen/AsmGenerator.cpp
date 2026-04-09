@@ -14,10 +14,20 @@ AsmGenerator::AsmGenerator(
     : _blocks(blocks), _globals(globals), _files(files), _alloc(alloc)
 {
     for (const auto &g : _globals)
+    {
         _global_types[g.name] = g.type;
+        _global_ptr_depths[g.name] = g.ptr_depth;
+    }
     for (const auto &f : _files)
         _file_names.insert(f.name);
 }
+
+uint8_t AsmGenerator::ptr_depth_of(const std::string &name) const
+{
+    const auto it = _global_ptr_depths.find(name);
+    return it != _global_ptr_depths.end() ? it->second : 0;
+}
+
 
 std::string AsmGenerator::generate()
 {
@@ -32,15 +42,15 @@ std::string AsmGenerator::generate()
 
 // .data section
 
-std::string AsmGenerator::data_directive(IrValueType t)
+std::string AsmGenerator::data_directive(IrValueType t, uint8_t ptr_depth)
 {
+    if (ptr_depth > 1)
+        return "DD";
     switch (t)
     {
     case IrValueType::BOOL:
-    case IrValueType::UINT8:
-    case IrValueType::PTR8: return "DB";
-    case IrValueType::UINT16:
-    case IrValueType::PTR16: return "DW";
+    case IrValueType::UINT8: return "DB";
+    case IrValueType::UINT16: return "DW";
     default: return "DD";
     }
 }
@@ -48,6 +58,12 @@ std::string AsmGenerator::data_directive(IrValueType t)
 std::string AsmGenerator::format_init(const IrGlobal& g)
 {
     if (g.initial_value.empty()) return "0";
+
+    if (g.type == IrValueType::BOOL)
+    {
+        if (g.initial_value.value == "true") return "1";
+        if (g.initial_value.value == "false") return "0";
+    }
 
     const std::string& v = g.initial_value.value;
     if (!v.empty() && v.front() == '"')
@@ -70,9 +86,9 @@ void AsmGenerator::emit_data_section()
     for (const auto& g : _globals)
     {
         if (g.default_ast_type == ASTTypeNode::STRING)
-            d("    " + g.name + " " + data_directive(g.type) + " \"" + format_init(g) + "\"");
+            d("    " + g.name + " " + data_directive(g.type, g.ptr_depth) + " \"" + format_init(g) + "\"");
         else
-            d("    " + g.name + " " + data_directive(g.type) + " " + format_init(g));
+            d("    " + g.name + " " + data_directive(g.type, g.ptr_depth) + " " + format_init(g));
     }
 }
 
@@ -153,21 +169,21 @@ uint8_t AsmGenerator::bits_for(IrValueType t)
     case IrValueType::BOOL:
     case IrValueType::UINT8: return 8;
     case IrValueType::UINT16: return 16;
-    case IrValueType::PTR8:
-    case IrValueType::PTR16:
-    case IrValueType::PTR32:
     case IrValueType::UINT32:
     case IrValueType::INT:
     default: return 32;
     }
 }
 
-std::string AsmGenerator::emit_mem_load(const std::string& name, IrValueType type, const char* scratch)
+std::string AsmGenerator::emit_mem_load(
+    const std::string& name, IrValueType type, uint8_t ptr_depth, const char* scratch)
 {
-    if (ir_value_type_is_ptr(type))
-        c("    LOAD_" + std::to_string(bits_for(type_of(name))) + " " + scratch + ", " + name );
+    if (ptr_depth > 1)
+            c("    LOAD_32 " + std::string(scratch) + ", [" + name + "]");
+    else if (ptr_depth == 1)
+            c("    LOAD_32 " + std::string(scratch) + ", " + name);
     else
-        c("    LOAD_" + std::to_string(bits_for(type_of(name))) + " " + scratch + ", [" + name + "]");
+            c("    LOAD_" + std::to_string(bits_for(type)) + " " + std::string(scratch) + ", [" + name + "]");
     return scratch;
 }
 
@@ -190,7 +206,12 @@ std::string AsmGenerator::resolve_src(
 
     case IrOperandType::Temporary:
         if (is_mem(op))
-            return emit_mem_load(op.value, op.value_type, scratch);
+        {
+            const uint8_t depth = op.ptr_depth > 0
+                             ? op.ptr_depth
+                             : ptr_depth_of(op.value);
+            return emit_mem_load(op.value, op.value_type, depth, scratch);
+        }
 
         if (_file_names.contains(op.value)) {
             c("    LOAD_32 " + std::string(scratch) + ", " + op.value);
@@ -320,7 +341,8 @@ void AsmGenerator::emit_load_ir(const IrInstruction& instr, uint8_t bits)
 
     if (is_mem(a))
     {
-        if (ir_value_type_is_ptr(type_of(a.value)))
+        const uint8_t depth = a.ptr_depth > 0 ? a.ptr_depth : ptr_depth_of(a.value);
+        if (depth >= 1)
             c("    " + prefix + dst + ", " + a.value);
         else
             c("    " + prefix + dst + ", [" + a.value + "]");
@@ -334,6 +356,7 @@ void AsmGenerator::emit_load_ir(const IrInstruction& instr, uint8_t bits)
 
     finalize_dst(instr.result, dst);
 }
+
 void AsmGenerator::emit_store_ir(const IrInstruction& instr, uint8_t bits)
 {
     bool imm_v;
@@ -626,7 +649,7 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
             const std::string addr = [&]() -> std::string
             {
                 if (is_mem(instr.result))
-                    return emit_mem_load(instr.result.value, instr.result.value_type, k_ssrc1);
+                    return emit_mem_load(instr.result.value, instr.result.value_type, instr.result.ptr_depth, k_ssrc1);
                 const std::string r = phys_reg(instr.result);
                 return r.empty() ? k_ssrc1 : r;
             }();
@@ -737,24 +760,6 @@ void AsmGenerator::emit_terminator(const IrBasicBlock& block)
             break;
         }
     case IrBlockTerminator::RETURN:
-        {
-            bool imm;
-            const std::string val = resolve_src(block.return_operand, k_ssrc1, imm);
-            if (_current_function == _main_function_name)
-            {
-                if (val != "R0")
-                    c("    LOAD_32 R0, " + val);
-                c("    HALT");
-            }
-            else
-            {
-                if (val != "R0")
-                    c("    LOAD_32 R0, " + val);
-                c("    RET");
-            }
-            break;
-
-        }
     case IrBlockTerminator::RETURN_VOID:
         if (_current_function == _main_function_name)
             c("    HALT");

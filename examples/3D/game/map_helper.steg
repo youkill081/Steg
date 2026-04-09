@@ -1,0 +1,20 @@
+file plane0 = 0;
+file plane1 = 0;
+
+export fn init_map_helper(file p0, file p1) -> void {
+    plane0 = p0;
+    plane1 = p1;
+}
+
+export fn map_get_wall(int x, int y) -> uint16 {
+    return file_read_little_uint16_at(plane0, ((y * 64) + x) * 2);
+}
+
+export fn map_get_object(int x, int y) -> uint16 {
+    return file_read_little_uint16_at(plane1, ((y * 64) + x) * 2);
+}
+
+export fn map_is_wall(int x, int y) -> bool {
+    uint16 id = map_get_wall(x, y);
+    return id > 0 && id < 64;
+}

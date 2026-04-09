@@ -117,31 +117,67 @@ void RegisterAllocator::extend_lifetimes_for_back_jumps(uint64_t start_offset)
             label_to_first_instr[block.label] = block.instructions.front().instr_nbr;
     }
 
-    // for each block that terminated with a JUMP to previous block
+    std::unordered_map<std::string, uint64_t> back_jump_targets; // target_label -> max instr_nbr of jump source
+
     for (uint64_t i = start_offset; i < _blocks.size() &&
          (i == start_offset || !_blocks[i]->is_function_entry); ++i)
     {
         const IrBasicBlock& block = *_blocks[i];
 
-        if (block.terminator != IrBlockTerminator::JUMP) continue;
-        if (block.instructions.empty()) continue;
-        const auto successor = block.successor.lock();
-        if (!successor) continue;
+        if (block.terminator != IrBlockTerminator::JUMP &&
+            block.terminator != IrBlockTerminator::BRANCH)
+            continue;
 
-        const auto target_it = label_to_first_instr.find(successor->label);
+        uint64_t block_last_instr = 0;
+        if (!block.instructions.empty())
+            block_last_instr = block.instructions.back().instr_nbr;
+        else
+        {
+            // Find the previous non-empty block's last instruction
+            for (int64_t j = static_cast<int64_t>(i) - 1; j >= static_cast<int64_t>(start_offset); --j)
+            {
+                if (!_blocks[j]->instructions.empty())
+                {
+                    block_last_instr = _blocks[j]->instructions.back().instr_nbr + 1;
+                    break;
+                }
+            }
+        }
 
+        auto check_back_jump = [&](const std::weak_ptr<IrBasicBlock>& succ_weak)
+        {
+            const auto successor = succ_weak.lock();
+            if (!successor) return;
+
+            const auto target_it = label_to_first_instr.find(successor->label);
+            if (target_it == label_to_first_instr.end()) return;
+
+            const uint64_t target_first = target_it->second;
+
+            if (target_first >= block_last_instr) return; // Only process back jumps
+
+            auto &max_jump = back_jump_targets[successor->label];
+            max_jump = std::max(max_jump, block_last_instr);
+        };
+
+        check_back_jump(block.successor);
+        if (block.terminator == IrBlockTerminator::BRANCH)
+            check_back_jump(block.false_successor);
+    }
+
+    // Extend lifetimes for all variables that are used in a loop
+    for (const auto& [target_label, max_back_jump_instr] : back_jump_targets)
+    {
+        const auto target_it = label_to_first_instr.find(target_label);
         if (target_it == label_to_first_instr.end()) continue;
 
-        const uint64_t target_first = target_it->second;
-        const uint64_t this_last = block.instructions.back().instr_nbr;
+        const uint64_t loop_header_instr = target_it->second;
 
-        if (target_first >= this_last) continue; // Continue logic only if it's a back jump
-
-        for (auto& [name, life] : _registry_life_duration)
+        for (auto &[name, life] : _registry_life_duration)
         {
-            const bool is_loop_carried = _parameter_names.count(name) || life.start < target_first;
-            if (is_loop_carried && life.start <= this_last && life.end >= target_first)
-                life.end = std::max(life.end, this_last + 1);
+            if (life.start < loop_header_instr && life.end >= loop_header_instr) {
+                life.end = std::max(life.end, max_back_jump_instr);
+            }
         }
     }
 }
@@ -188,8 +224,7 @@ void RegisterAllocator::linear_scan_function()
 
     for (const auto& [name, life] : intervals)
     {
-        for (auto it = active.begin();
-             it != active.end() && it->first < life.start;)
+        for (auto it = active.begin(); it != active.end() && it->first <= life.start;)
         {
             const auto& [expired_name, was_preserved] = it->second;
             const std::string& reg = _result.reg_map.at(make_key(expired_name));
@@ -317,16 +352,9 @@ void RegisterAllocator::insert_preserved_saves(uint64_t start_index)
     used_preserved.erase(std::ranges::unique(used_preserved).begin(),
                          used_preserved.end());
 
-    if (used_preserved.empty())
-        return;
-
-    // CORRECTION : On capture par référence [&] pour accéder à _result et make_key
     auto make_spill = [&](IrOpCode op, int reg_idx) -> IrInstruction
     {
         std::string rname = reg_name(reg_idx);
-
-        // CORRECTION : On force l'enregistrement du registre physique dans la map
-        // Ainsi, quand l'ASM generator fera lookup("...", "R21"), il recevra bien "R21" !
         _result.reg_map[make_key(rname)] = rname;
 
         IrInstruction s;
@@ -335,30 +363,50 @@ void RegisterAllocator::insert_preserved_saves(uint64_t start_index)
         return s;
     };
 
-    // Prologue : insérer en bloc pour préserver l'ordre
-    IrBasicBlock& entry = *_blocks[start_index];
-    std::vector<IrInstruction> prologue;
-    for (int r : used_preserved)
-        prologue.push_back(make_spill(IrOpCode::SPILL_SAVE, r));
-    entry.instructions.insert(entry.instructions.begin(),
-                               prologue.begin(), prologue.end());
+    // Prologue
+    if (!used_preserved.empty())
+    {
+        IrBasicBlock& entry = *_blocks[start_index];
+        std::vector<IrInstruction> prologue;
+        for (const int r : used_preserved)
+            prologue.push_back(make_spill(IrOpCode::SPILL_SAVE, r));
 
-    // Épilogue : SPILL_RESTORE en ordre inverse avant chaque RETURN
+        entry.instructions.insert(entry.instructions.begin(),
+                                   prologue.begin(), prologue.end());
+    }
+
+    // Epilogue
     for (uint64_t i = start_index; i < _blocks.size(); ++i)
     {
         if (i != start_index && _blocks[i]->is_function_entry)
             break;
         IrBasicBlock& block = *_blocks[i];
 
-        const bool is_return = block.terminator == IrBlockTerminator::RETURN
-                            || block.terminator == IrBlockTerminator::RETURN_VOID;
-        if (!is_return)
+        const bool is_return = block.terminator == IrBlockTerminator::RETURN;
+        const bool is_return_void = block.terminator == IrBlockTerminator::RETURN_VOID;
+
+        if (!is_return && !is_return_void)
             continue;
 
-        for (auto it = used_preserved.rbegin(); it != used_preserved.rend(); ++it)
-            block.instructions.push_back(make_spill(IrOpCode::SPILL_RESTORE, *it));
+        if (is_return)
+        {
+            _result.reg_map[make_key("R0")] = "R0";
+
+            IrInstruction copy_to_r0;
+            copy_to_r0.op = IrOpCode::COPY;
+            copy_to_r0.arg1 = block.return_operand;
+            copy_to_r0.result = IrOperand{IrOperandType::Temporary, "R0"};
+            block.instructions.push_back(copy_to_r0);
+        }
+
+        if (!used_preserved.empty())
+        {
+            for (auto it = used_preserved.rbegin(); it != used_preserved.rend(); ++it)
+                block.instructions.push_back(make_spill(IrOpCode::SPILL_RESTORE, *it));
+        }
     }
 }
+
 RegisterAllocation RegisterAllocator::allocate()
 {
     uint64_t index = 0;

@@ -49,7 +49,7 @@ inline bool token_is_numeric_value(const std::string &token)
 
 }
 
-inline uint32_t token_to_numeric(const std::string &token)
+inline uint32_t token_uint32_to_numeric(const std::string &token)
 {
     if (is_float(token))
     {

@@ -1,0 +1,149 @@
+uint8  DDA_SIDE    = 0;
+float  DDA_HIT_X   = 0.0;
+float  DDA_HIT_Y   = 0.0;
+float  DDA_RDX     = 0.0;
+float  DDA_RDY     = 0.0;
+uint16 DDA_WALL_ID = 0;
+uint32 draw_color  = 0;
+
+import { map_is_wall, map_get_wall } from "./game/map_helper.steg";
+import { get_pa, get_px, get_py }    from "./game/player_helper.steg";
+import { texture_get_pixel, wall_to_tex_id, texture_get_pixel_at } from "./game/texture_helper.steg";
+
+fn dda_init_side(float pos, float dir, int cell, float delta) -> float {
+    if (dir < 0.0) { return (pos - cell) * delta; }
+    return (cell + 1.0 - pos) * delta;
+}
+
+fn dda_cast(float px, float py, float rdx, float rdy) -> float {
+    int mx = px;
+    int my = py;
+
+    DDA_RDX = rdx;
+    DDA_RDY = rdy;
+
+    if (map_is_wall(mx, my)) { return 0.0001; }
+
+    // safe_inv
+    float ddx = 0.0;
+    float ddy = 0.0;
+    if (fabs(rdx) < 0.000001) { ddx = 1000000000.0; } else { ddx = fabs(1.0 / rdx); }
+    if (fabs(rdy) < 0.000001) { ddy = 1000000000.0; } else { ddy = fabs(1.0 / rdy); }
+
+    int step_x = 1;
+    int step_y = 1;
+    if (rdx < 0.0) { step_x = -1; }
+    if (rdy < 0.0) { step_y = -1; }
+
+    float sx = dda_init_side(px, rdx, mx, ddx);
+    float sy = dda_init_side(py, rdy, my, ddy);
+
+    while (!map_is_wall(mx, my)) {
+        if (sx < sy) { sx += ddx; mx += step_x; DDA_SIDE = 0; }
+        else         { sy += ddy; my += step_y; DDA_SIDE = 1; }
+    }
+
+    DDA_WALL_ID = map_get_wall(mx, my);
+
+    float dist = 0.0;
+    if (DDA_SIDE == 0) {
+        dist      = (mx - px + (1 - step_x) / 2.0) / rdx;
+        DDA_HIT_Y = py + dist * rdy;
+    } else {
+        dist      = (my - py + (1 - step_y) / 2.0) / rdy;
+        DDA_HIT_X = px + dist * rdx;
+    }
+    return dist;
+}
+
+fn fill_column(framebuffer buf, int x, int y0, int y1) -> void {
+    uint32 @fb = window_framebuffer_get_address(buf);
+
+    if (x < 0 || x >= 320) { return; }
+    if (y0 < 0)   { y0 = 0; }
+    if (y1 > 200) { y1 = 200; }
+    if (y0 >= y1) { return; }
+
+    uint32 addr = (y0 * 320) + x;
+    int y = y0;
+    while (y < y1) {
+        fb[addr] = draw_color;
+        addr += 320;
+        y += 1;
+    }
+}
+
+fn draw_column(framebuffer buf, int x, float dist) -> void {
+    if (dist < 0.000001) { dist = 0.000001; }
+
+    int wall_h  = 200 / dist;
+    int y_top   = 100 - (wall_h / 2);
+    int draw_y0 = y_top;            if (draw_y0 < 0)   { draw_y0 = 0; }
+    int draw_y1 = y_top + wall_h;   if (draw_y1 > 200) { draw_y1 = 200; }
+
+    uint8 tex_x = 0;
+    if (DDA_SIDE == 0) {
+        int hit_y_int = DDA_HIT_Y;
+        tex_x = (DDA_HIT_Y - hit_y_int) * 64;
+    } else {
+        int hit_x_int = DDA_HIT_X;
+        tex_x = (DDA_HIT_X - hit_x_int) * 64;
+    }
+
+    uint16 tex_id = wall_to_tex_id(DDA_WALL_ID, DDA_SIDE);
+
+    uint32 tex_col_base = (tex_id * 4096) + (tex_x * 64);
+
+    float tex_step = 64.0 / wall_h;
+    float tex_pos  = (draw_y0 - y_top) * tex_step;
+
+    uint32 @fb = window_framebuffer_get_address(buf);
+
+    // Ceiling
+    draw_color = 50 << 24 | 50 << 16 | 50 << 8 | 255;
+    fill_column(buf, x, 0, draw_y0);
+
+    int y = draw_y0;
+    while (y < draw_y1) {
+        uint8  tex_y = 63 - tex_pos;
+        uint32 color = texture_get_pixel_at(tex_col_base + tex_y);
+        if (DDA_SIDE == 1) {
+            uint8 r = (color >> 24) / 2;
+            uint8 g = ((color >> 16) & 255) / 2;
+            uint8 b = ((color >> 8)  & 255) / 2;
+            color   = r << 24 | g << 16 | b << 8 | 255;
+        }
+        fb[(y * 320) + x] = color;
+        tex_pos += tex_step;
+        y += 1;
+    }
+
+    // Floor
+    draw_color = 100 << 24 | 80 << 16 | 60 << 8 | 255;
+    fill_column(buf, x, draw_y1, 200);
+}
+
+export fn cast_rays(framebuffer buf) -> void {
+    float fov = 60.0;
+    float ray_step = fov / 320.0;
+    float ray_a = get_pa() - (fov / 2.0);
+    float pa = get_pa();
+    float px = get_px();
+    float py = get_py();
+    int x = 0;
+
+    while (x < 320) {
+        float rdx  = cos(deg2rad(ray_a));
+        float rdy  = sin(deg2rad(ray_a));
+        float dist = dda_cast(px, py, rdx, rdy);
+
+        float diff_angle = ray_a - pa;
+        if (diff_angle < -180.0) { diff_angle += 360.0; }
+        if (diff_angle >  180.0) { diff_angle -= 360.0; }
+
+        draw_column(buf, x, dist * cos(deg2rad(diff_angle)));
+
+        ray_a += ray_step;
+        x += 1;
+    }
+}

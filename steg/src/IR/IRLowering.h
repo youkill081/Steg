@@ -19,6 +19,7 @@ namespace compiler
     class IRLowering
     {
     public:
+        std::unordered_map<std::string, uint8_t> _global_ptr_depths;
         std::vector<std::shared_ptr<IrBasicBlock>> lowered_blocks;
         std::vector<IrGlobal> lowered_globals;
 

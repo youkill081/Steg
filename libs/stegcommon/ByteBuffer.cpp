@@ -65,18 +65,32 @@ void ByteBuffer::write_uint8(uint8_t value)
     this->buffer.push_back(value);
 }
 
-void ByteBuffer::write_uint16(uint16_t value)
+void ByteBuffer::write_uint16_big(uint16_t value)
 {
     buffer.push_back((value >> 8) & 0xFF);
     buffer.push_back(value & 0xFF);
 }
 
-void ByteBuffer::write_uint32(uint32_t value)
+void ByteBuffer::write_uint16_little(uint16_t value)
+{
+    buffer.push_back(value & 0xFF);
+    buffer.push_back((value >> 8) & 0xFF);
+}
+
+void ByteBuffer::write_uint32_big(uint32_t value)
 {
     buffer.push_back((value >> 24) & 0xFF);
     buffer.push_back((value >> 16) & 0xFF);
     buffer.push_back((value >> 8) & 0xFF);
     buffer.push_back(value & 0xFF);
+}
+
+void ByteBuffer::write_uint32_little(uint32_t value)
+{
+    buffer.push_back(value & 0xFF);
+    buffer.push_back((value >> 8) & 0xFF);
+    buffer.push_back((value >> 16) & 0xFF);
+    buffer.push_back((value >> 24) & 0xFF);
 }
 
 uint8_t ByteBuffer::read_uint8()
@@ -104,6 +118,31 @@ uint32_t ByteBuffer::read_uint32()
         (buffer[cursor + 1] << 16) |
         (buffer[cursor + 2] << 8) |
         buffer[cursor + 3];
+
+    cursor += 4;
+    return v;
+}
+
+uint16_t ByteBuffer::read_little_uint16()
+{
+    if (!remaining_uint16())
+        return 0;
+
+    uint16_t v = buffer[cursor] | buffer[cursor + 1] << 8;
+
+    cursor += 2;
+    return v;
+}
+
+uint32_t ByteBuffer::read_little_uint32()
+{
+    if (!remaining_uint32())
+        return 0;
+
+    uint32_t v = buffer[cursor] |
+                 (buffer[cursor + 1] << 8) |
+                 (buffer[cursor + 2] << 16) |
+                 (buffer[cursor + 3] << 24);
 
     cursor += 4;
     return v;

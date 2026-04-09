@@ -7,11 +7,13 @@
 #include <unordered_map>
 #include "ast/ASTVisitor.h"
 #include "../utils/SymbolTable.h"
+#include "semantic_analysis/utils/helpers.h"
 
 namespace compiler {
     class ExportCollector final : public ASTVisitor {
     public:
         std::unordered_map<std::string, std::shared_ptr<SymbolInfo>> exported_symbols;
+        std::string current_function_name;
 
         void visit(ASTMainProgramNode* node) override {
             for (auto &func : node->functions)
@@ -22,6 +24,8 @@ namespace compiler {
 
         void visit(ASTFunctionProgramNode* node) override {
             if (node->is_exported) {
+                node->name = utils::mangle_function(node->path, node->name);
+                current_function_name = node->name;
                 std::vector<ResolvedType> params;
                 for (auto& p : node->parameters)
                     params.push_back(ResolvedType::from(p->type));

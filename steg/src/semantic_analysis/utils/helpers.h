@@ -21,4 +21,38 @@ namespace compiler::utils {
 
         return std::nullopt;
     }
+
+    [[nodiscard]] inline std::string get_mangled_prefix(const std::filesystem::path &path)
+    {
+        const std::filesystem::path absolute = std::filesystem::absolute(path);
+        std::string result;
+
+        for (const auto& part : absolute)
+        {
+            std::string s = part.stem().string();
+            for (auto& c : s)
+                if (!std::isalnum(c))
+                    c = '_';
+            if (!s.empty())
+                result += s + "__";
+        }
+
+        return result;
+    }
+
+    [[nodiscard]] inline std::string mangle_global(std::filesystem::path &path, const std::string& name)
+    {
+        return get_mangled_prefix(path) + "__global__" + name;
+    }
+
+    [[nodiscard]] inline std::string mangle_local(
+        const std::string& current_function_name,
+        const std::string& name
+    ) {
+        return current_function_name + "__local__" + name;
+    }
+
+    [[nodiscard]] inline std::string mangle_function(const std::filesystem::path &path, const std::string& name) {
+        return get_mangled_prefix(path) + "__fn__" + name;
+    }
 }

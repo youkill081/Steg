@@ -124,9 +124,11 @@ namespace compiler
             builtin("window_should_close", v(T::BOOL), {}, "WINDOW_SHOULD_CLOSE");
             builtin("window_clear", v(T::VOID), {v(T::UINT8), v(T::UINT8), v(T::UINT8)}, "WINDOW_CLEAR");
             builtin("window_present", v(T::VOID), {}, "WINDOW_PRESENT");
+            builtin("window_toggle_fullscreen", v(T::VOID), {}, "WINDOW_TOGGLE_FULLSCREEN");
             builtin("window_key_pressed", v(T::BOOL), {v(T::UINT32)}, "WINDOW_KEY_PRESSED");
             builtin("window_key_down", v(T::BOOL), {v(T::UINT32)}, "WINDOW_KEY_DOWN");
             builtin("window_set_target_fps", v(T::VOID), {v(T::UINT32)}, "WINDOW_SET_TARGET_FPS");
+            builtin("window_get_delta", v(T::FLOAT), {}, "WINDOW_GET_DELTA");
             builtin("window_set_text_size", v(T::VOID), {v(T::UINT32)}, "WINDOW_SET_TEXT_SIZE");
             builtin("window_set_text_color", v(T::VOID), {v(T::UINT8), v(T::UINT8), v(T::UINT8)},
                     "WINDOW_SET_TEXT_COLOR");
@@ -147,6 +149,8 @@ namespace compiler
             builtin("window_mouse_wheel_delta", v(T::INT), {}, "WINDOW_MOUSE_WHEEL_DELTA");
             builtin("window_hide_cursor", v(T::VOID), {}, "WINDOW_HIDE_CURSOR");
             builtin("window_show_cursor", v(T::VOID), {}, "WINDOW_SHOW_CURSOR");
+            builtin("window_disable_cursor", v(T::VOID), {}, "WINDOW_DISABLE_CURSOR");
+            builtin("window_enable_cursor", v(T::VOID), {}, "WINDOW_ENABLE_CURSOR");
             builtin("window_framebuffer_create", v(T::FRAMEBUFFER), {v(T::UINT32), v(T::UINT32)}, "WINDOW_TEXTURE_FRAMEBUFFER_CREATE");
             builtin("window_framebuffer_get_address", v(T::UINT32, 1), {v(T::FRAMEBUFFER)}, "WINDOW_TEXTURE_FRAMEBUFFER_ADDRESS");
             builtin("window_framebuffer_sync", v(T::VOID), {v(T::FRAMEBUFFER)}, "WINDOW_TEXTURE_FRAMEBUFFER_SYNC");
@@ -159,15 +163,26 @@ namespace compiler
             builtin("file_close", v(T::VOID), {v(T::FILE)}, "FILE_CLOSE");
             builtin("file_size", v(T::UINT32), {v(T::FILE)}, "FILE_GET_SIZE");
             builtin("file_map", v(T::VOID, 1), {v(T::FILE)}, "FILE_MAP");
+            builtin("file_map_x_from_cursor", v(T::VOID, 1), {v(T::FILE), v(T::UINT32)}, "FILE_MAP_FROM_CURSOR");
             builtin("file_reset_cursor", v(T::VOID), {v(T::FILE)}, "FILE_RESET_CURSOR");
             builtin("file_seek_cursor", v(T::VOID), {v(T::UINT32), v(T::FILE)}, "FILE_SEEK_CURSOR");
+            builtin("file_get_cursor", v(T::UINT32), {v(T::FILE)}, "FILE_GET_CURSOR");
             builtin("file_clear_data", v(T::VOID), {v(T::FILE)}, "FILE_CLEAR_DATA");
             builtin("file_read_uint8", v(T::UINT8), {v(T::FILE)}, "FILE_READ_BYTE");
+            builtin("file_read_uint8_at", v(T::UINT8), {v(T::FILE), v(T::UINT32)}, "FILE_READ_BYTE_AT");
             builtin("file_read_uint16", v(T::UINT16), {v(T::FILE)}, "FILE_READ_WORD");
+            builtin("file_read_uint16_at", v(T::UINT16), {v(T::FILE), v(T::UINT32)}, "FILE_READ_WORD_AT");
+            builtin("file_read_little_uint16", v(T::UINT16), {v(T::FILE)}, "FILE_READ_WORD_LITTLE");
+            builtin("file_read_little_uint16_at", v(T::UINT16), {v(T::FILE), v(T::UINT32)}, "FILE_READ_WORD_LITTLE_AT");
             builtin("file_read_uint32", v(T::UINT32), {v(T::FILE)}, "FILE_READ_DOUBLEWORD");
+            builtin("file_read_uint32_at", v(T::UINT32), {v(T::FILE), v(T::UINT32)}, "FILE_READ_DOUBLEWORD_AT");
+            builtin("file_read_little_uint32", v(T::UINT32), {v(T::FILE)}, "FILE_READ_DOUBLEWORD_LITTLE");
+            builtin("file_read_little_uint32_at", v(T::UINT32), {v(T::FILE), v(T::UINT32)}, "FILE_READ_DOUBLEWORD_LITTLE_AT");
             builtin("file_write_uint8", v(T::VOID), {v(T::UINT8), v(T::FILE)}, "FILE_APPEND_BYTE");
             builtin("file_write_uint16", v(T::VOID), {v(T::UINT16), v(T::FILE)}, "FILE_APPEND_WORD");
+            builtin("file_write_little_uint16", v(T::VOID), {v(T::UINT16), v(T::FILE)}, "FILE_APPEND_WORD_LITTLE");
             builtin("file_write_uint32", v(T::VOID), {v(T::UINT32), v(T::FILE)}, "FILE_APPEND_DOUBLEWORD");
+            builtin("file_write_little_uint32", v(T::VOID), {v(T::UINT32), v(T::FILE)}, "FILE_APPEND_DOUBLEWORD_LITTLE");
             builtin("file_is_uint8_remaining", v(T::BOOL), {v(T::FILE)}, "FILE_IS_BYTE_REMAINING");
             builtin("file_is_uint16_remaining", v(T::BOOL), {v(T::FILE)}, "FILE_IS_WORD_REMAINING");
             builtin("file_is_uint32_remaining", v(T::BOOL), {v(T::FILE)}, "FILE_IS_DOUBLEWORD_REMAINING");

@@ -8,24 +8,27 @@
 
 using namespace compiler;
 
-std::string IRPrinter::format_value_type(const IrValueType t)
+std::string IRPrinter::format_value_type(const IrValueType &value_type, uint32_t ptr_depth)
 {
-    switch (t)
+    const auto format_value_type = [&]() -> std::string
     {
-    case IrValueType::BOOL: return "bool";
-    case IrValueType::UINT8: return "u8";
-    case IrValueType::UINT16: return "u16";
-    case IrValueType::UINT32: return "u32";
-    case IrValueType::INT: return "i32";
-    case IrValueType::FLOAT: return "f32";
-    case IrValueType::PTR8: return "ptr8";
-    case IrValueType::PTR16: return "ptr16";
-    case IrValueType::PTR32: return "ptr32";
-    case IrValueType::FILE: return "file";
-    case IrValueType::CLOCK: return "clock";
-    case IrValueType::UNKNOWN: return "?";
-    }
-    return "?";
+        switch (value_type)
+        {
+        case IrValueType::BOOL: return "bool";
+        case IrValueType::UINT8: return "u8";
+        case IrValueType::UINT16: return "u16";
+        case IrValueType::UINT32: return "u32";
+        case IrValueType::INT: return "i32";
+        case IrValueType::FLOAT: return "f32";
+        case IrValueType::FILE: return "file";
+        case IrValueType::CLOCK: return "clock";
+        case IrValueType::UNKNOWN: return "?";
+        }
+        return "?";
+    };
+    return ptr_depth > 0 ?
+        "ptr." + std::to_string(ptr_depth) + "." + format_value_type() :
+        format_value_type();
 }
 
 std::string IRPrinter::format_operand(const IrOperand& op)
@@ -33,7 +36,7 @@ std::string IRPrinter::format_operand(const IrOperand& op)
     if (op.value.empty()) return "_";
 
     const std::string type_suffix = (op.value_type != IrValueType::UNKNOWN)
-                                        ? (":" + format_value_type(op.value_type))
+                                        ? (":" + format_value_type(op.value_type, op.ptr_depth))
                                         : "";
 
     switch (op.type)
@@ -240,12 +243,12 @@ std::string IRPrinter::print() const
     if (!_globals.empty())
     {
         out << "Globals\n";
-        for (const auto &[name, type, ast_type, initial_value] : _globals)
+        for (const auto &[name, type, ast_type, initial_value, ptr_depth] : _globals)
         {
-        out << "  " << name;
+        out << "  " << name << " " << ptr_depth;
             if (!initial_value.value.empty())
                 out << " = " << format_operand(initial_value);
-            out << "  (" << format_value_type(type) << ")\n";
+            out << "  (" << format_value_type(type, ptr_depth) << ")\n";
         }
         out << "\n";
     }

@@ -166,12 +166,12 @@ ByteBuffer Assembler::compiled_file_to_bytebuffer(CompiledFile &compiledFile, Li
     linter.error_guard([&]
     {
         // Push Variables
-        buffer.write_uint32(compiledFile.variables.size());
+        buffer.write_uint32_big(compiledFile.variables.size());
         for (const auto &variable : compiledFile.variables)
         {
             buffer.write_uint8(variable.flags);
-            buffer.write_uint32(compiledFile.variables.get_variable_address(variable));
-            buffer.write_uint16(variable.value.size());
+            buffer.write_uint32_big(compiledFile.variables.get_variable_address(variable));
+            buffer.write_uint16_big(variable.value.size());
             for (const auto &data : variable.value)
             {
                 switch (variable.type)
@@ -180,42 +180,42 @@ ByteBuffer Assembler::compiled_file_to_bytebuffer(CompiledFile &compiledFile, Li
                         buffer.write_uint8(std::get<uint8_t>(data));
                         break;
                     case VARIABLE_UINT16:
-                        buffer.write_uint16(std::get<uint16_t>(data));
+                        buffer.write_uint16_big(std::get<uint16_t>(data));
                         break;
                     case VARIABLE_UINT32:
-                        buffer.write_uint32(std::get<uint32_t>(data));
+                        buffer.write_uint32_big(std::get<uint32_t>(data));
                         break;
                 }
             }
         }
 
         // Push Files
-        buffer.write_uint32(compiledFile.files.size());
+        buffer.write_uint32_big(compiledFile.files.size());
         for (auto &file : compiledFile.files)
         {
             file.file_data.reset_cursor();
 
-            buffer.write_uint16(file.descriptor);
+            buffer.write_uint16_big(file.descriptor);
 
             buffer.write_uint8(file.extension.size());
             for (const auto &c : file.extension)
                 buffer.write_uint8(c);
 
-            buffer.write_uint32(file.file_data.remaining_uint8());
+            buffer.write_uint32_big(file.file_data.remaining_uint8());
             while (file.file_data.remaining_uint8())
                 buffer.write_uint8(file.file_data.read_uint8());
         }
 
         // Push subtextures
-        buffer.write_uint32(compiledFile.subtextures.size());
+        buffer.write_uint32_big(compiledFile.subtextures.size());
         for (const auto &sub : compiledFile.subtextures)
         {
-            buffer.write_uint16(sub.origin_file.descriptor);
-            buffer.write_uint16(sub.descriptor);
-            buffer.write_uint16(sub.x);
-            buffer.write_uint16(sub.y);
-            buffer.write_uint16(sub.width);
-            buffer.write_uint16(sub.height);
+            buffer.write_uint16_big(sub.origin_file.descriptor);
+            buffer.write_uint16_big(sub.descriptor);
+            buffer.write_uint16_big(sub.x);
+            buffer.write_uint16_big(sub.y);
+            buffer.write_uint16_big(sub.width);
+            buffer.write_uint16_big(sub.height);
         }
 
         for (const auto& instruction : compiledFile.instructions)
@@ -269,7 +269,7 @@ ByteBuffer Assembler::compiled_file_to_bytebuffer(CompiledFile &compiledFile, Li
 
             if (instruction.instruction_parameters.data_value.data_count != NO_DATA)
             {
-                buffer.write_uint32(instruction.instruction_parameters.data_value.value);
+                buffer.write_uint32_big(instruction.instruction_parameters.data_value.value);
             }
         }
     });

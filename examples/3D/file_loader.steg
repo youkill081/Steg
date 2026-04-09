@@ -1,0 +1,172 @@
+files {
+    GAMEMAPS: "./assets/GAMEMAPS.WL6"
+    MAPHEAD: "./assets/MAPHEAD.WL6"
+    VSWAP: "./assets/VSWAP.WL6"
+}
+
+import { load } from "./game/loader.steg"
+import { map_get_wall } from "./game/map_helper.steg"
+import { palette } from "./game/texture_helper.steg"
+
+fn rlew_decode(file in_file, uint16 rlew_tag, uint32 in_length) -> file {
+    file_seek_cursor(0, in_file);
+
+    file out_file = file_create("");
+
+    uint16 expected_size = file_read_little_uint16(in_file);
+    uint32 bytes_read = 2;
+
+    while (bytes_read < in_length) {
+        uint16 w = file_read_little_uint16(in_file);
+        bytes_read += 2;
+
+        if (w == rlew_tag) {
+            uint16 count = file_read_little_uint16(in_file);
+            uint16 value = file_read_little_uint16(in_file);
+            bytes_read += 4;
+
+            uint32 i = 0;
+            for (i = 0; i < count; i += 1) {
+                file_write_little_uint16(value, out_file);
+            }
+        } else {
+            file_write_little_uint16(w, out_file);
+        }
+    }
+
+    return out_file;
+}
+
+fn carmack_decode(file in_file, uint32 start_offset, uint32 in_length) -> file {
+    file out_file = file_create("");
+
+    file_seek_cursor(start_offset, in_file);
+    uint16 expected_size = file_read_little_uint16(in_file);
+
+    uint32 bytes_read = 2;
+    uint32 out_offset = 0;
+    uint32 end_offset = start_offset + in_length;
+
+    while (file_get_cursor(in_file) < end_offset) {
+        uint8 n = file_read_uint8(in_file);
+        uint8 x = file_read_uint8(in_file);
+
+        if (x == 167 || x == 168) {
+            if (n == 0) {
+                // exception : not really a ptr
+                uint8 exception_byte = file_read_uint8(in_file);
+                file_write_uint8(exception_byte, out_file);
+                file_write_uint8(x, out_file);
+                out_offset += 2;
+            } else {
+                if (x == 167) {
+                    // Near pointer
+                    uint8 offset_byte = file_read_uint8(in_file);
+                    uint32 copy_offset = out_offset - (2 * offset_byte);
+
+                    uint32 i = 0;
+                    for (i = 0; i < n; i += 1) {
+                        uint32 current_pos = file_get_cursor(out_file);
+                        file_seek_cursor(copy_offset, out_file);
+                        uint16 val = file_read_little_uint16(out_file);
+                        file_seek_cursor(current_pos, out_file);
+
+                        file_write_little_uint16(val, out_file);
+                        copy_offset += 2;
+                        out_offset += 2;
+                    }
+                } else {
+                    // Far pointer (x == 168)
+                    uint16 offset_word = file_read_little_uint16(in_file);
+                    uint32 copy_offset = 2 * offset_word;
+
+                    uint32 i = 0;
+                    for (i = 0; i < n; i += 1) {
+                        uint32 current_pos = file_get_cursor(out_file);
+                        file_seek_cursor(copy_offset, out_file);
+                        uint16 val = file_read_little_uint16(out_file);
+                        file_seek_cursor(current_pos, out_file);
+
+                        file_write_little_uint16(val, out_file);
+                        copy_offset += 2;
+                        out_offset += 2;
+                    }
+                }
+            }
+        } else {
+            // Not ptr
+            file_write_uint8(n, out_file);
+            file_write_uint8(x, out_file);
+            out_offset += 2;
+        }
+    }
+
+    return out_file;
+}
+
+fn load_vswap_walls() -> file {
+    uint16 num_chunks = file_read_little_uint16_at(VSWAP, 0);
+    uint16 sprites_start = file_read_little_uint16_at(VSWAP, 2);
+
+    uint32 offsets_base = 6;
+    uint32 lengths_base = 6 + (num_chunks * 4);
+
+    file wall_data = file_create("");
+
+    uint16 i = 0;
+    while (i < sprites_start) {
+        uint32 chunk_offset = file_read_little_uint32_at(VSWAP, offsets_base + (i * 4));
+        uint16 chunk_length = file_read_little_uint16_at(VSWAP, lengths_base + (i * 2));
+
+        uint32 j = 0;
+        while (j < chunk_length) {
+            uint8 byte = file_read_uint8_at(VSWAP, chunk_offset + j);
+            file_write_uint8(byte, wall_data);
+            j += 1;
+        }
+
+        i += 1;
+    }
+
+    return wall_data;
+}
+
+export fn load_level(uint8 level) -> void {
+    file_seek_cursor(0, MAPHEAD);
+    uint16 rlew_tag = file_read_little_uint16(MAPHEAD);
+
+    file_seek_cursor(2 + (4 * level), MAPHEAD);
+    uint32 header_offset = file_read_little_uint32(MAPHEAD);
+
+    // --- plane 0 ---
+    file_seek_cursor(header_offset + 0, GAMEMAPS);
+    uint32 p0_offset = file_read_little_uint32(GAMEMAPS);
+
+    file_seek_cursor(header_offset + 12, GAMEMAPS);
+    uint16 p0_length = file_read_little_uint16(GAMEMAPS);
+
+    file p0_temp = carmack_decode(GAMEMAPS, p0_offset, p0_length);
+    file plane0 = rlew_decode(p0_temp, rlew_tag, file_size(p0_temp));
+    file_close(p0_temp);
+
+    file_seek_cursor(header_offset + 26, GAMEMAPS);
+    uint8 ceiling_color_index = file_read_uint8(GAMEMAPS);
+    uint8 floor_color_index   = file_read_uint8(GAMEMAPS);
+
+    // --- plane 1 (objects / entities) ---
+    file_seek_cursor(header_offset + 4, GAMEMAPS);
+    uint32 p1_offset = file_read_little_uint32(GAMEMAPS);
+
+    file_seek_cursor(header_offset + 14, GAMEMAPS);
+    uint16 p1_length = file_read_little_uint16(GAMEMAPS);
+
+    file p1_temp = carmack_decode(GAMEMAPS, p1_offset, p1_length);
+    file plane1 = rlew_decode(p1_temp, rlew_tag, file_size(p1_temp));
+    file_close(p1_temp);
+
+    uint16 num_walls = file_read_little_uint16_at(VSWAP, 2);
+    file wall_data = load_vswap_walls();
+
+    // Send to the game
+    load(plane0, plane1, wall_data, num_walls);
+}
