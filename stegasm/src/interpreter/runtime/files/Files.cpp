@@ -43,20 +43,21 @@ void Files::delete_file(descriptor desc)
     _entries[desc] = nullptr;
 }
 
-std::shared_ptr<FileBase> Files::operator[](descriptor desc)
+const std::shared_ptr<FileBase> &Files::operator[](descriptor desc)
 {
-    std::shared_ptr<FileBase> entry = _entries[desc];
+    const std::shared_ptr<FileBase> &entry = _entries[desc];
     if (!entry)
         throw FileError("Descriptor " + std::to_string(desc) + " not found !");
     return entry;
 }
 
-std::shared_ptr<File> Files::get_file(descriptor desc)
+File *Files::get_file(descriptor desc)
 {
-    std::shared_ptr<FileBase> entry = (*this)[desc];
+    const std::shared_ptr<FileBase>& entry = (*this)[desc];
 
-    auto file = std::dynamic_pointer_cast<File>(entry);
+    auto file = dynamic_cast<File*>(entry.get());
     if (!file)
         throw FileError("Descriptor " + std::to_string(desc) + " is not a plain file !");
+
     return file;
 }

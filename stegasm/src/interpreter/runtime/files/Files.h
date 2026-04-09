@@ -34,6 +34,6 @@ public:
     void close_file(descriptor desc);
     void delete_file(descriptor desc);
 
-    std::shared_ptr<FileBase> operator[](descriptor desc);
-    std::shared_ptr<File> get_file(descriptor desc);
+    const std::shared_ptr<FileBase> &operator[](descriptor desc);
+    File *get_file(descriptor desc);
 };
