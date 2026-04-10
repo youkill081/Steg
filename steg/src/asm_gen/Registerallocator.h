@@ -9,7 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <unordered_set>
 #include <vector>
 #include <set>
@@ -31,7 +31,7 @@ namespace compiler
 
     struct RegisterAllocation
     {
-        std::unordered_map<std::string, std::string> reg_map;
+        std::map<std::string, std::string> reg_map;
 
         [[nodiscard]] std::string lookup(
             const std::string& function_label,
@@ -53,7 +53,7 @@ namespace compiler
         std::unordered_set<std::string> _parameter_names;
 
         std::string _current_function;
-        std::unordered_map<std::string, LifeDuration> _registry_life_duration;
+        std::map<std::string, LifeDuration> _registry_life_duration;
         std::vector<int> _free_volatile;
         std::vector<int> _free_preserved;
         std::unordered_set<uint64_t> _call_sites; // instr_nbr of each CALL

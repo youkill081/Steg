@@ -6,6 +6,7 @@
 #include "linter/Linter.h"
 
 #include <algorithm>
+#include <map>
 
 using namespace compiler;
 
@@ -108,7 +109,7 @@ void RegisterAllocator::compute_function_duration(
 void RegisterAllocator::extend_lifetimes_for_back_jumps(uint64_t start_offset)
 {
     // Create Label -> First instruction_nbr for this function
-    std::unordered_map<std::string, uint64_t> label_to_first_instr;
+    std::map<std::string, uint64_t> label_to_first_instr;
     for (uint64_t i = start_offset; i < _blocks.size() &&
          (i == start_offset || !_blocks[i]->is_function_entry); ++i)
     {
@@ -117,7 +118,7 @@ void RegisterAllocator::extend_lifetimes_for_back_jumps(uint64_t start_offset)
             label_to_first_instr[block.label] = block.instructions.front().instr_nbr;
     }
 
-    std::unordered_map<std::string, uint64_t> back_jump_targets; // target_label -> max instr_nbr of jump source
+    std::map<std::string, uint64_t> back_jump_targets; // target_label -> max instr_nbr of jump source
 
     for (uint64_t i = start_offset; i < _blocks.size() &&
          (i == start_offset || !_blocks[i]->is_function_entry); ++i)
