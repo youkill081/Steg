@@ -192,7 +192,7 @@ namespace compiler
                 final_path = std::filesystem::absolute(path_source);
             }
 
-            node->absolute_path = final_path.string();
+            node->absolute_path = final_path.lexically_normal().string();
 
             if (table.get(node->name) != nullptr)
             {

@@ -42,6 +42,10 @@ void instr_FSUBR(Runtime &runtime, InstructionView view);
 void instr_FSUBD(Runtime &runtime, InstructionView view);
 void instr_MULR(Runtime &runtime, InstructionView view);
 void instr_MULD(Runtime &runtime, InstructionView view);
+void instr_FTANR(Runtime &runtime, InstructionView view);
+void instr_FTAND(Runtime &runtime, InstructionView view);
+void instr_FATANR(Runtime &runtime, InstructionView view);
+void instr_FATAND(Runtime &runtime, InstructionView view);
 void instr_SMULR(Runtime &runtime, InstructionView view);
 void instr_SMULD(Runtime &runtime, InstructionView view);
 void instr_FMULR(Runtime &runtime, InstructionView view);
@@ -386,6 +390,14 @@ constexpr std::array rawInstructionSet =
         InstructionHandler(&instr_MULD, REG, ONE_DATA),
         InstructionHandler(&instr_MULR3, REG, REG_BOTH, REG_BOTH),
         InstructionHandler(&instr_MULD3, REG, REG_BOTH, ONE_DATA)
+    },
+    RawInstruction{"FTAN", true,
+        InstructionHandler(&instr_FTANR, REG, REG_BOTH),
+        InstructionHandler(&instr_FTAND, REG, ONE_DATA),
+    },
+    RawInstruction{"FATAN", true,
+        InstructionHandler(&instr_FATANR, REG, REG_BOTH),
+        InstructionHandler(&instr_FATAND, REG, ONE_DATA),
     },
     RawInstruction{"FMUL", true,
         InstructionHandler(&instr_FMULR, REG, REG_BOTH),

@@ -112,6 +112,8 @@ namespace compiler
             builtin("fmax", v(T::FLOAT), {v(T::FLOAT), v(T::FLOAT)}, "FMAX");
             builtin("fmin", v(T::FLOAT), {v(T::FLOAT), v(T::FLOAT)}, "FMIN");
             builtin("fabs", v(T::FLOAT), {v(T::FLOAT)}, "FABS");
+            builtin("ftan", v(T::FLOAT), {v(T::FLOAT)}, "FTAN");
+            builtin("fatan", v(T::FLOAT), {v(T::FLOAT)}, "FATAN");
 
             builtin("image_map", v(T::UINT32, 1), {v(T::FILE)}, "MAP_IMAGE");
             builtin("last_image_size_x", v(T::UINT32), {}, "MAP_IMAGE_SIZE_X");

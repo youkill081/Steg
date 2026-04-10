@@ -227,6 +227,46 @@ void instr_MULD(Runtime& runtime, InstructionView view)
     );
 }
 
+void instr_FTANR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::tan(std::bit_cast<float>(view.get_r2(runtime)))
+        )
+    );
+}
+
+void instr_FTAND(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::tan(std::bit_cast<float>(view.get_data(runtime)))
+        )
+    );
+}
+
+void instr_FATANR(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::atan(std::bit_cast<float>(view.get_r2(runtime)))
+        )
+    );
+}
+
+void instr_FATAND(Runtime& runtime, InstructionView view)
+{
+    runtime.registries.write(
+        view.r1(),
+        std::bit_cast<uint32_t>(
+            std::atan(std::bit_cast<float>(view.get_data(runtime)))
+        )
+    );
+}
+
 void instr_SMULR(Runtime& runtime, InstructionView view)
 {
     runtime.registries.write(
