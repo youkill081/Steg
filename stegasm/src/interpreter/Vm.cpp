@@ -15,17 +15,35 @@ uint32_t Vm::run(ByteBuffer& buffer)
 {
     Runtime runtime = Loader::load(buffer);
 
+#ifdef ENABLE_INSTRUCTION_COUNTER
+    uint64_t instruction_count = 0;
+    uint64_t batch_counter = 0;
+
+    constexpr uint32_t BATCH_SIZE = 10000; // wait 10,000 instructions before time checking
+    auto last_time = std::chrono::steady_clock::now();
+#endif
+
     while (runtime.is_running)
     {
-        if (runtime.instructions.size() <= runtime.instruction_pointer)
-        {
-            Logger::log("Reach end of program", "Vm");
-            break;
-        }
-
         const auto &current_instr = runtime.instructions[runtime.instruction_pointer];
         runtime.instruction_pointer++;
         current_instr.handler.fn(runtime, current_instr.view);
+
+#ifdef ENABLE_INSTRUCTION_COUNTER
+        instruction_count++;
+
+        if (++batch_counter >= BATCH_SIZE) {
+            batch_counter = 0;
+            auto current_time = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(current_time - last_time);
+
+            if (elapsed.count() >= 1) {
+                std::cout << "[Counter] Ops/sec: " << instruction_count << std::endl;
+                instruction_count = 0;
+                last_time = current_time;
+            }
+        }
+#endif
     }
     return runtime.return_value;
 }
