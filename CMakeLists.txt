@@ -41,8 +41,6 @@ add_subdirectory(libs/raylib)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(
             $<$<CONFIG:Release>:-O3>
-            $<$<CONFIG:Release>:-funroll-loops>
-            $<$<CONFIG:Release>:-fomit-frame-pointer>
 
             $<$<CONFIG:RelWithDebInfo>:-O3>
     )
