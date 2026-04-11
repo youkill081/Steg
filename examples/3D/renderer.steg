@@ -114,17 +114,27 @@ fn draw_column(framebuffer buf, int x, float dist) -> void {
 
     int y = draw_y0;
     while (y < draw_y1) {
-        uint8  tex_y = 63 - tex_pos;
-        uint32 color = texture_get_pixel_at(tex_col_base + tex_y);
+        int tex_y_idx = 63 - tex_pos;
+        uint32 color = texture_get_pixel_at(tex_col_base + tex_y_idx);
+
         if (DDA_SIDE == 1) {
-            uint8 r = (color >> 24) / 2;
-            uint8 g = ((color >> 16) & 255) / 2;
-            uint8 b = ((color >> 8)  & 255) / 2;
-            color   = r << 24 | g << 16 | b << 8 | 255;
+            color = ((color >> 1) & 2139062143) | 255; // That devise all color chanel by 2
         }
-        fb[(y * 320) + x] = color;
-        tex_pos += tex_step;
-        y += 1;
+
+        int int_tex_pos = tex_pos;
+        float next_tex_pos = int_tex_pos + 1.0;
+
+        int y_next = y_top + (next_tex_pos / tex_step);
+
+        if (y_next > draw_y1) { y_next = draw_y1; }
+        if (y_next <= y)      { y_next = y + 1; }
+
+        while (y < y_next) {
+            fb[(y * 320) + x] = color;
+            y += 1;
+        }
+
+        tex_pos = (y - y_top) * tex_step;
     }
 
     // Floor
