@@ -16,9 +16,6 @@ fn main() -> void {
     while (!window_should_close()) {
         window_clear(0, 0, 0);
 
-
-        debug_t(1);
-
         update_player_pos();
         cast_rays(buf);
 
