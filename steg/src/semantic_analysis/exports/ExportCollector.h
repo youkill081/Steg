@@ -60,6 +60,8 @@ namespace compiler {
         void visit(ASTReturnStatement* node) override {}
         void visit(ASTBreakStatement* node) override {}
         void visit(ASTContinueStatement* node) override {}
+        void visit(ASTLabelStatement* node) override {}
+        void visit(ASTGotoStatement* node) override {}
         void visit(ASTExpressionStatement* node) override {}
         void visit(ASTBinaryExpressionNode* node) override {}
         void visit(ASTUnaryExpressionNode* node) override {}

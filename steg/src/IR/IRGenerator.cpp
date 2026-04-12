@@ -686,6 +686,30 @@ void IRGenerator::visit(ASTContinueStatement*)
         terminate_jump(target);
 }
 
+void IRGenerator::visit(ASTLabelStatement* node)
+{
+    add_instruction(IrInstruction{
+        IrOpCode::LABEL,
+        {},
+        {
+            .type = IrOperandType::Label,
+            .value = node->label
+        }
+    });
+}
+
+void IRGenerator::visit(ASTGotoStatement* node)
+{
+    add_instruction(IrInstruction{
+        IrOpCode::GOTO,
+        {},
+        {
+            .type = IrOperandType::Label,
+            .value = node->label
+        }
+    });
+}
+
 /* Program visitors */
 void IRGenerator::visit(ASTFunctionProgramNode* node)
 {

@@ -73,6 +73,7 @@ set(STEG_LIB_SOURCES
         src/IR/IRConstantFolding.cpp
         src/IR/IRConstantFolding.h
         src/IR/utils/exec.h
+        src/parser/statements/parse_label_goto.h
 )
 
 add_library(steg_lib STATIC ${STEG_LIB_SOURCES})

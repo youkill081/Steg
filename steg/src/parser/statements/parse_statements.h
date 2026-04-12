@@ -7,6 +7,7 @@
 #include "parse_expression_statement.h"
 #include "parse_for.h"
 #include "parse_if.h"
+#include "parse_label_goto.h"
 #include "parse_return.h"
 #include "parse_variables.h"
 #include "parse_while.h"
@@ -26,6 +27,8 @@ namespace compiler
     inline auto varStatement = as_statement(parseVariableDeclaration << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
     inline auto ifStatement = as_statement(parseIfStatement);
     inline auto whileStatement = as_statement(parseWhileStatement);
+    inline auto labelStatement = as_statement(parseLabelStatement);
+    inline auto gotoStatement = as_statement(parseGotoStatement << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
     inline auto forStatement = as_statement(parseForStatement);
     inline auto returnStatement = as_statement(parseReturn << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
     inline auto breakStatement = as_statement(parseBreak << lintedParseToken<TOKEN_PUNCTUATION_SEMICOLON>);
@@ -36,6 +39,9 @@ namespace compiler
         choice(
             varStatement,
             ifStatement,
+            whileStatement,
+            labelStatement,
+            gotoStatement,
             whileStatement,
             forStatement,
             returnStatement, breakStatement,

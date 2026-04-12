@@ -727,6 +727,10 @@ void AsmGenerator::emit_instruction(const IrInstruction& instr)
         break;
     case IrOpCode::FTOU: emit_unop("FTOU", instr);
         break;
+    case IrOpCode::LABEL: c(instr.arg1.value + ":");
+        break;
+    case IrOpCode::GOTO: c("    JMP " + instr.arg1.value);
+        break;
     }
 }
 

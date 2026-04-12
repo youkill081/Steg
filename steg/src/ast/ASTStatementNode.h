@@ -129,6 +129,26 @@ namespace compiler
         void accept(ASTVisitor* visitor) override;
     };
 
+    class ASTLabelStatement final : public ASTStatementNode
+    {
+    public:
+        ASTLabelStatement(const LexerToken& token, const std::string &label) : ASTStatementNode(token), label(label) {};
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::string label;
+    };
+
+    class ASTGotoStatement final : public ASTStatementNode
+    {
+    public:
+        ASTGotoStatement(const LexerToken& token, const std::string &label) : ASTStatementNode(token), label(label) {};
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::string label;
+    };
+
     class ASTVariableStatement final : public ASTStatementNode
     {
     public:

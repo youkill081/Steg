@@ -31,6 +31,8 @@ namespace compiler
         virtual void visit(ASTReturnStatement* node) = 0;
         virtual void visit(ASTBreakStatement* node) = 0;
         virtual void visit(ASTContinueStatement* node) = 0;
+        virtual void visit(ASTLabelStatement* node) = 0;
+        virtual void visit(ASTGotoStatement* node) = 0;
         virtual void visit(ASTVariableStatement* node) = 0;
         virtual void visit(ASTExpressionStatement* node) = 0;
 

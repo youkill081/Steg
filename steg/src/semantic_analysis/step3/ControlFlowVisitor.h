@@ -35,6 +35,8 @@ namespace compiler
 
         void visit(ASTBreakStatement* node) override;
         void visit(ASTContinueStatement* node) override;
+        void visit(ASTLabelStatement* node) override {}
+        void visit(ASTGotoStatement* node) override {}
 
         void visit(ASTParameterProgramNode*) override {}
         void visit(ASTLiteralExpressionNode*) override {}

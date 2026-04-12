@@ -202,6 +202,10 @@ std::string IRPrinter::format_instruction(const IrInstruction& i)
         break;
     case IrOpCode::SIGNED_BIT_SHIFT_RIGHT: out << res << " = " << a1 << " >>.s " << a2;
         break;
+    case IrOpCode::LABEL: out << a1 << ":";
+        break;
+    case IrOpCode::GOTO: out << "goto " << a1;
+        break;
     }
 
     out << " [instr -> " << i.instr_nbr << "]";

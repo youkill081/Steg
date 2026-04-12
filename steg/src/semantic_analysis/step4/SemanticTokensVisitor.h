@@ -93,6 +93,8 @@ namespace compiler
         void visit(ASTLiteralExpressionNode*) override {}
         void visit(ASTBreakStatement*) override {}
         void visit(ASTContinueStatement*) override {}
+        void visit(ASTLabelStatement* node) override;
+        void visit(ASTGotoStatement* node) override {}
         void visit(ASTTypeNode*) override {}
         void visit(ASTErrorNode*) override {}
         void visit(ASTStatementError*) override {}
@@ -110,4 +112,9 @@ namespace compiler
             node->index->accept(this);
         }
     };
+
+    inline void SemanticTokensVisitor::visit(ASTLabelStatement* node)
+    {
+        _map.set_token(node->token, TOKEN_CATH_KEYWORD);
+    }
 }

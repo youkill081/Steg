@@ -96,6 +96,8 @@ namespace compiler
         void visit(ASTReturnStatement *node) override;
         void visit(ASTBreakStatement*) override;
         void visit(ASTContinueStatement*) override;
+        void visit(ASTLabelStatement* node) override;
+        void visit(ASTGotoStatement* node) override;
 
         /* Programs nodes */
 

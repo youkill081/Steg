@@ -93,6 +93,8 @@ namespace compiler
         LOAD_ARR, // result = arg1[arg2]
         STORE_ARR, // result[arg1] = arg2
 
+        LABEL, GOTO,
+
         LOAD_8,  LOAD_16,  LOAD_32,
         STORE_8, STORE_16, STORE_32,
 

@@ -154,6 +154,30 @@ void compiler::ASTContinueStatement::accept(ASTVisitor* visitor)
     visitor->visit(this);
 }
 
+void compiler::ASTLabelStatement::display(std::size_t left_padding)
+{
+    display_name("Label", left_padding);
+    display_indent(left_padding);
+    std::cout << "Label: " << label << std::endl;
+}
+
+void compiler::ASTLabelStatement::accept(ASTVisitor* visitor)
+{
+    visitor->visit(this);
+}
+
+void compiler::ASTGotoStatement::display(std::size_t left_padding)
+{
+    display_name("Goto", left_padding);
+    display_indent(left_padding);
+    std::cout << "Goto: " << label << std::endl;
+}
+
+void compiler::ASTGotoStatement::accept(ASTVisitor* visitor)
+{
+    visitor->visit(this);
+}
+
 void compiler::ASTExpressionStatement::display(std::size_t left_padding)
 {
     display_name("Expression", left_padding);
