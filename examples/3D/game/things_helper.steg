@@ -39,16 +39,16 @@ export fn init_things(file p1) -> void {
     }
 }
 
-int g_sx       = 0;
-int g_sy       = 0;
-int g_height   = 0;
-float g_dist   = 0.0;
+int g_sx = 0;
+int g_sy = 0;
+int g_height = 0;
+float g_dist = 0.0;
 uint32 g_iz_dist = 0;
 uint32 g_sprite_offset = 0;
-uint32 g_pixel_pool    = 0;
-uint16 g_first_col     = 0;
+uint32 g_pixel_pool = 0;
+uint16 g_first_col = 0;
 
-fn draw_post(uint32 @fb, uint32 @zb, uint16 start_row, uint16 end_row, int cx_start, int cx_end) -> void {
+fn draw_post(uint32 @fb, file zb, uint16 start_row, uint16 end_row, int cx_start, int cx_end) -> void {
     uint16 row = start_row;
     while (row < end_row) {
         uint8 ci = file_read_uint8_at(VSWAP, g_pixel_pool);
@@ -67,7 +67,7 @@ fn draw_post(uint32 @fb, uint32 @zb, uint16 start_row, uint16 end_row, int cx_st
         if (cy_start < cy_end) {
             int cx = cx_start;
             while (cx < cx_end) {
-                if (g_iz_dist < zb[cx]) {
+                if (g_iz_dist < file_read_uint32_at(zb, cx * 4)) {
                     int cy = cy_start;
                     int fb_idx = (cy * 320) + cx;
                     while (cy < cy_end) {
@@ -83,7 +83,7 @@ fn draw_post(uint32 @fb, uint32 @zb, uint16 start_row, uint16 end_row, int cx_st
     }
 }
 
-fn draw_sprite_col(uint32 @fb, uint32 @zb, uint16 col) -> void {
+fn draw_sprite_col(uint32 @fb, file zb, uint16 col) -> void {
     int scr_x = g_sx + ((col * g_height) >> 6);
     int next_px = g_sx + (((col + 1) * g_height) >> 6);
 
@@ -99,7 +99,7 @@ fn draw_sprite_col(uint32 @fb, uint32 @zb, uint16 col) -> void {
     if (cx_start < cx_end) {
         int tcx = cx_start;
         while (tcx < cx_end) {
-            if (g_iz_dist < zb[tcx]) {
+            if (g_iz_dist < file_read_uint32_at(zb, tcx * 4)) {
                 visible = 1;
                 break;
             }
@@ -125,7 +125,7 @@ fn draw_sprite_col(uint32 @fb, uint32 @zb, uint16 col) -> void {
     }
 }
 
-fn draw_sprite(uint32 @fb, uint32 @zb, uint16 sprite_index) -> void {
+fn draw_sprite(uint32 @fb, file zb, uint16 sprite_index) -> void {
     uint16 fs = get_first_sprite();
     uint32 soff = file_read_little_uint32_at(VSWAP, 6 + (4 * (fs + sprite_index)));
     g_sprite_offset = soff;
@@ -143,8 +143,7 @@ fn draw_sprite(uint32 @fb, uint32 @zb, uint16 sprite_index) -> void {
     }
 }
 
-export fn draw_things(framebuffer buf, framebuffer z_buffer) -> void {
-    uint32 @zb = window_framebuffer_get_address(z_buffer);
+export fn draw_things(framebuffer buf, file z_buffer) -> void {
     uint32 @fb = window_framebuffer_get_address(buf);
 
     float px = get_px();
@@ -181,7 +180,7 @@ export fn draw_things(framebuffer buf, framebuffer z_buffer) -> void {
                 float f_iz = (rx * 10000.0) - 1.0;
                 g_iz_dist = f_iz;
 
-                draw_sprite(fb, zb, file_read_little_uint16_at(things_tex, idx * 2));
+                draw_sprite(fb, z_buffer, file_read_little_uint16_at(things_tex, idx * 2));
             }
         }
         i += 1;
