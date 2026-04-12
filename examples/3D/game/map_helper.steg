@@ -24,5 +24,5 @@ export fn map_get_object(int x, int y) -> uint16 {
 
 export fn map_is_wall(int x, int y) -> bool {
     uint16 id = map_get_wall(x, y);
-    return id > 0 && id < 64;
+    return id > 0 && id < 63;
 }

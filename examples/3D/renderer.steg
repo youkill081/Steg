@@ -3,6 +3,9 @@ float  DDA_HIT_X   = 0.0;
 float  DDA_HIT_Y   = 0.0;
 float  DDA_RDX     = 0.0;
 float  DDA_RDY     = 0.0;
+bool  DDA_IS_DOOR = false;
+bool DDA_IS_DOOR_FRAME = false;
+
 uint16 DDA_WALL_ID = 0;
 uint32 draw_color  = 0;
 framebuffer z_buffer_fb = 0;
@@ -31,37 +34,111 @@ fn dda_cast(float px, float py, float rdx, float rdy) -> float {
     DDA_RDX = rdx;
     DDA_RDY = rdy;
 
-    if (map_is_wall(mx, my)) { return 0.0001; }
+    float ddx = 1000000.0;
+    if (rdx > 0.000001 || rdx < -0.000001) { ddx = 1.0 / rdx; if (ddx < 0.0) { ddx = -ddx; } }
 
-    // safe_inv
-    float ddx = 0.0;
-    float ddy = 0.0;
-    if (fabs(rdx) < 0.000001) { ddx = 1000000000.0; } else { ddx = fabs(1.0 / rdx); }
-    if (fabs(rdy) < 0.000001) { ddy = 1000000000.0; } else { ddy = fabs(1.0 / rdy); }
+    float ddy = 1000000.0;
+    if (rdy > 0.000001 || rdy < -0.000001) { ddy = 1.0 / rdy; if (ddy < 0.0) { ddy = -ddy; } }
 
-    int step_x = 1;
-    int step_y = 1;
-    if (rdx < 0.0) { step_x = -1; }
-    if (rdy < 0.0) { step_y = -1; }
+    int step_x = 0;
+    int step_y = 0;
+    float sx = 0.0;
+    float sy = 0.0;
 
-    float sx = dda_init_side(px, rdx, mx, ddx);
-    float sy = dda_init_side(py, rdy, my, ddy);
-
-    while (!map_is_wall(mx, my)) {
-        if (sx < sy) { sx += ddx; mx += step_x; DDA_SIDE = 0; }
-        else         { sy += ddy; my += step_y; DDA_SIDE = 1; }
+    if (rdx < 0.0) {
+        step_x = -1;
+        sx = (px - mx) * ddx;
+    } else {
+        step_x = 1;
+        sx = (mx + 1.0 - px) * ddx;
     }
 
-    DDA_WALL_ID = map_get_wall(mx, my);
+    if (rdy < 0.0) {
+        step_y = -1;
+        sy = (py - my) * ddy;
+    } else {
+        step_y = 1;
+        sy = (my + 1.0 - py) * ddy;
+    }
+
+    uint16 tile = map_get_wall(mx, my);
+    if (tile == 91) { DDA_SIDE = 1; }
+    if (tile == 92) { DDA_SIDE = 0; }
+
+    while (true) {
+        tile = map_get_wall(mx, my);
+
+        if (tile > 0) {
+            if (tile == 91 || tile == 92) {
+                float dist_gate = 0.0;
+                if (DDA_SIDE == 0) { dist_gate = sx - (ddx * 0.5); }
+                else { dist_gate = sy - (ddy * 0.5); }
+
+                if (dist_gate >= 0.0) {
+                    float hit_pos = 0.0;
+
+                    if (DDA_SIDE == 0) {
+                        if (sy < dist_gate) {
+                            DDA_IS_DOOR_FRAME = true; DDA_IS_DOOR = false; DDA_SIDE = 1; sy += ddy; break;
+                        }
+                        hit_pos = py + dist_gate * rdy;
+                        int hit_pos_int = hit_pos; hit_pos -= hit_pos_int;
+                    } else {
+                        if (sx < dist_gate) {
+                            DDA_IS_DOOR_FRAME = true; DDA_IS_DOOR = false; DDA_SIDE = 0; sx += ddx; break;
+                        }
+                        hit_pos = px + dist_gate * rdx;
+                        int hit_pos_int = hit_pos; hit_pos -= hit_pos_int;
+                    }
+
+                    float open_amount = 0.15;
+
+                    if (hit_pos < open_amount) {
+                        if (DDA_SIDE == 0 && sy < sx) {
+                            DDA_IS_DOOR_FRAME = true; DDA_IS_DOOR = false; DDA_SIDE = 1; sy += ddy; break;
+                        }
+                        if (DDA_SIDE == 1 && sx < sy) {
+                            DDA_IS_DOOR_FRAME = true; DDA_IS_DOOR = false; DDA_SIDE = 0; sx += ddx; break;
+                        }
+                        tile = 0;
+                    } else {
+                        if (DDA_SIDE == 0) {
+                            sx = dist_gate + ddx; DDA_HIT_X = hit_pos - open_amount;
+                        } else {
+                            sy = dist_gate + ddy; DDA_HIT_Y = hit_pos - open_amount;
+                        }
+                        DDA_IS_DOOR = true; DDA_IS_DOOR_FRAME = false; break;
+                    }
+                }
+            }
+
+            if (tile > 0 && tile < 91) {
+                DDA_IS_DOOR = false; DDA_IS_DOOR_FRAME = false; break;
+            }
+        }
+
+        if (sx < sy) {
+            sx += ddx;
+            mx += step_x;
+            DDA_SIDE = 0;
+        } else {
+            sy += ddy;
+            my += step_y;
+            DDA_SIDE = 1;
+        }
+    }
+
+    DDA_WALL_ID = tile;
 
     float dist = 0.0;
     if (DDA_SIDE == 0) {
-        dist      = (mx - px + (1 - step_x) / 2.0) / rdx;
+        dist = sx - ddx;
         DDA_HIT_Y = py + dist * rdy;
     } else {
-        dist      = (my - py + (1 - step_y) / 2.0) / rdy;
+        dist = sy - ddy;
         DDA_HIT_X = px + dist * rdx;
     }
+
     return dist;
 }
 
@@ -91,15 +168,24 @@ fn draw_column(framebuffer buf, int x, float dist) -> void {
     int draw_y1 = y_top + wall_h;   if (draw_y1 > 200) { draw_y1 = 200; }
 
     uint8 tex_x = 0;
-    if (DDA_SIDE == 0) {
-        int hit_y_int = DDA_HIT_Y;
-        tex_x = (DDA_HIT_Y - hit_y_int) * 64;
+
+    if (DDA_IS_DOOR) {
+        if (DDA_SIDE == 0) {
+            tex_x = DDA_HIT_X * 64;
+        } else {
+            tex_x = DDA_HIT_Y * 64;
+        }
     } else {
-        int hit_x_int = DDA_HIT_X;
-        tex_x = (DDA_HIT_X - hit_x_int) * 64;
+        if (DDA_SIDE == 0) {
+            int hit_y_int = DDA_HIT_Y;
+            tex_x = (DDA_HIT_Y - hit_y_int) * 64;
+        } else {
+            int hit_x_int = DDA_HIT_X;
+            tex_x = (DDA_HIT_X - hit_x_int) * 64;
+        }
     }
 
-    uint16 tex_id = wall_to_tex_id(DDA_WALL_ID, DDA_SIDE);
+    uint16 tex_id = wall_to_tex_id(DDA_WALL_ID, DDA_SIDE, DDA_IS_DOOR, DDA_IS_DOOR_FRAME);
 
     uint32 tex_col_base = (tex_id * 4096) + (tex_x * 64);
 
