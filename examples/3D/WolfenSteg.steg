@@ -3,9 +3,10 @@ import { display_player_pos, init_gun, update_player_pos, update_player_gun } fr
 import { cast_rays, init_renderer, get_zbuffer } from "./renderer.steg";
 import { draw_things } from "./game/things_helper.steg";
 import { init_doors, update_doors } from "./game/door_helper.steg";
+import { update_enemies } from "./game/enemy_helper.steg";
 
 fn main() -> void {
-    load_level(0);
+    load_level(rand() % 59);
 
     init_renderer();
     init_doors();
@@ -20,13 +21,12 @@ fn main() -> void {
         window_clear(0, 0, 0);
 
         update_player_pos();
+        update_enemies();
         cast_rays(buf);
 
         update_doors();
         draw_things(buf, get_zbuffer());
         update_player_gun(buf);
-
-        debug_t(1);
 
         window_framebuffer_sync(buf);
         window_framebuffer_draw(buf, 0, 0);
