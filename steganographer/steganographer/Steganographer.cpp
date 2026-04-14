@@ -6,6 +6,7 @@
 
 #include <random>
 
+#include "Colors.h"
 #include "Logger.h"
 #include "sequences/ReadSequence.h"
 #include "sequences/WriteSequence.h"
@@ -112,7 +113,8 @@ void Steganographer::encode(steganographer::Image& image, const ByteBuffer& data
     write_seed(image, seed, seed_size);
 
     uint32_t real_seed = complete_to_final_seed(image, seed);
-    Logger::log("Write with obfuscated seed : " + std::to_string(seed), "Steganographer");
+    Logger::log("-> Write with obfuscated seed : " + std::to_string(seed), "Steganographer",
+        AnsiColors::Cyan);
 
     WriteSequence write_sequencer{image, real_seed};
     write_sequencer.write_sequence(data, type);
@@ -124,7 +126,8 @@ Steganographer::DecodeResult Steganographer::decode(steganographer::Image& image
     uint32_t seed = read_seed(image, seed_size);
     uint32_t real_seed = complete_to_final_seed(image, seed);
 
-    Logger::log("Decode with obfuscated seed " + std::to_string(seed), "Steganographer");
+    Logger::log("-> Decode with obfuscated seed " + std::to_string(seed), "Steganographer",
+        AnsiColors::Cyan);
 
     ReadSequence read_sequencer{image, real_seed};
     return Steganographer::DecodeResult{

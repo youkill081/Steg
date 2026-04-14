@@ -8,14 +8,20 @@
 #include <ostream>
 #include <string>
 
-void Logger::log(const std::string& message, const std::string& from)
+#include "Colors.h"
+
+void Logger::log(
+    const std::string &message,
+    const std::string &from,
+    const char *from_color,
+    const char *message_color)
 {
     if (from.empty())
     {
         std::cout << message << std::endl;
     } else
     {
-        std::cout << "[" << from << "] " << message << std::endl;
+        std::cout << from_color << "[" << from << "] " << AnsiColors::Reset << message_color << message <<  AnsiColors::Reset << std::endl;
     }
 
 }

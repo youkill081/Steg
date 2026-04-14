@@ -15,6 +15,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <filesystem>
 
+#include "Colors.h"
 #include "stb_image_write.h"
 #include "Logger.h"
 
@@ -65,7 +66,7 @@ void Image::save_png(const std::string& output_path) const
         absolute_path = output_path;
     }
 
-    Logger::log("Saving image to " + absolute_path, "Image");
+    Logger::log("-> Saving image to " + absolute_path, "Image", AnsiColors::Cyan);
 
     std::vector<unsigned char> data;
     data.resize(static_cast<std::size_t>(_width) * static_cast<std::size_t>(_height) * 3u);

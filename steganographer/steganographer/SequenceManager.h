@@ -26,6 +26,7 @@ protected:
     uint32_t _seed;
 
     uint64_t _current_index = 0;
+    uint8_t _current_pass = 0;
     uint8_t _nbr_of_shuffle = 0;
 
     pixel &get_next_pixel();
