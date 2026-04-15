@@ -73,7 +73,7 @@ void File::read_data_if_needed()
 
     int byte;
     while ((byte = file_stream.get()) != EOF)
-        this->_file_data.write_uint8(static_cast<uint8_t>(byte));
+        this->_file_data.append_uint8(static_cast<uint8_t>(byte));
 
     this->_file_data.reset_cursor();
     this->_modified = false;
@@ -137,6 +137,18 @@ void File::reset_cursor()
     this->_file_data.reset_cursor();
 }
 
+void File::seek_cursor(uint32_t index)
+{
+    this->read_data_if_needed();
+    this->_file_data.seek_cursor(index);
+}
+
+uint32_t File::get_cursor()
+{
+    this->read_data_if_needed();
+    return this->_file_data.get_cursor();
+}
+
 void File::clear_data()
 {
     this->read_data_if_needed();
@@ -157,17 +169,91 @@ uint16_t File::read_word()
     return this->_file_data.read_uint16();
 }
 
+uint16_t File::read_word_little()
+{
+    this->read_data_if_needed();
+    return this->_file_data.read_little_uint16();
+}
+
+uint32_t File::read_doubleword()
+{
+    this->read_data_if_needed();
+    return this->_file_data.read_uint32();
+}
+
+uint32_t File::read_doubleword_little()
+{
+    this->read_data_if_needed();
+    return this->_file_data.read_little_uint32();
+}
+
 void File::append_byte(uint8_t byte)
+{
+    this->read_data_if_needed();
+    this->_file_data.append_uint8(byte);
+    this->_modified = true;
+}
+
+void File::append_word_big(uint16_t word)
+{
+    this->read_data_if_needed();
+    this->_file_data.append_uint16_big(word);
+    this->_modified = true;
+}
+
+void File::append_word_little(uint16_t word)
+{
+    this->read_data_if_needed();
+    this->_file_data.append_uint16_little(word);
+    this->_modified = true;
+}
+
+void File::append_doubleword_big(uint32_t word)
+{
+    this->read_data_if_needed();
+    this->_file_data.append_uint32_big(word);
+    this->_modified = true;
+}
+
+void File::append_doubleword_little(uint32_t word)
+{
+    this->read_data_if_needed();
+    this->_file_data.append_uint32_little(word);
+    this->_modified = true;
+}
+
+void File::write_byte(uint8_t byte)
 {
     this->read_data_if_needed();
     this->_file_data.write_uint8(byte);
     this->_modified = true;
 }
 
-void File::append_word(uint16_t word)
+void File::write_word_big(uint16_t word)
 {
     this->read_data_if_needed();
-    this->_file_data.write_uint16(word);
+    this->_file_data.write_uint16_big(word);
+    this->_modified = true;
+}
+
+void File::write_word_little(uint16_t word)
+{
+    this->read_data_if_needed();
+    this->_file_data.write_uint16_little(word);
+    this->_modified = true;
+}
+
+void File::write_doubleword_big(uint32_t word)
+{
+    this->read_data_if_needed();
+    this->_file_data.write_uint32_big(word);
+    this->_modified = true;
+}
+
+void File::write_doubleword_little(uint32_t word)
+{
+    this->read_data_if_needed();
+    this->_file_data.write_uint32_little(word);
     this->_modified = true;
 }
 
@@ -181,4 +267,22 @@ bool File::has_word_remaining()
 {
     this->read_data_if_needed();
     return this->_file_data.remaining_uint16() != 0;
+}
+
+bool File::has_doubleword_remaining()
+{
+    this->read_data_if_needed();
+    return this->_file_data.remaining_uint32() != 0;
+}
+
+uint32_t File::get_size()
+{
+    this->read_data_if_needed();
+    return this->_file_data.size();
+}
+
+const ByteBuffer& File::get_file_data()
+{
+    this->read_data_if_needed();
+    return _file_data;
 }

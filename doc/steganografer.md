@@ -1,4 +1,4 @@
-# Stéganographe
+# Stéganographe / OUTDATED, cette documentation est à refaire
 
 Le but de ce programme est de cacher de la donnée dans des images en les altérant le moins possible.
 
@@ -49,7 +49,7 @@ $$
 
 Voici l'algorithme pour retrouver la graine :
 
-##### #1 → Définir `nombre_pixel` comme graine de notre fonction de génération pseudo-aléatoire
+##### #1 -> Définir `nombre_pixel` comme graine de notre fonction de génération pseudo-aléatoire
 
 ##### #2 Récupération des X bits
 
@@ -107,11 +107,11 @@ Ce padding sera de type `uint32` afin d'avoir un modulo automatique au moment de
 1) Nous générons un nouveau nombre pseudo-aléatoire et l'additionnons au padding (padding += N).
 2) Nous lisons le pixel P = pixels[padding % nombre_pixel].
 3) Nous avons maintenant plusieurs cas possibles selon la valeur de l'usage du pixel :  
-   usage = HIDE_SEED → nous faisons padding += 1 et on recommence cette étape avec le nouveau pixel récupéré.  
-   usage = ALL_READ → nous faisons padding += 1 et on recommence cette étape avec le nouveau pixel récupéré.  
-   usage = ZERO_READ → la valeur est enregistrée dans le bit de poids faible de la couleur rouge | nous mettons maintenant l'usage du pixel sur ONE_READ.  
-   usage = ONE_READ → la valeur est enregistrée dans le bit de poids faible de la couleur bleue | nous mettons maintenant l'usage du pixel sur TWO_READ.  
-   usage = TWO_READ → la valeur est enregistrée dans le bit de poids faible de la couleur verte | nous mettons maintenant l'usage du pixel sur ALL_READ.
+   usage = HIDE_SEED -> nous faisons padding += 1 et on recommence cette étape avec le nouveau pixel récupéré.  
+   usage = ALL_READ -> nous faisons padding += 1 et on recommence cette étape avec le nouveau pixel récupéré.  
+   usage = ZERO_READ -> la valeur est enregistrée dans le bit de poids faible de la couleur rouge | nous mettons maintenant l'usage du pixel sur ONE_READ.  
+   usage = ONE_READ -> la valeur est enregistrée dans le bit de poids faible de la couleur bleue | nous mettons maintenant l'usage du pixel sur TWO_READ.  
+   usage = TWO_READ -> la valeur est enregistrée dans le bit de poids faible de la couleur verte | nous mettons maintenant l'usage du pixel sur ALL_READ.
 
 ### Étape 2 : Checksum, CRC32, Header et Data
 

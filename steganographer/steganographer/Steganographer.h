@@ -16,20 +16,20 @@ private:
     static Random32 random;
 
     static unsigned int generate_real_random();
-    static unsigned int get_seed_size(const Image &image);
+    static unsigned int get_seed_size(const steganographer::Image &image);
 
     static uint32_t zero_unused_seed_bits(uint32_t full_seed, uint32_t seed_size);
-    static uint32_t complete_to_final_seed(const Image &image, uint32_t complete_seed);
+    static uint32_t complete_to_final_seed(const steganographer::Image &image, uint32_t complete_seed);
 
-    static void write_seed(Image &image, uint32_t seed, uint32_t seed_size);
-    static uint32_t read_seed(Image &image, uint32_t seed_size);
+    static void write_seed(steganographer::Image &image, uint32_t seed, uint32_t seed_size);
+    static uint32_t read_seed(steganographer::Image &image, uint32_t seed_size);
 public:
-    static void encode(Image &image, const ByteBuffer &data, DataType type);
+    static void encode(steganographer::Image &image, const ByteBuffer &data, DataType type);
 
     struct DecodeResult
     {
         Header header{};
         ByteBuffer data;
     };
-    static DecodeResult decode(Image &image);
+    static DecodeResult decode(steganographer::Image &image);
 };

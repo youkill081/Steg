@@ -1,0 +1,153 @@
+name: Steg CI Build
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.version_check.outputs.should_build }}
+      version: ${{ steps.version_check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Version and Check Tag
+        id: version_check
+        run: |
+          git fetch --tags
+
+          VERSION=$(grep -oP 'project\(stegnocode VERSION \K[0-9.]+' CMakeLists.txt)
+
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: Could not extract version from CMakeLists.txt"
+            exit 1
+          fi
+
+          TAG="v$VERSION"
+          echo "Version: $VERSION | Tag: $TAG"
+
+          # If manual launch, force build
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual workflow dispatch detected. Forcing build."
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Logique classique pour les push/PR
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG$"; then
+            echo "Tag $TAG already exists on remote. Skipping build."
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $TAG does not exist. Building."
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: check-version
+    if: needs.check-version.outputs.should_build == 'true'
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            os_name: windows
+          - os: ubuntu-latest
+            os_name: linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libx11-dev libxcursor-dev libxinerama-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev
+
+      - name: Setup CMake 4.0
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.0.x'
+
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Targets
+        run: cmake --build build --target steg steglsp --config Release
+
+      - name: Prepare Artifact (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p dist
+          cp build/steg/steg dist/steg_${{ matrix.os }}_${{ needs.check-version.outputs.version }}
+          cp build/steg/lsp/steglsp dist/steglsp_${{ matrix.os }}_${{ needs.check-version.outputs.version }}
+
+      - name: Prepare Artifact (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir dist
+          copy build\steg\steg.exe dist\steg_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
+          copy build\steg\lsp\steglsp.exe dist\steglsp_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: steg_${{ matrix.os }}_${{ needs.check-version.outputs.version }}
+          path: dist/
+
+  tag:
+    needs: [build, check-version]
+    runs-on: ubuntu-latest
+    # Don't tag if manual launch
+    if: needs.check-version.outputs.should_build == 'true' && github.event_name != 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag v${{ needs.check-version.outputs.version }}
+          git push origin v${{ needs.check-version.outputs.version }}
+
+  release:
+    needs: [ tag, check-version ]
+    runs-on: ubuntu-latest
+    # Don't release if manual launch'
+    if: needs.check-version.outputs.should_build == 'true' && github.event_name != 'workflow_dispatch'
+
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          name: "v${{ needs.check-version.outputs.version }}"
+          draft: false
+          prerelease: false
+          files: dist/**

@@ -18,8 +18,4 @@ namespace assembler
         const std::vector<ParsedLine>& lines,
         const std::string& sectionName
     );
-
-    bool token_is_uint32_value(const std::string &token);
-    uint32_t token_to_uint32(const std::string &token);
-
 }

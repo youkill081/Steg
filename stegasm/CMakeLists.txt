@@ -4,7 +4,6 @@ project(stegasm)
 
 set(CMAKE_CXX_STANDARD 23)
 
-# On enlève src/main.cpp de cette liste !
 set(STEGASM_LIB_SOURCES
         src/instructions.h
         src/interpreter/runtime/Runtime.h
@@ -53,14 +52,16 @@ set(STEGASM_LIB_SOURCES
         src/interpreter/runtime/files/Files.h
         src/interpreter/runtime/Clocks.cpp
         src/interpreter/runtime/Clocks.h
+        src/interpreter/runtime/Stack.h
+        src/interpreter/runtime/InstructionView.h
+        src/interpreter/runtime/InstructionViewImpl.h
+        src/interpreter/runtime/TimeDebugger.h
 )
 
 add_library(stegasm_lib STATIC ${STEGASM_LIB_SOURCES})
 
-target_include_directories(stegasm_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(stegasm_lib PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 target_link_libraries(stegasm_lib PUBLIC stegcommon)
 target_link_libraries(stegasm_lib PUBLIC raylib)
-
-add_executable(stegasm src/main.cpp)
-
-target_link_libraries(stegasm PRIVATE stegasm_lib)

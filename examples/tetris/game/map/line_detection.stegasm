@@ -13,8 +13,8 @@ init_animation:
 ; ---
 
 ; is_row_complete
-; IN  R1 → index de ligne (2..21)
-; OUT R0 → 1 si complète, 0 sinon
+; IN  R1 -> index de ligne (2..21)
+; OUT R0 -> 1 si complète, 0 sinon
 is_row_complete:
     LOAD_32 R2, R1
     MUL R2, 10
@@ -125,7 +125,7 @@ compact_loop:
     CMP R0, 1
     JE compact_skip_row ; Complete line, no copy-paste
 
-    ; Copy read_row → write_row only if lines are different
+    ; Copy read_row -> write_row only if lines are different
     CMP R6, R7
     JE compact_same_row
 
@@ -162,8 +162,8 @@ apply_done:
 
 
 ; copy_row
-; IN R1 → Source line
-; IN R2 → Destination line
+; IN R1 -> Source line
+; IN R2 -> Destination line
 ; Clobbers : R3 R4 R5 R6 R7
 copy_row:
     LOAD_32 R3, R1
@@ -195,7 +195,7 @@ copy_row_end:
 
 
 ; clear_row
-; IN R1 → index de ligne
+; IN R1 -> index de ligne
 ; Clobbers : R2 R3 R4 R5
 clear_row:
     LOAD_32 R2, R1
@@ -220,7 +220,7 @@ clear_row_end:
 
 
 ; add_score_for_lines
-; IN R1 → nombre de lignes (1..4)
+; IN R1 -> nombre de lignes (1..4)
 ; base_value × level :
 ;   1 = 100  |  2 = 300  |  3 = 500  |  4 = 800 (Tetris !)
 ; Clobbers : R2 R3

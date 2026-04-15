@@ -10,6 +10,7 @@
 #include "assembler/Assembler.h"
 
 #include <iostream>
+#include <utils.h>
 
 using namespace assembler;
 
@@ -42,8 +43,8 @@ bool InstructionSet::token_is_in_brackets(const std::string &token)
 
 uint32_t InstructionSet::parse_data_value(std::string token, const SymbolSet &symbols)
 {
-    if (token_is_uint32_value(token))
-        return token_to_uint32(token);
+    if (token_is_numeric_value(token))
+        return token_uint32_to_numeric(token);
 
     if (!symbols.contains(token))
         Linter::error("Unknown symbol \"" + token + "\"");

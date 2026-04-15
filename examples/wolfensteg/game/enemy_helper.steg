@@ -1,0 +1,180 @@
+file enemy_thing_idx = 0;
+file enemy_state = 0;
+file enemy_timer = 0;
+file enemy_type = 0;
+uint32 num_enemies = 0;
+
+import { get_px, get_py, get_pa } from "./player_helper.steg";
+import { get_thing_x, get_thing_y, set_thing_pos, set_thing_tex, set_thing_colidable } from "./things_helper.steg";
+import { map_is_wall, map_is_door } from "./map_helper.steg";
+import { get_door_openness } from "./door_helper.steg"
+
+/* Getters and Setters */
+
+export fn get_num_enemies() -> uint32 { return num_enemies; }
+export fn get_enemy_thing_idx() -> file { return enemy_thing_idx; }
+
+/* Initialization */
+
+export fn init_enemies() -> void {
+    enemy_thing_idx = file_create("");
+    enemy_state = file_create("");
+    enemy_timer = file_create("");
+    enemy_type = file_create("");
+}
+
+export fn add_enemy(uint32 tidx, uint16 map_val) -> void {
+    uint8 type = 255;
+    uint16 start_tex = 0;
+
+    // sprite and type mapping
+
+    // Guard type 0
+    if ((map_val >= 108 && map_val <= 111) || (map_val >= 112 && map_val <= 115) || (map_val >= 144 && map_val <= 147) || (map_val >= 148 && map_val <= 151) || (map_val >= 180 && map_val <= 183) || (map_val >= 184 && map_val <= 187)) { type = 0; start_tex = 50; }
+    // Dog type 1
+    if ((map_val >= 134 && map_val <= 137) || (map_val >= 138 && map_val <= 141) || (map_val >= 170 && map_val <= 173) || (map_val >= 174 && map_val <= 177) || (map_val >= 206 && map_val <= 209) || (map_val >= 210 && map_val <= 213)) { type = 1; start_tex = 99; }
+    // SS type 2
+    if ((map_val >= 126 && map_val <= 129) || (map_val >= 130 && map_val <= 133) || (map_val >= 162 && map_val <= 165) || (map_val >= 166 && map_val <= 169) || (map_val >= 198 && map_val <= 201) || (map_val >= 202 && map_val <= 205)) { type = 2; start_tex = 138; }
+    // Zombie type 3
+    if ((map_val >= 216 && map_val <= 219) || (map_val >= 220 && map_val <= 223) || (map_val >= 234 && map_val <= 237) || (map_val >= 238 && map_val <= 241) || (map_val >= 252 && map_val <= 255) || (map_val >= 256 && map_val <= 259)) { type = 3; start_tex = 243; }
+    // Officer type 4
+    if ((map_val >= 116 && map_val <= 119) || (map_val >= 120 && map_val <= 123) || (map_val >= 152 && map_val <= 155) || (map_val >= 156 && map_val <= 159) || (map_val >= 188 && map_val <= 191) || (map_val >= 192 && map_val <= 195)) { type = 4; start_tex = 190; }
+
+    if (type == 255) {
+        return; // unknown enemy
+    }
+
+    set_thing_tex(tidx, start_tex);
+
+    file_append_little_uint32(tidx, enemy_thing_idx);
+    file_append_little_uint32(0, enemy_state);
+    file_append_little_uint32(0, enemy_timer);
+    file_append_uint8(type, enemy_type);
+
+    num_enemies += 1;
+}
+
+/* Update and kill */
+
+fn get_death_sprite(uint8 type, uint32 frame) -> uint16 {
+    if (type == 0) { // Guard
+        if (frame == 0) {return 90;} if (frame == 1) {return 91;}
+        if (frame == 2) {return 92;} if (frame == 3) {return 93;}
+        return 95;
+    }
+    if (type == 1) { // Dog
+        if (frame == 0) {return 131;} if (frame == 1) {return 132;}
+        if (frame == 2) {return 133;}
+        return 134;
+    }
+    if (type == 2) { // SS
+        if (frame == 0) {return 179;} if (frame == 1) {return 180;}
+        if (frame == 2) {return 181;}
+        return 183;
+    }
+    if (type == 3) { // Zombie
+        if (frame == 0) {return 228;} if (frame == 1) {return 229;}
+        if (frame == 2) {return 230;} if (frame == 3) {return 232;}
+        return 233;
+    }
+    if (type == 4) { // Officer
+        if (frame == 0) {return 279;} if (frame == 1) {return 280;}
+        if (frame == 2) {return 281;} if (frame == 3) {return 283;}
+        return 284;
+    }
+    return 95;
+}
+
+export fn kill_enemy(uint32 e_idx) -> void {
+    if (e_idx >= num_enemies) {return;}
+
+    uint32 current_s = file_read_little_uint32_at(enemy_state, e_idx * 4);
+    if (current_s == 1) { return; } // Ignore if already dead
+
+    // Set a dead
+    file_seek_cursor(e_idx * 4, enemy_state);
+    file_write_little_uint32(1, enemy_state);
+
+    // disable collision
+    uint32 tidx = file_read_little_uint32_at(enemy_thing_idx, e_idx * 4);
+    set_thing_colidable(get_thing_x(tidx), get_thing_y(tidx), 0);
+}
+
+export fn update_enemies() -> void {
+    uint32 i = 0;
+    while (i < num_enemies) {
+        uint32 state = file_read_little_uint32_at(enemy_state, i * 4);
+        uint32 tidx  = file_read_little_uint32_at(enemy_thing_idx, i * 4);
+        uint8  type  = file_read_uint8_at(enemy_type, i);
+
+        if (state == 1) {
+            uint32 timer = file_read_little_uint32_at(enemy_timer, i * 4);
+
+            uint32 frame = timer / 5;
+            if (frame > 4) { frame = 4; } // Stay on last frame
+
+            set_thing_tex(tidx, get_death_sprite(type, frame));
+
+            file_seek_cursor(i * 4, enemy_timer);
+            file_write_little_uint32(timer + 1, enemy_timer);
+        }
+        i += 1;
+    }
+}
+
+/* Function to check if enemy is at targeted  */
+
+export fn find_enemy_at_crosshair() -> int {
+    float px = get_px();
+    float py = get_py();
+    float pa = get_pa();
+
+    float vx = cos(deg2rad(pa));
+    float vy = sin(deg2rad(pa));
+
+    uint32 i = 0;
+    int closest_enemy = -1;
+    float closest_dist = 1000.0;
+
+    float threshold = 0.999;
+    while (i < num_enemies) {
+        uint32 state = file_read_little_uint32_at(enemy_state, i * 4);
+
+        if (state == 0) {
+            uint32 tidx = file_read_little_uint32_at(enemy_thing_idx, i * 4);
+            float ex = get_thing_x(tidx);
+            float ey = get_thing_y(tidx);
+
+            float dx = ex - px;
+            float dy = ey - py;
+            float dist = sqrt(dx*dx + dy*dy);
+
+            if (dist > 0.1) {
+                float edx = dx / dist;
+                float edy = dy / dist;
+
+                float dot = (vx * edx) + (vy * edy);
+                if (dot > threshold && dist < closest_dist) {
+                    bool wall_blocked = false;
+                    float check_dist = 0.5;
+                    while (check_dist < dist) {
+                        float cx = px + vx * check_dist;
+                        float cy = py + vy * check_dist;
+                        if (map_is_wall(cx, cy) || (map_is_door(cx, cy) && get_door_openness(cx, cy) < 0.5)) {
+                            wall_blocked = true;
+                            break;
+                        }
+                        check_dist += 0.5;
+                    }
+
+                    if (!wall_blocked) {
+                        closest_dist = dist;
+                        closest_enemy = i;
+                    }
+                }
+            }
+        }
+        i += 1;
+    }
+    return closest_enemy;
+}

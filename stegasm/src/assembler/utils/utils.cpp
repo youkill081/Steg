@@ -9,6 +9,8 @@
 #include "assembler/assembler_exception.h"
 #include "assembler/TextParser.h"
 
+#include <charconv>
+
 namespace assembler
 {
     std::span<const ParsedLine> get_section_lines(
@@ -46,23 +48,5 @@ namespace assembler
             return {lines.data() + section_start_index + 1, number_line_section};
 
         return {};
-    }
-
-    bool token_is_uint32_value(const std::string& token)
-    {
-        uint32_t result;
-        auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
-        return ec == std::errc();
-    }
-
-    uint32_t token_to_uint32(const std::string& token)
-    {
-        if (token_is_uint32_value(token))
-        {
-            uint32_t result;
-            std::from_chars(token.data(), token.data() + token.size(), result);
-            return result;
-        }
-        Linter::error("Invalid uint16 value \"" + token + "\"");
     }
 }

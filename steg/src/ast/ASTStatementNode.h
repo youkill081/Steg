@@ -1,0 +1,180 @@
+//
+// Created by Roumite on 14/03/2026.
+//
+
+#pragma once
+
+#include <vector>
+#include <memory>
+
+#include "ASTNode.h"
+#include "ASTExpressionNode.h"
+
+namespace compiler
+{
+    class ASTStatementNode : public ASTNode
+    {
+    public:
+        ASTStatementNode(const LexerToken& token) { this->token = token; }
+    };
+
+    class ASTStatementError : public ASTStatementNode
+    {
+    public:
+        ASTStatementError(const LexerToken& token) : ASTStatementNode(token) {};
+        void display(std::size_t left_padding) override
+        {
+            display_indent(left_padding);
+            std::cout << "Error" << std::endl;
+        };
+        void accept(ASTVisitor* visitor) override;
+    };
+
+    class ASTBlockStatementNode final : public ASTStatementNode
+    {
+    public:
+        ASTBlockStatementNode(std::vector<std::unique_ptr<ASTStatementNode>> statement, const LexerToken& token) :
+            ASTStatementNode(token), statements(std::move(statement)) {}
+
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::vector<std::unique_ptr<ASTStatementNode>> statements;
+    };
+
+    class ASTIfStatementNode final : public ASTStatementNode
+    {
+    public:
+        ASTIfStatementNode(
+            std::unique_ptr<ASTExpressionNode> condition,
+            std::unique_ptr<ASTBlockStatementNode> then_statement,
+            std::unique_ptr<ASTBlockStatementNode> false_statement,
+            const LexerToken& token
+        ) : ASTStatementNode(token),
+            condition(std::move(condition)),
+            then_statement(std::move(then_statement)),
+            false_statement( std::move(false_statement)) {}
+
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::unique_ptr<ASTExpressionNode> condition;
+        std::unique_ptr<ASTBlockStatementNode> then_statement;
+        std::unique_ptr<ASTBlockStatementNode> false_statement; // For the else, this is optionnal
+    };
+
+    class ASTWhileStatementNode final : public ASTStatementNode
+    {
+    public:
+        ASTWhileStatementNode(std::unique_ptr<ASTExpressionNode> condition, std::unique_ptr<ASTStatementNode> body_statement, const LexerToken& token)
+            : ASTStatementNode(token), condition(std::move(condition)), body_statement( std::move(body_statement)) {}
+
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::unique_ptr<ASTExpressionNode> condition;
+        std::unique_ptr<ASTStatementNode> body_statement;
+    };
+
+    class ASTForStatementNode final : public ASTStatementNode
+    {
+    public:
+        ASTForStatementNode(
+            std::unique_ptr<ASTExpressionNode> init_expression,
+            std::unique_ptr<ASTExpressionNode> condition_expression,
+            std::unique_ptr<ASTExpressionNode> post_expression,
+            std::unique_ptr<ASTStatementNode> body_statement,
+            const LexerToken& token
+        ) : ASTStatementNode(token),
+            init_expression(std::move(init_expression)),
+            condition_expression(std::move(condition_expression)),
+            post_expression(std::move(post_expression)),
+            body_statement( std::move(body_statement)) {}
+
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::unique_ptr<ASTExpressionNode> init_expression;
+        std::unique_ptr<ASTExpressionNode> condition_expression;
+        std::unique_ptr<ASTExpressionNode> post_expression;
+
+        std::unique_ptr<ASTStatementNode> body_statement;
+    };
+
+    class ASTReturnStatement final : public ASTStatementNode
+    {
+    public:
+        ASTReturnStatement(std::unique_ptr<ASTExpressionNode> expression, const LexerToken& token)
+            : ASTStatementNode(token), expression(std::move(expression)) {}
+
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::unique_ptr<ASTExpressionNode> expression; // The return expression is optional
+    };
+
+    class ASTBreakStatement final : public ASTStatementNode
+    {
+    public:
+        ASTBreakStatement(const LexerToken& token) : ASTStatementNode(token) {};
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+    };
+
+    class ASTContinueStatement final : public ASTStatementNode
+    {
+    public:
+        ASTContinueStatement(const LexerToken& token) : ASTStatementNode(token)  {};
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+    };
+
+    class ASTLabelStatement final : public ASTStatementNode
+    {
+    public:
+        ASTLabelStatement(const LexerToken& token, const std::string &label) : ASTStatementNode(token), label(label) {};
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::string label;
+    };
+
+    class ASTGotoStatement final : public ASTStatementNode
+    {
+    public:
+        ASTGotoStatement(const LexerToken& token, const std::string &label) : ASTStatementNode(token), label(label) {};
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+
+        std::string label;
+    };
+
+    class ASTVariableStatement final : public ASTStatementNode
+    {
+    public:
+        ASTVariableStatement(
+            const std::string &name,
+            std::unique_ptr<ASTTypeNode> type,
+            std::unique_ptr<ASTExpressionNode> expression,
+            const LexerToken& token
+        ) : ASTStatementNode(token), name(name), type(std::move(type)), expression(std::move(expression)) {}
+
+        std::string name;
+        std::unique_ptr<ASTTypeNode> type;
+        std::unique_ptr<ASTExpressionNode> expression; // Optional expression to init the variable
+
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+    };
+
+    class ASTExpressionStatement final : public ASTStatementNode
+    {
+    public:
+        ASTExpressionStatement(std::unique_ptr<ASTExpressionNode> expression, const LexerToken& token)
+            : ASTStatementNode(token), expression(std::move(expression)) {}
+
+        void display(std::size_t left_padding) override;
+        void accept(ASTVisitor* visitor) override;
+        std::unique_ptr<ASTExpressionNode> expression;
+    };
+}

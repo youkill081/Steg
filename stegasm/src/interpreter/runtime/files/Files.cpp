@@ -8,54 +8,56 @@
 
 descriptor Files::next_descriptor()
 {
-    while (_entries.contains(_current))
-        _current++;
-    return _current;
+    return _current++;
 }
 
 descriptor Files::open_file(const std::string& path)
 {
     descriptor desc = next_descriptor();
-    _entries.emplace(desc, File::open_file(path));
+    _entries[desc] = File::open_file(path);
     return desc;
 }
 
 descriptor Files::create_file(const std::string& path)
 {
     descriptor desc = next_descriptor();
-    _entries.emplace(desc, File::create_empty_file(path));
+    _entries[desc] = File::create_empty_file(path);
     return desc;
 }
 
 void Files::push_file(descriptor desc, std::shared_ptr<FileBase> entry)
 {
-    _entries.emplace(desc, std::move(entry));
+    _entries[desc] = std::move(entry);
     if (desc >= _current)
         _current = desc + 1;
 }
 
 void Files::close_file(descriptor desc)
 {
-    _entries.erase(desc);
+    _entries[desc] = nullptr;
 }
 
 void Files::delete_file(descriptor desc)
 {
     get_file(desc)->delete_file();
-    _entries.erase(desc);
+    _entries[desc] = nullptr;
 }
 
-std::shared_ptr<FileBase> Files::operator[](descriptor desc)
+const std::shared_ptr<FileBase> &Files::operator[](descriptor desc)
 {
-    if (!_entries.contains(desc))
+    const std::shared_ptr<FileBase> &entry = _entries[desc];
+    if (!entry)
         throw FileError("Descriptor " + std::to_string(desc) + " not found !");
-    return _entries.at(desc);
+    return entry;
 }
 
-std::shared_ptr<File> Files::get_file(descriptor desc)
+File *Files::get_file(descriptor desc)
 {
-    auto file = std::dynamic_pointer_cast<File>((*this)[desc]);
+    const std::shared_ptr<FileBase>& entry = (*this)[desc];
+
+    auto file = dynamic_cast<File*>(entry.get());
     if (!file)
         throw FileError("Descriptor " + std::to_string(desc) + " is not a plain file !");
+
     return file;
 }

@@ -12,18 +12,18 @@
 class SubTexture final : public FileBase
 {
 private:
-    std::shared_ptr<File> _origin;
+    File *_origin;
     Crop _crop;
 
 public:
-    SubTexture(std::shared_ptr<File> origin, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
-        : _origin(std::move(origin)), _crop{x, y, w, h}
+    SubTexture(File *origin, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+        : _origin(origin), _crop{x, y, w, h}
     {
         _origin->add_callback([this]() { this->call_callbacks(); });
     }
 
     const std::string& get_path() override { return _origin->get_path(); }
 
-    std::optional<Crop> get_crop() const override { return _crop; }
+    [[nodiscard]] std::optional<Crop> get_crop() const override { return _crop; }
     FileBaseType get_file_type() override { return SUBTEXTURE_TYPE; }
 };

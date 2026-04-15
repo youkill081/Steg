@@ -13,8 +13,13 @@
 
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <filesystem>
+
+#include "Colors.h"
 #include "stb_image_write.h"
 #include "Logger.h"
+
+using namespace steganographer;
 
 Image::Image(const std::string& path)
 {
@@ -35,7 +40,6 @@ Image::Image(const std::string& path)
             px.red = p[0];
             px.green = p[1];
             px.blue = p[2];
-            px.usage = ZERO_READ;
             pixels->push_back(px);
         }
     }
@@ -55,7 +59,14 @@ void Image::save_png(const std::string& output_path) const
         throw std::runtime_error("Image::save_png: pixels size doesn't match width*height");
     }
 
-    Logger::log("Saving image to " + output_path, "Image");
+    std::string absolute_path;
+    try {
+        absolute_path = std::filesystem::absolute(output_path).string();
+    } catch (...) {
+        absolute_path = output_path;
+    }
+
+    Logger::log("-> Saving image to " + absolute_path, "Image", AnsiColors::Cyan);
 
     std::vector<unsigned char> data;
     data.resize(static_cast<std::size_t>(_width) * static_cast<std::size_t>(_height) * 3u);
@@ -79,7 +90,12 @@ void Image::save_png(const std::string& output_path) const
     }
 }
 
-pixel& Image::get_pixel(uint32_t number) const
+pixel &Image::get_pixel(uint32_t number) const
 {
     return pixels->at(number%pixels->size());
+}
+
+Pixels &Image::get_pixels() const
+{
+    return *pixels;
 }

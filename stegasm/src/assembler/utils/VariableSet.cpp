@@ -35,6 +35,13 @@ std::vector<VariableType> token_to_data_generic(
     Linter::error("Failed to parse token \"" + token + "\" for variable \"" + variableName + "\"");
 }
 
+std::vector<VariableType> token_u32_to_data(const std::string &token, const std::string &variableName)
+{
+    if (!token_is_numeric_value(token))
+        Linter::error("Failed to parse token \"" + token + "\" for variable \"" + variableName + "\"");
+    return { token_uint32_to_numeric(token) };
+}
+
 std::vector<VariableType> token_to_data(
     const std::string &token,
     const std::string &variableName,
@@ -43,7 +50,7 @@ std::vector<VariableType> token_to_data(
     switch (type) {
     case VARIABLE_UINT8:  return token_to_data_generic<uint8_t>(token, variableName);
     case VARIABLE_UINT16: return token_to_data_generic<uint16_t>(token, variableName);
-    case VARIABLE_UINT32: return token_to_data_generic<uint32_t>(token, variableName);
+    case VARIABLE_UINT32: return token_u32_to_data(token, variableName); // special case for u32 to handle float
     default: Linter::error("Type inconnu");
     }
 }
@@ -57,6 +64,8 @@ VariableType get_end_of_variable(VariableTypeFlag type)
     case VARIABLE_UINT16:
         return static_cast<uint16_t>(0);
     case VARIABLE_UINT32:
+        return static_cast<uint32_t>(0);
+    default:
         return static_cast<uint32_t>(0);
     }
 }

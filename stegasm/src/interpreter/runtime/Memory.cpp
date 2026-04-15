@@ -9,12 +9,14 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstdint>
+#include <algorithm>
 
 // ----- MemoryBlockSet -----
 
 MemoryBlockSet::MemoryBlockSet()
 {
     blocks.emplace_back(0u, MAX_VALUE_IN_UINT32, FREE);
+    invalidate_cache();
 }
 
 uint32_t MemoryBlockSet::find_free_block_index(uint32_t size) const
@@ -41,6 +43,7 @@ bool MemoryBlockSet::is_address_used(uint32_t address) const
 
 uint32_t MemoryBlockSet::allocate(uint32_t size)
 {
+    invalidate_cache();
     if (size == 0) throw MemoryError("Cannot allocate zero size");
     const uint32_t index = find_free_block_index(size);
 
@@ -56,6 +59,7 @@ uint32_t MemoryBlockSet::allocate(uint32_t size)
 void MemoryBlockSet::allocate_at(uint32_t address, uint32_t size)
 {
     if (size == 0) return;
+    invalidate_cache();
 
     uint64_t end = static_cast<uint64_t>(address) + static_cast<uint64_t>(size);
     if (end - 1 > MAX_VALUE_IN_UINT32) {
@@ -106,8 +110,13 @@ void MemoryBlockSet::allocate_at(uint32_t address, uint32_t size)
     }
 }
 
+void MemoryBlockSet::invalidate_cache() {
+    std::ranges::fill(_hash_cache, 0xFFFFFFFF);
+}
+
 void MemoryBlockSet::merge_all_free_block()
 {
+    invalidate_cache();
     if (blocks.empty()) return;
 
     for (size_t i = 0; i < blocks.size() - 1;)
@@ -124,20 +133,60 @@ void MemoryBlockSet::merge_all_free_block()
     }
 }
 
+void MemoryBlockSet::update_just_read(uint32_t block_idx) const {
+    if (_just_read_cache[0] == block_idx) return;
+
+    _just_read_cache[3] = _just_read_cache[2];
+    _just_read_cache[2] = _just_read_cache[1];
+    _just_read_cache[1] = _just_read_cache[0];
+    _just_read_cache[0] = block_idx;
+}
+
 uint32_t MemoryBlockSet::find_address_block_index(uint32_t address) const
 {
-    for (uint32_t i = 0; i < blocks.size(); ++i)
+    for (uint32_t idx : _just_read_cache) // Only 4 elements to iterate
     {
-        if (blocks[i].start <= address && address < blocks[i].start + blocks[i].size)
+        if (idx < blocks.size())
         {
-            return i;
+            const auto &b = blocks[idx];
+            if (address >= b.start && address < b.start + b.size) return idx;
         }
     }
-    throw MemoryError("Address " + std::to_string(address) + " is not in memory");
+
+    const uint32_t hash_idx = (address >> 5) & CACHE_MASK; // Checking in the cache
+    uint32_t entry = _hash_cache[hash_idx];
+    if (entry < blocks.size()) {
+        const auto &b = blocks[entry];
+        if (address >= b.start && address < b.start + b.size) {
+            update_just_read(entry);
+            return entry;
+        }
+    }
+
+    // Fallback to upper_bound search (log2(N)+O(1))
+    // Return the first block above the address
+    auto it = std::upper_bound(blocks.begin(), blocks.end(), address,
+        [](uint32_t addr, const MemoryBlock& block) {
+            return addr < block.start;
+        });
+
+    if (it == blocks.begin()) {
+        throw MemoryError("Address " + std::to_string(address) + " is not in memory");
+    }
+    it -= 1; // Change to the right block
+    if (address >= it->start + it->size) {
+        throw MemoryError("Address " + std::to_string(address) + " is not in memory");
+    }
+
+    const uint32_t block_idx = static_cast<uint32_t>(std::distance(blocks.begin(), it));
+    update_just_read(block_idx);
+    _hash_cache[hash_idx] = block_idx;
+    return block_idx;
 }
 
 void MemoryBlockSet::free(uint32_t address)
 {
+    invalidate_cache();
     const uint32_t index = find_address_block_index(address);
 
     if (blocks[index].free == FREE)
@@ -152,17 +201,22 @@ void MemoryBlockSet::free(uint32_t address)
 
 MemoryBlock& MemoryBlockSet::get_block_for_address(uint32_t address)
 {
-    uint32_t idx = find_address_block_index(address);
+    const uint32_t idx = find_address_block_index(address);
     return blocks[idx];
 }
 
 const MemoryBlock& MemoryBlockSet::get_block_for_address(uint32_t address) const
 {
-    uint32_t idx = find_address_block_index(address);
+    const uint32_t idx = find_address_block_index(address);
     return blocks[idx];
 }
 
 // ----- Memory -----
+
+MemoryBlock& Memory::get_block(uint32_t address)
+{
+    return _blocks.get_block_for_address(address);
+}
 
 uint8_t Memory::read_uint8(uint32_t address) const
 {
@@ -209,12 +263,11 @@ uint32_t Memory::read_uint32(uint32_t address) const
 
 void Memory::write_uint8(uint32_t address, uint8_t value)
 {
-    if (_blocks.is_address_free(address))
+    MemoryBlock &block = _blocks.get_block_for_address(address);
+    if (block.free == FREE)
         throw MemoryError("[SEGFAULT] Try to write at FREE address " + std::to_string(address));
 
-    MemoryBlock& block = _blocks.get_block_for_address(address);
     uint32_t offset = address - block.start;
-
     if (offset >= block.data.size())
         throw MemoryError("Internal error: offset out of range in write");
 
@@ -223,12 +276,11 @@ void Memory::write_uint8(uint32_t address, uint8_t value)
 
 void Memory::write_uint16(uint32_t address, uint16_t value)
 {
-    if (_blocks.is_address_free(address))
+    MemoryBlock &block = _blocks.get_block_for_address(address);
+    if (block.free == FREE)
         throw MemoryError("[SEGFAULT] Try to write uint16 at FREE address " + std::to_string(address));
 
-    MemoryBlock& block = _blocks.get_block_for_address(address);
     uint32_t offset = address - block.start;
-
     if (offset + 1 >= block.data.size())
         throw MemoryError("Write uint16 out of block bounds");
 
@@ -238,12 +290,11 @@ void Memory::write_uint16(uint32_t address, uint16_t value)
 
 void Memory::write_uint32(uint32_t address, uint32_t value)
 {
-    if (_blocks.is_address_free(address))
+    MemoryBlock &block = _blocks.get_block_for_address(address);
+    if (block.free == FREE)
         throw MemoryError("[SEGFAULT] Try to write uint32 at FREE address " + std::to_string(address));
 
-    MemoryBlock& block = _blocks.get_block_for_address(address);
     uint32_t offset = address - block.start;
-
     if (offset + 3 >= block.data.size())
         throw MemoryError("Write uint32 out of block bounds");
 

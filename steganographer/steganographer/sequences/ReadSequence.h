@@ -26,7 +26,7 @@ private:
 
     void check_checksum();
 public:
-    ReadSequence(Image& image, uint32_t seed);
+    ReadSequence(steganographer::Image& image, uint32_t seed);
 
     ByteBuffer &get_data_buffer() { return _data_buffer; }
     ByteBuffer &get_header_buffer() { return _header_buffer; }

@@ -4,14 +4,11 @@
 
 #include "Registries.h"
 
+#include <bitset>
+
 #include "Logger.h"
 #include "../exceptions.h"
-
-void Registries::check_registry_valid(const uint16_t registry_number)
-{
-    if (registry_number > number_of_registries)
-        throw RegistryError("Invalid registry number " + std::to_string(registry_number));
-}
+#include "interpreter/runtime/InstructionView.h"
 
 void Registries::write(const RegNames registry_name, const uint32_t value)
 {
@@ -20,7 +17,6 @@ void Registries::write(const RegNames registry_name, const uint32_t value)
 
 void Registries::write(const uint16_t registry_number, const uint32_t value)
 {
-    check_registry_valid(registry_number);
     registries[registry_number] = value;
 }
 
@@ -31,7 +27,6 @@ uint32_t Registries::read(const RegNames registry_name) const
 
 uint32_t Registries::read(uint16_t registry_number) const
 {
-    check_registry_valid(registry_number);
     return registries[registry_number];
 }
 
@@ -40,6 +35,6 @@ void Registries::display() const
     for (uint16_t i = 0; i < number_of_registries; i++)
     {
         auto reg = static_cast<RegNames>(i);
-        Logger::log(registryToString[reg] + " -> " + std::to_string(registries[i]), "Registries");
+        Logger::log(registryToString[reg] + " -> " + std::to_string(registries[i]) + " | " + std::bitset<32>(registries[i]).to_string(), "Registries");
     }
 }
