@@ -83,8 +83,13 @@ jobs:
         with:
           cmake-version: '4.0.x'
 
-      - name: Configure CMake
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 
       - name: Build Targets
         run: cmake --build build --target steg steglsp --config Release
@@ -100,8 +105,8 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           mkdir dist
-          copy build\steg\Release\steg.exe dist\steg_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
-          copy build\steg\lsp\Release\steglsp.exe dist\steglsp_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
+          copy build\steg\steg.exe dist\steg_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
+          copy build\steg\lsp\steglsp.exe dist\steglsp_${{ matrix.os }}_${{ needs.check-version.outputs.version }}.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
