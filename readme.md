@@ -93,14 +93,14 @@
 
 | Binaires    | Description                                                                                                                           |
 |-------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| **Steg**    | Point d'entrée unifié du projet, permet de lancer du steg/StegASM, d'éxécuter dans des images et également de build dans les images ! |
+| **Steg**    | Point d'entrée unifié du projet, permet de lancer du Steg/StegASM, d'éxécuter dans des images et également de build dans les images ! |
 | **StegLSP** | Serveur LSP pour les fichiers .steg, directement connecté au compilateur steg !                                                       |
 
-Malgré la forte composante from-scratch le projet s'appuie quand même sur quelques librairies externes (incluses en submodules) : 
-- **stb** — Lecture/écriture de pixels pour la stéganographie, gère également plusieurs formats d'image
-- **raylib** — Moteur graphique, fenêtres, inputs
-- **lsp-framework** — Socle du serveur LSP
-- **googletest** — Framework de tests
+Malgré la forte composante from-scratch ; le projet s'appuie quand même sur quelques librairies externes (incluses en submodules) : 
+- [**stb**](https://github.com/nothings/stb) — Lecture/Écriture de pixels pour la stéganographie, gère également plusieurs formats d'image
+- [**raylib**](https://www.raylib.com/) — Moteur graphique, fenêtres, inputs...
+- [**lsp-framework**](https://github.com/leon-bckl/lsp-framework) — Socle du serveur LSP
+- [**googletest**](https://github.com/google/googletest) — Framework de tests
 
 ---
 
@@ -113,11 +113,6 @@ Sur Windows il est conseillé d'utiliser [MinGW](https://www.mingw-w64.org/) pou
 
 
 ````shell
-# Récupérer les dépendances
-git submodule update --init --recursive
-
-# Compiler
-mkdir build && cd build
 cmake -B build -DENABLE_INSTRUCTION_COUNTER=OFF
 cmake --build build --config Release
 ````
@@ -151,10 +146,10 @@ Compile et éxécute directement un fichier source, sans passer par une image :
 
 ````shell
 steg run mon_programme.steg
-steg run mon_programme.StegASM
+steg run mon_programme.stegasm
 ````
 
-Le lancement est directement compatible avec les fichiers .steg et .StegASM.
+Le lancement est directement compatible avec les fichiers **.steg** et **.stegasm**.
 
 ### Construire une image executable
 
@@ -222,7 +217,7 @@ Grâce à ce serveur LSP, vous pouvez avoir sur la plupart des IDE moderne :
 
 - **Coloration Syntaxique**
 - **Analyse sémantiques** -> contrôle de flux, types, paramètres etc...
-- **Warnings** : Comme les conversion implicite
+- **Warnings** : Comme les conversions implicites
 
 --- 
 
