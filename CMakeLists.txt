@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 4.0)
 
 project(stegnocode VERSION 0.0.1)
 
-option(ENABLE_INSTRUCTION_COUNTER "If enable, display in the console the number of operation computed each second" ON)
+option(ENABLE_INSTRUCTION_COUNTER "If enable, display in the console the number of operation computed each second" OFF)
 
 if(MINGW)
     add_compile_options("-Wa,-mbig-obj")
