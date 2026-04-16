@@ -57,7 +57,7 @@ void displayHelp() {
 
 int run(int ac, char** av);
 int build(int ac, char** av);
-int run_img(int ac, char** av);
+int run_img(const std::string &image_path);
 
 int main(int ac, char** av)
 {
@@ -91,8 +91,11 @@ int main(int ac, char** av)
             std::cerr << AnsiColors::Red << "Error: Missing image to run." << AnsiColors::Reset << std::endl;
             return 1;
         }
-        return run_img(ac, av);
+        return run_img(av[2]);
     }
+
+    if (ac == 2)
+        return run_img(av[1]); // Short version of run_img
 
     std::cerr << AnsiColors::Red << "Unknown command: " << command << AnsiColors::Reset << std::endl;
     displayHelp();
@@ -289,11 +292,11 @@ int build(int ac, char** av)
 
 /* Run Image */
 
-int run_img(int ac, char** av)
+int run_img(const std::string &image_path)
 {
     try
     {
-        steganographer::Image img{av[2]};
+        steganographer::Image img{image_path};
         Steganographer::DecodeResult decoded = Steganographer::decode(img);
 
         auto data_type = static_cast<DataType>(decoded.header.data_type);
