@@ -6,7 +6,7 @@ import { init_doors, update_doors } from "./game/door_helper.steg";
 import { update_enemies } from "./game/enemy_helper.steg";
 
 fn main() -> void {
-    load_level(rand() % 59);
+    load_level(rand() % 60);
 
     init_renderer();
     init_doors();
