@@ -12,6 +12,7 @@
 [![CMake](https://img.shields.io/badge/CMake-4.0+-064F8C?style=flat-square&logo=cmake)](https://cmake.org/)
 [![Plaformes](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey?style=flat-square)]()
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)]()
+[![en](https://img.shields.io/badge/lang-fr-red.svg)](https://github.com/youkill081/steg-lang/blob/master/README.md)
 
 </div>
 
@@ -61,7 +62,9 @@
 
 ## Démo
 
-![](./doc/demo-wolfensteg.gif)
+<p align="center">
+  <img src="./doc/demo-wolfensteg.gif">
+</p>
 
 ---
 
@@ -113,7 +116,7 @@ Malgré la forte composante from-scratch ; le projet s'appuie quand même sur qu
 
 > [CMake 4.0+](https://cmake.org/download/) est requis.
 
-Le programme a été conçu pour **Window** et **Linux** de manière cross-plateforme.  
+Le programme a été conçu pour **Window** et **Linux** de manière cross-plateforme (les images crée sont compatibles avec les deux).   
 Sur Windows il est conseillé d'utiliser [MinGW](https://www.mingw-w64.org/) pour compiler le projet afin d'avoir les meilleurs performances au niveau de l'interpréteur.
 
 
