@@ -62,7 +62,9 @@ Write code in **Steg** (high level language), compile it, and inject it silently
 ## Démo
 
 <p align="center">
-  <img src="./doc/demo-wolfensteg.gif">
+    <img src="./doc/demo-wolfensteg.gif">
+    <br>
+    <b>Load WolfenSteg from the image and play it.</b>
 </p>
 
 ---

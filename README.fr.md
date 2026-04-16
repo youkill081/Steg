@@ -63,7 +63,9 @@
 ## Démo
 
 <p align="center">
-  <img src="./doc/demo-wolfensteg.gif">
+    <img src="./doc/demo-wolfensteg.gif">
+    <br>
+    <b>Charge WolfenSteg depuis l'image et joue.</b>
 </p>
 
 ---
