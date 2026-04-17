@@ -219,7 +219,7 @@ Fortement inspiré de l'assembleur "standart" il expose les registres et instruc
 
 Les fichiers sources portent l'extension `.stegasm`.
 
-> Une documentation de StegASM est disponible [ici](./doc/stegasm.md).
+> Une documentation de StegASM est disponible [ici](./doc/stegasm.fr.md).
 
 ---
 
