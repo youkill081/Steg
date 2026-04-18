@@ -1,72 +1,72 @@
-# Le langage Steg
+# The Steg language
 
-**Steg** est le langage haut niveau du projet. Il se compile en StegASM via une chaîne complète :
+**Steg** is the high-level language of the project. It compiles to StegASM via a full compilation chain :
 
 ```
-Lexer -> Parseur -> AST -> Analyse sémantique -> IR -> Backend Génération StegASM
+Lexer -> Parseur -> AST -> Semantics analysis -> IR -> StegASM Backend
 ```
 
-Les fichiers sources portent l'extension `.steg`.
+Files use the `.steg` extension.
 
-> Pour une introduction à StegASM, le langage bas niveau, consultez la [documentation StegASM](./stegasm.md).
+> For an introduction to StegASM, the low-level language, consult the [StegASM documentation](./stegasm.md).
 
 ---
 
-## Table des matières
+## Table of content
 
 <!-- TOC -->
-* [Le langage Steg](#le-langage-steg)
-  * [Table des matières](#table-des-matières)
-  * [Structure d'un fichier .steg](#structure-dun-fichier-steg)
+* [The Steg language](#the-steg-language)
+  * [Table of content](#table-of-content)
+  * [Structure of a `.steg` file](#structure-of-a-steg-file)
   * [Types](#types)
-    * [Types primitifs](#types-primitifs)
-    * [Types opaques](#types-opaques)
+    * [Primitives Types](#primitives-types)
+    * [Opaques Types](#opaques-types-)
     * [Conversions](#conversions)
   * [Variables](#variables)
-    * [Variables locales](#variables-locales)
-    * [Variables globales](#variables-globales)
-    * [Chaînes de caractères](#chaînes-de-caractères)
-  * [Fonctions](#fonctions)
-    * [Déclaration](#déclaration)
+    * [Locales Variables](#locales-variables)
+    * [Globals Variables](#globals-variables)
+    * [Strings](#strings)
+  * [Functions](#functions)
+    * [Declaration](#declaration)
     * [Exportation](#exportation)
-  * [Imports et exports](#imports-et-exports)
-    * [Importer des symboles](#importer-des-symboles)
-    * [Propagation des fichiers](#propagation-des-fichiers)
-  * [Structures de contrôle](#structures-de-contrôle)
+  * [Imports and Exports](#imports-and-exports)
+    * [Import Symbol](#import-symbol)
+    * [Files propagations](#files-propagations)
+  * [Control structures](#control-structures)
     * [Conditions](#conditions)
-    * [Boucle while](#boucle-while)
-    * [Boucle for](#boucle-for)
-    * [break et continue](#break-et-continue)
-  * [Section files](#section-files)
-  * [Type file en détail](#type-file-en-détail)
-  * [Fonctions built-in](#fonctions-built-in)
-    * [Affichage](#affichage)
-    * [Système](#système)
-    * [Mathématiques](#mathématiques)
-    * [Image](#image)
-    * [Fenêtre - Cycle de vie](#fenêtre---cycle-de-vie)
-    * [Fenêtre - Rendu](#fenêtre---rendu)
-    * [Fenêtre - Clavier](#fenêtre---clavier)
-    * [Fenêtre - Souris](#fenêtre---souris)
-    * [Fenêtre - Framebuffer](#fenêtre---framebuffer)
-    * [Fichiers et vecteurs](#fichiers-et-vecteurs)
-    * [Horloge](#horloge)
+    * [While loop](#while-loop-)
+    * [For Loops](#for-loops)
+    * [break and continue](#break-and-continue)
+  * [Files Section](#files-section-)
+  * [The file type in details](#the-file-type-in-details)
+  * [Built-in functions](#built-in-functions)
+    * [Printing and debug](#printing-and-debug)
+    * [System](#system)
+    * [Mathematics](#mathematics)
+    * [Images](#images)
+    * [Window - lifecycle](#window---lifecycle)
+    * [Window - Drawing](#window---drawing)
+    * [Window - Keyboard](#window---keyboard)
+    * [Window - Mouse](#window---mouse)
+    * [Window - Framebuffer](#window---framebuffer)
+    * [Files and vectors](#files-and-vectors)
+    * [Clocks](#clocks)
 <!-- TOC -->
 
 ---
 
-## Structure d'un fichier .steg
+## Structure of a `.steg` file
 
-Un fichier `.steg` peut contenir les éléments suivants, dans n'importe quel ordre :
+A `.steg` file can contain the following elements, in any order :  
 
-| Élément            | Rôle                                              |
-|--------------------|---------------------------------------------------|
-| `import { ... }`   | Importation de symboles depuis d'autres fichiers  |
-| `files { ... }`    | Fichiers embarqués dans le binaire                |
-| Variables globales | Variables accessibles dans tout le fichier        |
-| `fn` / `export fn` | Définition de fonctions                           |
+| Élément            | Rôle                                         |
+|--------------------|----------------------------------------------|
+| `import { ... }`   | Import symbols from another file             |
+| `files { ... }`    | Included files in the binary                 |
+| Globals variables  | Globals variables are accessible in the file |
+| `fn` / `export fn` | Function definition                          |
 
-Exemple complet d'un fichier `.steg` :
+Example of a `.steg` file :
 
 ```steg
 import { init_gun, update_player_pos } from "./game/player_helper.steg";
@@ -86,45 +86,45 @@ export fn main() -> void {
 
 ## Types
 
-### Types primitifs
+### Primitives Types
 
-| Type     | Taille  | Description                  |
-|----------|---------|------------------------------|
-| `uint8`  | 8 bits  | Entier non signé sur 8 bits  |
-| `uint16` | 16 bits | Entier non signé sur 16 bits |
-| `uint32` | 32 bits | Entier non signé sur 32 bits |
-| `int`    | 32 bits | Entier signé                 |
-| `float`  | 32 bits | Flottant                     |
-| `bool`   | 8 bits  | Booléen                      |
+| Type     | Taille  | Description            |
+|----------|---------|------------------------|
+| `uint8`  | 8 bits  | 8 bits unsigned number |
+| `uint16` | 16 bits | 16 bits unsigned number |
+| `uint32` | 32 bits | 32 bits unsigned number |
+| `int`    | 32 bits | Signed number          |
+| `float`  | 32 bits | Float                  |
+| `bool`   | 8 bits  | Boolean                |
 
-### Types opaques
+### Opaques Types 
 
-Les types opaques représentent des ressources gérées par l'interpréteur. Ils ne peuvent pas être créés par une valeur littérale - ils sont obtenus et manipulés exclusivement via des fonctions built-in dédiées.
+Opaque Types are representing the resources managed by the interpreter. They cannot be created by a literal value - they are obtained and manipulated exclusively via built-in functions.  
 
-| Type          | Description                                      |
-|---------------|--------------------------------------------------|
-| `file`        | Fichier sur disque ou vecteur binaire en mémoire |
-| `framebuffer` | Surface de dessin pour le rendu graphique        |
-| `clock`       | Horloge pour la gestion du temps                 |
+| Type          | Description                                          |
+|---------------|------------------------------------------------------|
+| `file`        | File on the disk or a binary value in memory (array) |
+| `framebuffer` | Drawing surface for drawing                          |
+| `clock`       | Clock to handle time                                 |
 
 ### Conversions
 
-Les conversions entre types primitifs (`int`, `float`, `uint8`, `uint16`, `uint32`) sont toutes **implicites**. Il n'existe pas de syntaxe de cast explicite.
+Conversions between primitives' types (`int`, `float`, `uint8`, `uint16`, `uint32`) are all **implicit**. There is no explicit cast syntax.  
 
 ```steg
-float dist = 5.56;  // uint -> float, implicite
-uint32 x = dist;    // float -> uint32, implicite -> x = 5
+float dist = 5.56;  // uint -> float, implicit
+uint32 x = dist;    // float -> uint32, implicit -> x = 5
 ```
 
-> Les conversions implicites peuvent générer des **hints** si elles peuvent perdre de la donnée (ex : float -> uint). Le compilateur vous en informera.
+> Implicits' conversions could generate **hints** if they could lose some data (ex: float -> uint). The compiler will inform you about them.  
 
 ---
 
 ## Variables
 
-### Variables locales
+### Locales Variables
 
-Les variables locales se déclarent à l'intérieur d'une fonction et sont initialisées avec une expression :
+Locals' Variables are declared inside a function and are initialized with an expression.
 
 ```steg
 fn exemple() -> void {
@@ -134,43 +134,43 @@ fn exemple() -> void {
 }
 ```
 
-### Variables globales
+### Globals Variables
 
-Les variables globales se déclarent en dehors de toute fonction. Leur initialisation est limitée à des **valeurs constantes** - les expressions ne sont pas autorisées.
+Globals Variables are declared outside a function and are initialized with **constant values**.
 
 ```steg
 uint32 num_doors = 0;  // OK
-file d_map = 0;        // OK, descripteur invalide avant initialisation
-uint32 computed = 5 + 2; // Interdit : expression non constante
+file d_map = 0;        // OK, but the descritor may be invalid without initialization
+uint32 computed = 5 + 2; // Not allowed : not an constant expression
 ```
 
-> ⚠️ Les variables globales ne sont **pas exportées** automatiquement. Pour les exposer, créez une fonction getter explicitement exportée :
+> ⚠️ Globals Variable **can't be exported**. To expose them, create an explicit getter function :  
 
 ```steg
 uint32 num_doors = 0;
  
-export fn get_num_doors() -> uint32 {
+export fn get_num_doors() -> uint32 { // getter for num_doors
     return num_doors;
 }
 ```
 
-### Chaînes de caractères
+### Strings
 
-Une chaîne de caractères se déclare avec la notation `@` sur un type `uint8` :
+Strings are declared with the `@` notation on a `uint8` type :
 
 ```steg
 uint8 @my_string = "hello world";
 ```
 
-> Les tableaux de nombres ne sont pas encore supportés. Seules les chaînes de caractères peuvent utiliser cette notation.
+> Arrays of number aren't yet supported. Only strings are supported in this notation.
 
 ---
 
-## Fonctions
+## Functions
 
-### Déclaration
+### Declaration
 
-Une fonction se déclare avec le mot-clé `fn`. Le type de retour est **obligatoire** :
+A function is declared with the `fn` keyword. The return type is **mandatory** :
 
 ```steg
 fn add(int a, int b) -> int {
@@ -182,11 +182,11 @@ fn main() -> void {
 }
 ```
 
-Le type `void` indique qu'une fonction ne retourne rien.
+`void` indictable that the function doesn't return anything.
 
 ### Exportation
 
-Par défaut, une fonction n'est pas accessible depuis un autre fichier. Pour la rendre importable, utilisez le mot-clé `export` :
+By default, a function is **not** exported. To make it accessible from another file, use the `export` keyword :
 
 ```steg
 export fn get_door_openness(int x, int y) -> float {
@@ -199,14 +199,14 @@ export fn get_door_openness(int x, int y) -> float {
 
 ---
 
-## Imports et exports
+## Imports and Exports
 
-### Importer des symboles
+### Import Symbol
 
-On importe des symboles nommés depuis un autre fichier `.steg` avec la syntaxe suivante :
+To import a symbol from another `.steg` file, use this following syntax :  
 
 ```steg
-import { nom_fonction, autre_fonction } from "./chemin/vers/fichier.steg";
+import { a_fonction, another_function } from "./file/to/file.steg";
 ```
 
 ```steg
@@ -214,21 +214,21 @@ import { load_level } from "./file_loader.steg";
 import { cast_rays, init_renderer, get_zbuffer } from "./renderer.steg";
 ```
 
-Seules les fonctions marquées `export` dans le fichier source sont importables (voir [Exportation](#exportation)).
+Only the functions marked `export` in the imported file are accessible from the current file (see [Exportation](#exportation)).
 
-### Propagation des fichiers
+### Files propagations
 
-La section `files { ... }` est **automatiquement exportée** avec le fichier `.steg`. Si un fichier A importe B, et que B déclare des ressources dans `files { ... }`, ces ressources sont disponibles dans A.
+The section `files { ... }` is **automatically exported** with the `.steg` file. If a file A imports B, and B declares resources in `files { ... }`, these resources are available in A.
 
-Les variables globales, elles, ne se propagent **pas** - elles restent privées au fichier qui les déclare.
+Global variables, however, do not propagate **not** - they remain private to the file that declares them.
 
 ---
 
-## Structures de contrôle
+## Control structures
 
 ### Conditions
 
-Les blocs `if` / `else` suivent une syntaxe classique. Les accolades sont **obligatoires** :
+`if` / `else` blocks follow the classic syntax. The brackets are **mandatory**:
 
 ```steg
 if (door_id == 65535) {
@@ -238,21 +238,21 @@ if (door_id == 65535) {
 }
 ```
 
-> ⚠️ `else if` n'est **pas supporté**. Pour des conditions chaînées, imbriquez des `if` dans les blocs `else` :
+> ⚠️ `else if` isn't supported. To chain multiple conditions, nest `if` blocks inside each other :
 
 ```steg
 if (x == 0) {
-    // cas 1
+    // case 1
 } else {
     if (x == 1) {
-        // cas 2
+        // case 2
     } else {
-        // cas 3
+        // case 3
     }
 }
 ```
 
-### Boucle while
+### While loop 
 
 ```steg
 while (!window_should_close()) {
@@ -261,7 +261,7 @@ while (!window_should_close()) {
 }
 ```
 
-### Boucle for
+### For Loops
 
 ```steg
 uint32 i = 0;
@@ -270,11 +270,11 @@ for (i = 0; i < count; i += 1) {
 }
 ```
 
-> La variable de boucle doit être **déclarée avant** le `for`.
+> The loop variable must be **declared before** the `for`.
 
-### break et continue
+### break and continue
 
-Les mots-clés `break` et `continue` sont disponibles dans les boucles `while` et `for` :
+The keywords `break` and `continue` are available in `while` and `for` loops:
 
 ```steg
 while (true) {
@@ -286,9 +286,9 @@ while (true) {
 
 ---
 
-## Section files
+## Files Section 
 
-La section `files` permet d'**embarquer des fichiers directement dans le binaire** compilé. Elle est l'équivalent direct de la section `.file` en StegASM.
+The `files` section allows you to **embed files directly in the compiled binary**. It is the direct equivalent of the `.file` section in StegASM.
 
 ```steg
 files {
@@ -298,51 +298,51 @@ files {
 }
 ```
 
-Chaque entrée associe un **identifiant** (ex : `GAMEMAPS`) à un chemin de fichier. Ces identifiants sont ensuite utilisables comme arguments des fonctions built-in :
+Each entry associates an **identifier** (e.g., `GAMEMAPS`) with a file path. These identifiers can then be used as arguments for built-in functions:
 
 ```steg
 file header = file_open(MAPHEAD);
 ```
 
-La section `files` est **automatiquement exportée** : tout fichier qui importe un `.steg` contenant cette section bénéficie également des ressources déclarées.
+The `files` section is **automatically exported**: any file that imports a `.steg` containing this section also benefits from the declared resources.
 
 ---
 
-## Type file en détail
+## The file type in details
 
-Le type `file` est le type opaque le plus polyvalent du langage. Au-delà de la simple lecture de fichiers sur disque, il sert également de **vecteur dynamique en mémoire** - l'équivalent d'un vecteur ou d'un buffer.
+The `file` type is the most versatile opaque type in the language. Beyond simply reading files from the disk, it also serves as a **dynamic vector in memory** - the equivalent of a vector or a buffer.
 
-Toutes les opérations sur un `file` sont traitées directement par l'interpréteur : pas d'allocation dynamique explicite, pas d'overhead.
+All operations on a `file` are handled directly by the interpreter: no explicit dynamic allocation, no overhead.
 
-**Créer un vecteur vide :**
+**Create an empty vector :**
 
 ```steg
 file z_buffer = file_create("");
 ```
 
-**Écrire dans un vecteur :**
+**Write in a vector :**
 
 ```steg
-file_clear_data(z_buffer);   // Vide toutes les données
-file_reset_cursor(z_buffer); // Replace le curseur au début
+file_clear_data(z_buffer);   // Empty all data
+file_reset_cursor(z_buffer); // Place the cursor at the beginning
  
 while (x < 320) {
     float value = dist * cos(deg2rad(angle));
-    file_append_uint32(value * 10000.0, z_buffer);
+    file_append_uint32(value * 10000.0, z_buffer); // append uint32 at the end of the vector
     x += 1;
 }
 ```
 
-**Lire depuis un vecteur :**
+**Read from a vector :**
 
 ```steg
 file_seek_cursor(0, in_file);
 uint16 w = file_read_little_uint16(in_file);
 ```
 
-**Passer un `file` en paramètre et le retourner :**
+**Pass a `file` as a parameter and return it:**
 
-Les types `file` peuvent être passés en argument et retournés par une fonction comme n'importe quel autre type :
+The `file` type can be passed as an argument and returned by a function just like any other type:
 
 ```steg
 fn rlew_decode(file in_file, uint16 rlew_tag, uint32 in_length) -> file {
@@ -354,183 +354,185 @@ fn rlew_decode(file in_file, uint16 rlew_tag, uint32 in_length) -> file {
 
 ---
 
-## Fonctions built-in
+## Built-in functions
 
-Les fonctions built-in sont directement intégrées au langage. Elles ne nécessitent aucun import et sont compilées directement en instructions StegASM - leur overhead est donc quasi **nul**.
+The built-in functions are directly integrated into the language. They require no import and are compiled directly into StegASM instructions - their overhead is therefore almost **zero**.
 
-### Affichage
+### Printing and debug
 
-| Signature             | Retour | Description                      |
-|-----------------------|--------|----------------------------------|
-| `print_n(uint32 v)`   | `void` | Affiche un entier non signé      |
-| `print_sn(int v)`     | `void` | Affiche un entier signé          |
-| `print_f(float v)`    | `void` | Affiche un flottant              |
-| `print_c(uint8 v)`    | `void` | Affiche un caractère             |
-| `print_b(uint32 v)`   | `void` | Affiche un entier en binaire     |
-| `print_str(uint8 @s)` | `void` | Affiche une chaîne de caractères |
+| Signature             | Return | Description               |
+|-----------------------|--------|---------------------------|
+| `print_n(uint32 v)`   | `void` | Display unsigned integer  |
+| `print_sn(int v)`     | `void` | Display signer integer    |
+| `print_f(float v)`    | `void` | Display a float           |
+| `print_c(uint8 v)`    | `void` | Display a char            |
+| `print_b(uint32 v)`   | `void` | Display a value in binary |
+| `print_str(uint8 @s)` | `void` | Display a string          |
 
-### Système
+### System
 
-| Signature           | Retour   | Description                                                                                                                                                                                                                                                          |
-|---------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `exit(uint8 code)`  | `void`   | Termine l'exécution avec un code de sortie                                                                                                                                                                                                                           |
-| `aloc(uint32 size)` | `void @` | Alloue un bloc mémoire                                                                                                                                                                                                                                               |
-| `free(void @ptr)`   | `void`   | Libère un bloc mémoire alloué par `aloc`                                                                                                                                                                                                                             |
-| `rand()`            | `uint32` | Returnee un entier pseudo-aléatoire                                                                                                                                                                                                                                  |
-| `debug_r()`         | `void`   | Affiche l'état des registres                                                                                                                                                                                                                                         |
-| `debug_m()`         | `void`   | Affiche l'état de la mémoire                                                                                                                                                                                                                                         |
-| `debug_t(uint32 v)` | `void`   | 1er appel : Elle lance le chrono pour l'ID choisi. ;<br/>Appels suivants : Elle calcule et affiche le temps écoulé (le Delta) depuis le dernier passage, puis redémarre le chrono.<br/>Elle permet par éxemple de calcules le temps de chaque itération d'une boucle |
+| Signature           | Return   | Description                                                                                                                                                                                                                                          |
+|---------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `exit(uint8 code)`  | `void`   | Terminates execution with an exit code                                                                                                                                                                                                               |
+| `aloc(uint32 size)` | `void @` | Alloc a memory block                                                                                                                                                                                                                                 |
+| `free(void @ptr)`   | `void`   | Free a memory block allocate with `aloc`                                                                                                                                                                                                             |
+| `rand()`            | `uint32` | Return a random number                                                                                                                                                                                                                               |
+| `debug_r()`         | `void`   | Display registries status (debug function)                                                                                                                                                                                                           |
+| `debug_m()`         | `void`   | Display the memory content (debug function)                                                                                                                                                                                                          |
+| `debug_t(uint32 v)` | `void`   | First call: It starts the timer for the chosen ID. Subsequent calls: It calculates and displays the elapsed time (the Delta) since the last iteration, then restarts the timer. It can, for example, calculate the time of each iteration of a loop. |
 
-### Mathématiques
+### Mathematics
 
-| Signature                | Retour  | Description                     |
-|--------------------------|---------|---------------------------------|
-| `sin(float v)`           | `float` | Sinus                           |
-| `cos(float v)`           | `float` | Cosinus                         |
-| `ftan(float v)`          | `float` | Tangente                        |
-| `fatan(float v)`         | `float` | Arc-tangente                    |
-| `sqrt(float v)`          | `float` | Racine carrée                   |
-| `fabs(float v)`          | `float` | Valeur absolue                  |
-| `fmax(float a, float b)` | `float` | Maximum de deux flottants       |
-| `fmin(float a, float b)` | `float` | Minimum de deux flottants       |
-| `deg2rad(float v)`       | `float` | Convertit des degrés en radians |
-| `rad2deg(float v)`       | `float` | Convertit des radians en degrés |
+| Signature                | Return  | Description                 |
+|--------------------------|---------|-----------------------------|
+| `sin(float v)`           | `float` | Sinus                       |
+| `cos(float v)`           | `float` | Cosinus                     |
+| `ftan(float v)`          | `float` | Tangent                     |
+| `fatan(float v)`         | `float` | Arc-tangent                 |
+| `sqrt(float v)`          | `float` | Square root                 |
+| `fabs(float v)`          | `float` | Absolute value              |
+| `fmax(float a, float b)` | `float` | Maximum of two floats       |
+| `fmin(float a, float b)` | `float` | Minimum of two floats       |
+| `deg2rad(float v)`       | `float` | Converts degrees to radians |
+| `rad2deg(float v)`       | `float` | Converts radians to degrees |
 
-### Image
+### Images
 
-| Signature             | Retour     | Description                                                           |
-|-----------------------|------------|-----------------------------------------------------------------------|
-| `image_map(file f)`   | `uint32 @` | Mappe une image en mémoire, retourne un pointeur vers les pixels RGBA |
-| `last_image_size_x()` | `uint32`   | Largeur de la dernière image mappée                                   |
-| `last_image_size_y()` | `uint32`   | Hauteur de la dernière image mappée                                   |
+| Signature             | Return     | Description                                                   |
+|-----------------------|------------|---------------------------------------------------------------|
+| `image_map(file f)`   | `uint32 @` | Maps an image to memory, returns a pointer to the RGBA pixels |
+| `last_image_size_x()` | `uint32`   | With of the last mapped image                                 |
+| `last_image_size_y()` | `uint32`   | Height of the last mapped image                               |
 
-### Fenêtre - Cycle de vie
+### Window - lifecycle
 
-| Signature                                         | Retour  | Description                                                 |
-|---------------------------------------------------|---------|-------------------------------------------------------------|
-| `window_create(uint32 w, uint32 h, uint8 @title)` | `void`  | Crée et ouvre la fenêtre                                    |
-| `window_close()`                                  | `void`  | Ferme la fenêtre                                            |
-| `window_should_close()`                           | `bool`  | Vrai si l'utilisateur a demandé la fermeture                |
-| `window_toggle_fullscreen()`                      | `void`  | Bascule le mode plein écran                                 |
-| `window_set_viewport_size(uint32 w, uint32 h)`    | `void`  | Définit la taille du viewport interne                       |
-| `window_disable_viewport()`                       | `void`  | Désactive le viewport interne                               |
-| `window_set_target_fps(uint32 fps)`               | `void`  | Cible un nombre d'images par seconde                        |
-| `window_get_delta()`                              | `float` | Retourne le delta-time en secondes depuis la dernière frame |
-| `window_set_icon(file f)`                         | `void`  | Définit l'icône de la fenêtre                               |
+| Signature                                         | Return  | Description                           |
+|---------------------------------------------------|---------|---------------------------------------|
+| `window_create(uint32 w, uint32 h, uint8 @title)` | `void`  | Create and open a window              |
+| `window_close()`                                  | `void`  | Close the window                      |
+| `window_should_close()`                           | `bool`  | True if user ask closing              |
+| `window_toggle_fullscreen()`                      | `void`  | Toggle fullscreen                     |
+| `window_set_viewport_size(uint32 w, uint32 h)`    | `void`  | Defined the drawing viewport          |
+| `window_disable_viewport()`                       | `void`  | Disable the viewport                  |
+| `window_set_target_fps(uint32 fps)`               | `void`  | Target FPS                            |
+| `window_get_delta()`                              | `float` | Return delta-time from the last frame |
+| `window_set_icon(file f)`                         | `void`  | Define the icon of the window         |
 
-### Fenêtre - Rendu
+### Window - Drawing
 
-| Signature                                                  | Retour | Description                               |
-|------------------------------------------------------------|--------|-------------------------------------------|
-| `window_clear(uint8 r, uint8 g, uint8 b)`                  | `void` | Efface l'écran avec une couleur unie      |
-| `window_present()`                                         | `void` | Présente le frame courant à l'écran       |
-| `window_draw_text(uint32 x, uint32 y, uint8 @s)`           | `void` | Dessine du texte à la position donnée     |
-| `window_draw_texture(uint32 x, uint32 y, file f)`          | `void` | Dessine une texture à la position donnée  |
-| `window_set_text_size(uint32 size)`                        | `void` | Définit la taille du texte                |
-| `window_set_text_color(uint8 r, uint8 g, uint8 b)`         | `void` | Définit la couleur du texte               |
-| `window_set_font(file f)`                                  | `void` | Charge et active une police de caractères |
-| `window_set_texture_color_mask(uint8 r, uint8 g, uint8 b)` | `void` | Applique un masque coloré aux textures    |
-| `window_reset_texture_color_mask()`                        | `void` | Retire le masque coloré                   |
+| Signature                                                  | Return | Description                             |
+|------------------------------------------------------------|--------|-----------------------------------------|
+| `window_clear(uint8 r, uint8 g, uint8 b)`                  | `void` | Clear the window with a color           |
+| `window_present()`                                         | `void` | Present the current frame               |
+| `window_draw_text(uint32 x, uint32 y, uint8 @s)`           | `void` | Draw text at the given coordinates      |
+| `window_draw_texture(uint32 x, uint32 y, file f)`          | `void` | Draw a texture at the given coordinates |
+| `window_set_text_size(uint32 size)`                        | `void` | Define text size                        |
+| `window_set_text_color(uint8 r, uint8 g, uint8 b)`         | `void` | Define the color                        |
+| `window_set_font(file f)`                                  | `void` | Load and enable a font                  |
+| `window_set_texture_color_mask(uint8 r, uint8 g, uint8 b)` | `void` | Apply a color mask to a font            |
+| `window_reset_texture_color_mask()`                        | `void` | Remove the color mask                   |
 
-### Fenêtre - Clavier
+### Window - Keyboard
 
-| Signature                        | Retour | Description                                            |
-|----------------------------------|--------|--------------------------------------------------------|
-| `window_key_pressed(uint32 key)` | `bool` | Vrai si la touche vient d'être pressée (front montant) |
-| `window_key_down(uint32 key)`    | `bool` | Vrai si la touche est maintenue enfoncée               |
+> The keys are from the raylib scancodes
 
-### Fenêtre - Souris
+| Signature                        | Return | Description                          |
+|----------------------------------|--------|--------------------------------------|
+| `window_key_pressed(uint32 key)` | `bool` | True if the key just pressed         |
+| `window_key_down(uint32 key)`    | `bool` | True if the key is currently pressed |
 
-| Signature                                  | Retour   | Description                                           |
-|--------------------------------------------|----------|-------------------------------------------------------|
-| `window_mouse_x()`                         | `uint32` | Position X du curseur                                 |
-| `window_mouse_y()`                         | `uint32` | Position Y du curseur                                 |
-| `window_mouse_delta_x()`                   | `int`    | Déplacement X depuis le dernier frame                 |
-| `window_mouse_delta_y()`                   | `int`    | Déplacement Y depuis le dernier frame                 |
-| `window_mouse_wheel_delta()`               | `int`    | Défilement de la molette depuis le dernier frame      |
-| `window_mouse_button_pressed(uint32 btn)`  | `bool`   | Vrai si le bouton vient d'être cliqué (front montant) |
-| `window_mouse_button_down(uint32 btn)`     | `bool`   | Vrai si le bouton est maintenu enfoncé                |
-| `window_mouse_button_released(uint32 btn)` | `bool`   | Vrai si le bouton vient d'être relâché                |
-| `window_hide_cursor()`                     | `void`   | Masque le curseur                                     |
-| `window_show_cursor()`                     | `void`   | Affiche le curseur                                    |
-| `window_disable_cursor()`                  | `void`   | Désactive et capture le curseur (mode FPS)            |
-| `window_enable_cursor()`                   | `void`   | Réactive le curseur                                   |
+### Window - Mouse
 
-### Fenêtre - Framebuffer
+| Signature                                  | Return   | Description                         |
+|--------------------------------------------|----------|-------------------------------------|
+| `window_mouse_x()`                         | `uint32` | X Position of cursor                |
+| `window_mouse_y()`                         | `uint32` | Y Position of cursor                |
+| `window_mouse_delta_x()`                   | `int`    | X delta from the last frame         |
+| `window_mouse_delta_y()`                   | `int`    | Y delta from the last frame         |
+| `window_mouse_wheel_delta()`               | `int`    | Scrolling wheel from the last frame |
+| `window_mouse_button_pressed(uint32 btn)`  | `bool`   | True if the button just clicked     |
+| `window_mouse_button_down(uint32 btn)`     | `bool`   | True if the button est is down      |
+| `window_mouse_button_released(uint32 btn)` | `bool`   | True if the button just released    |
+| `window_hide_cursor()`                     | `void`   | Hide cursor                         |
+| `window_show_cursor()`                     | `void`   | Show cursor                         |
+| `window_disable_cursor()`                  | `void`   | Capture the cursor (FPS mode)       |
+| `window_enable_cursor()`                   | `void`   | Reactivates the cursor              |
 
-| Signature                                                     | Retour        | Description                                          |
-|---------------------------------------------------------------|---------------|------------------------------------------------------|
-| `window_framebuffer_create(uint32 w, uint32 h)`               | `framebuffer` | Crée un framebuffer de la taille donnée              |
-| `window_framebuffer_get_address(framebuffer fb)`              | `uint32 @`    | Retourne un pointeur vers les pixels du framebuffer  |
-| `window_framebuffer_sync(framebuffer fb)`                     | `void`        | Synchronise les modifications en mémoire vers le GPU |
-| `window_framebuffer_draw(framebuffer fb, uint32 x, uint32 y)` | `void`        | Dessine le framebuffer à la position donnée          |
+### Window - Framebuffer
 
-### Fichiers et vecteurs
+| Signature                                                     | Return        | Description                                       |
+|---------------------------------------------------------------|---------------|---------------------------------------------------|
+| `window_framebuffer_create(uint32 w, uint32 h)`               | `framebuffer` | Create a framebuffer of given size                |
+| `window_framebuffer_get_address(framebuffer fb)`              | `uint32 @`    | Return a pointer to the pixels of the framebuffer |
+| `window_framebuffer_sync(framebuffer fb)`                     | `void`        | Sync modification with the GPU                    |
+| `window_framebuffer_draw(framebuffer fb, uint32 x, uint32 y)` | `void`        | Draw the framebuffer at given position            |
 
-| Signature                                  | Retour   | Description                                    |
-|--------------------------------------------|----------|------------------------------------------------|
-| `file_open(uint8 @path)`                   | `file`   | Ouvre un fichier existant sur disque           |
-| `file_create(uint8 @path)`                 | `file`   | Crée un nouveau fichier ou vecteur vide (`""`) |
-| `file_save(file f)`                        | `void`   | Sauvegarde le fichier sur disque               |
-| `file_delete(file f)`                      | `void`   | Supprime le fichier sur disque                 |
-| `file_close(file f)`                       | `void`   | Ferme et libère le descripteur                 |
-| `file_size(file f)`                        | `uint32` | Retourne la taille en octets                   |
-| `file_map(file f)`                         | `void @` | Mappe tout le fichier en mémoire               |
-| `file_map_x_from_cursor(file f, uint32 n)` | `void @` | Mappe `n` octets depuis la position du curseur |
-| `file_reset_cursor(file f)`                | `void`   | Replace le curseur au début                    |
-| `file_seek_cursor(uint32 pos, file f)`     | `void`   | Déplace le curseur à la position absolue `pos` |
-| `file_get_cursor(file f)`                  | `uint32` | Retourne la position courante du curseur       |
-| `file_clear_data(file f)`                  | `void`   | Efface toutes les données du fichier/vecteur   |
-| `file_is_uint8_remaining(file f)`          | `bool`   | Vrai s'il reste au moins 1 octet à lire        |
-| `file_is_uint16_remaining(file f)`         | `bool`   | Vrai s'il reste au moins 2 octets à lire       |
-| `file_is_uint32_remaining(file f)`         | `bool`   | Vrai s'il reste au moins 4 octets à lire       |
+### Files and vectors
 
-**Lecture séquentielle (depuis le curseur) :**
+| Signature                                  | Return   | Description                               |
+|--------------------------------------------|----------|-------------------------------------------|
+| `file_open(uint8 @path)`                   | `file`   | Opens an existing file on disk            |
+| `file_create(uint8 @path)`                 | `file`   | Creates a new empty file or vector (`""`) |
+| `file_save(file f)`                        | `void`   | Save the file to disk                     |
+| `file_delete(file f)`                      | `void`   | Delete the file on disk                   |
+| `file_close(file f)`                       | `void`   | Close and release the descriptor          |
+| `file_size(file f)`                        | `uint32` | Returns the size in bytes                 |
+| `file_map(file f)`                         | `void @` | Maps the entire file in memory            |
+| `file_map_x_from_cursor(file f, uint32 n)` | `void @` | Map `n` bytes from cursor position        |
+| `file_reset_cursor(file f)`                | `void`   | Place the cursor at the beginning         |
+| `file_seek_cursor(uint32 pos, file f)`     | `void`   | Move cursor to absolute position `pos`    |
+| `file_get_cursor(file f)`                  | `uint32` | Return current position of cursor         |
+| `file_clear_data(file f)`                  | `void`   | Empty all data                            |
+| `file_is_uint8_remaining(file f)`          | `bool`   | True if there almost 1 byte to read       |
+| `file_is_uint16_remaining(file f)`         | `bool`   | True if there almost 2 bytes to read      |
+| `file_is_uint32_remaining(file f)`         | `bool`   | True if there almost 4 bytes to read      |
 
-| Signature                         | Retour   | Description                |
-|-----------------------------------|----------|----------------------------|
-| `file_read_uint8(file f)`         | `uint8`  | Lit 1 octet                |
-| `file_read_uint16(file f)`        | `uint16` | Lit 2 octets big-endian    |
-| `file_read_little_uint16(file f)` | `uint16` | Lit 2 octets little-endian |
-| `file_read_uint32(file f)`        | `uint32` | Lit 4 octets big-endian    |
-| `file_read_little_uint32(file f)` | `uint32` | Lit 4 octets little-endian |
+**Sequential reading (from the cursor):**
 
-**Lecture absolue (à une position donnée) :**
+| Signature                         | Return   | Description               |
+|-----------------------------------|----------|---------------------------|
+| `file_read_uint8(file f)`         | `uint8`  | Read 1 byte               |
+| `file_read_uint16(file f)`        | `uint16` | Read 2 bytes big-endian   |
+| `file_read_little_uint16(file f)` | `uint16` | Read 2 bytes little-endian |
+| `file_read_uint32(file f)`        | `uint32` | Read 4 bytes big-endian   |
+| `file_read_little_uint32(file f)` | `uint32` | Read 4 bytes little-endian |
 
-| Signature                                        | Retour   | Description                        |
+**Absolute reading (at a given position):**
+
+| Signature                                        | Return   | Description                        |
 |--------------------------------------------------|----------|------------------------------------|
-| `file_read_uint8_at(file f, uint32 pos)`         | `uint8`  | Lit 1 octet à `pos`                |
-| `file_read_uint16_at(file f, uint32 pos)`        | `uint16` | Lit 2 octets big-endian à `pos`    |
-| `file_read_little_uint16_at(file f, uint32 pos)` | `uint16` | Lit 2 octets little-endian à `pos` |
-| `file_read_uint32_at(file f, uint32 pos)`        | `uint32` | Lit 4 octets big-endian à `pos`    |
-| `file_read_little_uint32_at(file f, uint32 pos)` | `uint32` | Lit 4 octets little-endian à `pos` |
+| `file_read_uint8_at(file f, uint32 pos)`         | `uint8`  | Read 1 byte from `pos`             |
+| `file_read_uint16_at(file f, uint32 pos)`        | `uint16` | Read 2 bytes big-endian from `pos`    |
+| `file_read_little_uint16_at(file f, uint32 pos)` | `uint16` | Read 2 bytes little-endian from `pos` |
+| `file_read_uint32_at(file f, uint32 pos)`        | `uint32` | Read 4 bytes big-endian from `pos`    |
+| `file_read_little_uint32_at(file f, uint32 pos)` | `uint32` | Read 4 bytes little-endian from `pos` |
 
-**Écriture séquentielle (append) :**
+**Sequential writing (append):**
 
-| Signature                                     | Retour | Description                      |
-|-----------------------------------------------|--------|----------------------------------|
-| `file_append_uint8(uint8 v, file f)`          | `void` | Ajoute 1 octet en fin de fichier |
-| `file_append_uint16(uint16 v, file f)`        | `void` | Ajoute 2 octets big-endian       |
-| `file_append_little_uint16(uint16 v, file f)` | `void` | Ajoute 2 octets little-endian    |
-| `file_append_uint32(uint32 v, file f)`        | `void` | Ajoute 4 octets big-endian       |
-| `file_append_little_uint32(uint32 v, file f)` | `void` | Ajoute 4 octets little-endian    |
+| Signature                                     | Return | Description                  |
+|-----------------------------------------------|--------|------------------------------|
+| `file_append_uint8(uint8 v, file f)`          | `void` | Append 1 byte                |
+| `file_append_uint16(uint16 v, file f)`        | `void` | Append 2 bytes big-endian    |
+| `file_append_little_uint16(uint16 v, file f)` | `void` | Append 2 bytes little-endian |
+| `file_append_uint32(uint32 v, file f)`        | `void` | Append 4 bytes big-endian    |
+| `file_append_little_uint32(uint32 v, file f)` | `void` | Append 4 bytes little-endian |
 
-**Écriture à la position du curseur :**
+**Writing at the cursor position:**
 
-| Signature                                    | Retour | Description                            |
-|----------------------------------------------|--------|----------------------------------------|
-| `file_write_uint8(uint8 v, file f)`          | `void` | Écrit 1 octet à la position du curseur |
-| `file_write_uint16(uint16 v, file f)`        | `void` | Écrit 2 octets big-endian              |
-| `file_write_little_uint16(uint16 v, file f)` | `void` | Écrit 2 octets little-endian           |
-| `file_write_uint32(uint32 v, file f)`        | `void` | Écrit 4 octets big-endian              |
-| `file_write_little_uint32(uint32 v, file f)` | `void` | Écrit 4 octets little-endian           |
+| Signature                                    | Return | Description                     |
+|----------------------------------------------|--------|---------------------------------|
+| `file_write_uint8(uint8 v, file f)`          | `void` | Write 1 byte at cursor position |
+| `file_write_uint16(uint16 v, file f)`        | `void` | Write 2 bytes big-endian        |
+| `file_write_little_uint16(uint16 v, file f)` | `void` | Write 2 bytes little-endian     |
+| `file_write_uint32(uint32 v, file f)`        | `void` | Write 4 bytes big-endian        |
+| `file_write_little_uint32(uint32 v, file f)` | `void` | Write 4 bytes little-endian     |
 
-### Horloge
+### Clocks
 
-| Signature                       | Retour   | Description                                |
-|---------------------------------|----------|--------------------------------------------|
-| `clock_create()`                | `clock`  | Crée une horloge et démarre le chronomètre |
-| `clock_delete(clock c)`         | `void`   | Libère l'horloge                           |
-| `clock_reset(clock c)`          | `void`   | Remet le chronomètre à zéro                |
-| `clock_get_elapsed_ms(clock c)` | `uint32` | Temps écoulé en millisecondes              |
-| `clock_get_elapsed_s(clock c)`  | `uint32` | Temps écoulé en secondes                   |
+| Signature                       | Return   | Description                  |
+|---------------------------------|----------|------------------------------|
+| `clock_create()`                | `clock`  | Create a clock and start it  |
+| `clock_delete(clock c)`         | `void`   | Free the clock               |
+| `clock_reset(clock c)`          | `void`   | Reset the clock to zero      |
+| `clock_get_elapsed_ms(clock c)` | `uint32` | Elapsed time in milliseconds |
+| `clock_get_elapsed_s(clock c)`  | `uint32` | Elapsed time in seconds      |

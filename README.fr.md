@@ -208,7 +208,7 @@ Lexer -> Parseur -> AST -> Analyse sémantique -> IR -> Backend Génération Ste
 
 Les fichiers sources portent l'extension `.steg`.
 
-> Une documentation de Steg est disponible [ici](./doc/steg.md).
+> Une documentation de Steg est disponible [ici](./doc/steg.fr.md).
 
 --- 
 
