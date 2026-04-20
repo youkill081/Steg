@@ -76,7 +76,7 @@ Write code in **Steg** (high level language), compile it, and inject it silently
   * [Overview](#overview)
   * [Démo](#démo)
   * [Table of contents](#table-of-contents)
-  * [Projet component](#projet-component)
+  * [Project component](#project-component)
   * [Compilation](#compilation)
     * [Compilation options](#compilation-options)
       * [Instruction counter](#instruction-counter)
@@ -98,7 +98,7 @@ Write code in **Steg** (high level language), compile it, and inject it silently
 
 ---
 
-## Projet component
+## Project component
 
 | Binary      | Description                                                                                                                      |
 |-------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -130,7 +130,7 @@ cmake --build build --config Release
 
 #### Instruction counter
 
-An instructions-per-second (IPS) counter is available. It with display every second, the number of instructions that have been executed.    
+An instructions-per-second (IPS) counter is available. It displays every second, the number of instructions that have been executed.    
 It was designed to add as little overhead as possible, but it is disabled by default.    
 To enable it, just add the flag `-DENABLE_INSTRUCTION_COUNTER=ON`.  
 
@@ -230,7 +230,7 @@ Sources file use `.stegasm` extension.
 Thanks to this LSP server, you can have the following on most modern IDEs: 
 
 - **Syntax Coloring**
-- **Semantics Analysis** -> flow constrol, types, parameters etc...
+- **Semantics Analysis** -> flow control, types, parameters, etc...
 - **Warnings** : Like implicit conversions
 
 --- 
@@ -239,20 +239,22 @@ Thanks to this LSP server, you can have the following on most modern IDEs:
 
 ### WolfenSteg - Steg
 
-wolfenSteg is a Raycasting 3D game engine entirely written in Steg.  
+wolfenSteg is a Ray-casting 3D game engine entirely written in Steg.  
 This is the technical showcase of the project, proving that the VM and the compilation chain can handle intensive mathematical calculations in real time.
-  
+
+![WolfenSteg](./examples/wolfensteg/wolfensteg.png)
+**This image contains the game**
 
 #### Performance and capacity
 
-- Real-time raycasting: The engine runs smoothly at 60 FPS.
+- Real-time ray-casting: The engine runs smoothly at 60 FPS.
 - Raw power: The StegVM VM achieves peak performance of 250 million instructions per second (IPS).
 
 Gameplay : 
 - Select a random level at game launch
 - Colision system and movement handling
 - Can open doors and go through them
-- Basic fighting systeme to kill enemies (you can switch weapons with the **1** - **2** - **3** - **4** keys)
+- Basic fighting system to kill enemies (you can switch weapons with the **1** - **2** - **3** - **4** keys)
 
 #### Play
 
