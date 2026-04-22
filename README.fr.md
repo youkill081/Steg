@@ -62,6 +62,8 @@
 
 ## Démo
 
+> Les gifs peuvent prendre un peu de temps à charger.
+
 <p align="center">
     <img src="./doc/demo-wolfensteg.gif">
     <br>

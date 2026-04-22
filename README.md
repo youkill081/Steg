@@ -61,6 +61,8 @@ Write code in **Steg** (high level language), compile it, and inject it silently
 
 ## Demo
 
+> GIFs may take a little while to load
+
 <p align="center">
     <img src="./doc/demo-wolfensteg.gif">
     <br>
